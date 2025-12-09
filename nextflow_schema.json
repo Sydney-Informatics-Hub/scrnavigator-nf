@@ -1,0 +1,62 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "scrnavigator-nf pipeline parameters",
+    "description": "Pipeline parameter schema for the scrnavigator-nf Nextflow workflow.",
+    "type": "object",
+    "$defs": {
+        "input_output_options": {
+            "title": "Input/output options",
+            "type": "object",
+            "fa_icon": "fas fa-terminal",
+            "description": "Parameters that control the pipeline inputs and outputs.",
+            "required": ["input"],
+            "properties": {
+                "input": {
+                    "type": "string",
+                    "description": "Path to the input samplesheet CSV file."
+                },
+                "outdir": {
+                    "type": "string",
+                    "description": "Directory to place output files in.",
+                    "default": "results"
+                }
+            }
+        },
+        "run_options": {
+            "title": "Run options",
+            "type": "object",
+            "description": "Parameters that control the pipeline execution and flow.",
+            "properties": {
+                "qc_only": {
+                    "type": "boolean",
+                    "description": "Only run QC analysis.",
+                    "default": false
+                },
+                "resolutions": {
+                    "type": "string",
+                    "description": "Comma-separated list of clustering resolutions (floats or integers) to use for QC. Defaults to values from 0.6 to 2.4 in steps of 0.2."
+                }
+            }
+        },
+        "misc": {
+            "title": "Miscellaneous parameters",
+            "type": "object",
+            "description": "Miscellaneous parameters.",
+            "properties": {
+                "help": {
+                    "type": "boolean",
+                    "description": "Prints the pipeline help message.",
+                    "hidden": true
+                }
+            }
+        }
+    },
+    "allOf": [
+        {
+            "$ref": "#/$defs/input_output_options"
+        },
+        {
+            "$ref": "#/$defs/misc"
+        }
+    ]
+}
