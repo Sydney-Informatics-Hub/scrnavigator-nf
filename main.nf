@@ -36,17 +36,14 @@ workflow {
             assert !!sample : "Error: Must provide a sample name in the samplesheet."
             def rds_path = file(row.rds, checkIfExists: true)
             assert !!rds_path : "Error: Must provide a valid path to a Seurat RDS file."
-            def ensembl = row.ensembl == null || row.ensembl == '' ? true : row.ensembl.toBoolean()
             def min_ncount = row.min_ncount ? row.min_ncount.toInteger() : 0
             def max_ncount = row.max_ncount ? row.max_ncount.toInteger() : null
             def min_nfeature = row.min_nfeature ? row.min_nfeature.toInteger() : 0
             def max_nfeature = row.max_nfeature ? row.max_nfeature.toInteger() : null
             def min_mt_pct = row.min_mt_pct ? row.min_mt_pct.toInteger() : 0
             def max_mt_pct = row.max_mt_pct ? row.max_mt_pct.toInteger() : 100
-            return [
-                sample:sample,
-                rds_path:rds_path,
-                ensembl:ensembl,
+
+            def sample_params = [
                 res:row.res,
                 clusters_to_remove:row.clusters_to_remove,
                 multiplet_rate:row.multiplet_rate,
@@ -56,6 +53,14 @@ workflow {
                 max_nfeature:max_nfeature,
                 min_mt_pct:min_mt_pct,
                 max_mt_pct:max_mt_pct
+            ]
+            def skip_keys = [ 'sample', 'rds_path' ] + sample_params.collect { key, _value -> key }
+            def sample_meta = row.findAll { key, _value -> !skip_keys.contains(key) }
+            return [
+                sample:sample,
+                rds_path:rds_path,
+                params:sample_params,
+                meta:sample_meta
             ]
         }}
 
@@ -69,27 +74,21 @@ workflow {
             return [ sample, rds_paths ]
         }}
 
+    // Pre-process RDS files
     rds_files = samplesheet
-        .map { row -> [ row.sample, row.rds_path, row.ensembl ] }
-        .unique()
+        .map { row -> [ row.sample, row.rds_path, row.meta ] }
 
     PREPROCESS_RDS(rds_files)
 
-    // Create a map of the QC parameters
-    qc_parameters = samplesheet
-        .map { row -> [ row.sample, [
-            min_ncount:row.min_ncount,
-            max_ncount:row.max_ncount,
-            min_nfeature:row.min_nfeature,
-            max_nfeature:row.max_nfeature,
-            min_mt_pct:row.min_mt_pct,
-            max_mt_pct:row.max_mt_pct
-        ]]}
+    // Conduct initial QC
+    sample_parameters = samplesheet
+        .map { sample_id, _rds_path, sample_params, _sample_meta -> [ sample_id, sample_params ] }
     init_qc_in = PREPROCESS_RDS.out.preprocessed_rds
-        .join(qc_parameters, by: 0)
+        .join(sample_parameters, by: 0)
+    all_resolutions = channel.value(params.resolutions)
     report_template = channel.fromPath('assets/initial_qc_report.Rmd', checkIfExists: true).first()
 
-    INIT_QC(init_qc_in, params.resolutions, report_template)
+    INIT_QC(init_qc_in, all_resolutions, report_template)
 
 
 }

@@ -1,13 +1,17 @@
 process PREPROCESS_RDS {
     input:
-    tuple val(sample), path(rds_path), val(ensembl)
+    tuple val(sample), path(rds_path), val(meta)
 
     output:
     tuple val(sample), path("${sample}.preprocessed.rds"), emit: preprocessed_rds
 
     script:
-    def is_ensembl = ensembl ? "TRUE" : "FALSE"
+    def meta_csv = 'field,value\n' +
+        meta.collect { field, value -> [ field, value ].join(',') }.join('\n')
     """
-    preprocess_rds.R "${sample}" "${rds_path}" ${is_ensembl}
+    # Create parameter samplesheet
+    echo -e "${meta_csv}" > meta.csv
+
+    preprocess_rds.R "${sample}" "${rds_path}" meta.csv
     """
 }
