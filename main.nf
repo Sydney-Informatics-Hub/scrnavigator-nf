@@ -86,9 +86,9 @@ workflow {
     init_qc_in = PREPROCESS_RDS.out.preprocessed_rds
         .join(sample_parameters, by: 0)
     all_resolutions = channel.value(params.resolutions)
-    report_template = channel.fromPath('assets/initial_qc_report.Rmd', checkIfExists: true).first()
+    cluster_method = channel.value(params.cluster_method)
 
-    INIT_QC(init_qc_in, all_resolutions, report_template)
+    INIT_QC(init_qc_in, all_resolutions, cluster_method)
 
 
 }
