@@ -1,5 +1,5 @@
 process PREPROCESS_RDS {
-    publishDir "${params.outdir}/qc/${sample}", mode: 'copy'
+    publishDir "${params.outdir}/qc/${sample}/preprocess", mode: 'copy'
 
     input:
     tuple val(sample), path(rds_path), val(meta)

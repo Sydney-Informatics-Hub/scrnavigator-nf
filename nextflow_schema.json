@@ -32,9 +32,23 @@
                     "description": "Only run QC analysis.",
                     "default": false
                 },
+                "no_analysis": {
+                    "type": "boolean",
+                    "description": "Only run up to integration, don't perform pseudobulking, DE, or FEA.",
+                    "default": false
+                },
+                "cohort_id": {
+                    "type": "string",
+                    "description": "Name for the integrated cohort. Default: 'cohort'.",
+                    "default": "cohort"
+                },
                 "resolutions": {
                     "type": "string",
                     "description": "Comma-separated list of clustering resolutions (floats or integers) to use for QC. Defaults to values from 0.6 to 2.4 in steps of 0.2."
+                },
+                "integrated_resolution": {
+                    "type": "number",
+                    "description": "Final clustering resolution (float or integer) for the integrated dataset."
                 },
                 "cluster_method": {
                     "type": "string",

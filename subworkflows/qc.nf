@@ -1,6 +1,7 @@
 // Load modules
 include { PREPROCESS_RDS } from '../modules/preprocess_rds'
-include { INIT_QC } from '../modules/init_qc'
+include { FILTER } from '../modules/filter'
+include { SCTRANSFORM } from '../modules/sct'
 
 workflow QUALITY_CONTROL {
     take:
@@ -18,12 +19,15 @@ workflow QUALITY_CONTROL {
     // Conduct initial QC
     sample_parameters = samplesheet
         .map { row -> [ row.sample, row.params ] }
-    init_qc_in = PREPROCESS_RDS.out.preprocessed_rds
+    filter_in = PREPROCESS_RDS.out.preprocessed_rds
         .join(sample_parameters, by: 0)
 
-    INIT_QC(init_qc_in, all_resolutions, cluster_method)
+    FILTER(filter_in)
+
+    SCTRANSFORM(FILTER.out.qc_rds, all_resolutions, cluster_method)
 
     emit:
-    qc_data = INIT_QC.out.qc_rds
-    qc_results = INIT_QC.out.qc_results
+    rds = SCTRANSFORM.out.sct_rds
+    filter_qc_results = FILTER.out.qc_results
+    cluster_qc_results = SCTRANSFORM.out.qc_results
 }

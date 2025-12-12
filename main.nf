@@ -1,5 +1,7 @@
 // Load modules
 include { QUALITY_CONTROL } from './subworkflows/qc'
+include { DETECT_DOUBLETS } from './modules/doublet'
+include { INTEGRATE } from './modules/integrate'
 
 // Required pipeline parameters
 params.help = false
@@ -82,7 +84,24 @@ workflow {
 
     // If only running QC, stop here, otherwise continue on
     if (!params.qc_only) {
-        // TODO: Doublet detection, integration, annotation, DE, FEA
+        // Doublet detection
+        DETECT_DOUBLETS(QUALITY_CONTROL.out.rds, all_resolutions, cluster_method)
+
+        // Integration
+        all_rds_to_integrate = DETECT_DOUBLETS.out.doublets_removed_rds
+            .map { _sample, rds, _meta -> rds }
+            .collect()
+        cohort_id = channel.value(params.cohort_id)
+        integrated_resolution = channel.value(params.integrated_resolution)
+        INTEGRATE(all_rds_to_integrate, cohort_id, all_resolutions, integrated_resolution, cluster_method)
+    }
+
+    if (!params.no_analysis) {
+        // TODO:
+        // ANNOTATE()
+        // PSEUDO()
+        // DE()
+        // FEA
     }
 
 }

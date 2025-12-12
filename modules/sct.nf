@@ -1,5 +1,5 @@
-process INIT_QC {
-    publishDir "${params.outdir}/qc/${sample}", mode: 'copy'
+process SCTRANSFORM {
+    publishDir "${params.outdir}/qc/${sample}/cluster", mode: 'copy'
 
     input:
     tuple val(sample), path(rds_path), val(meta)
@@ -7,7 +7,7 @@ process INIT_QC {
     val cluster_method
 
     output:
-    tuple val(sample), path("${sample}.qc.rds"), emit: qc_rds
+    tuple val(sample), path("${sample}.sct_clustered.rds"), val(meta), emit: sct_rds
     tuple val(sample), path("qc_results"), emit: qc_results
 
     script:
@@ -19,6 +19,6 @@ process INIT_QC {
     # Create parameter samplesheet
     echo -e "${params_csv}" > params.csv
 
-    init_qc.R "${sample}" "${rds_path}" params.csv
+    sct.R "${sample}" "${rds_path}" params.csv
     """
 }
