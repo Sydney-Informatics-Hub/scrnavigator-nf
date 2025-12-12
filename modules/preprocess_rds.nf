@@ -1,4 +1,6 @@
 process PREPROCESS_RDS {
+    publishDir "${params.outdir}/qc/${sample}", mode: 'copy'
+
     input:
     tuple val(sample), path(rds_path), val(meta)
 
@@ -7,7 +9,7 @@ process PREPROCESS_RDS {
 
     script:
     def meta_csv = 'field,value\n' +
-        meta.collect { field, value -> [ field, ( value ? value : '' ) ].join(',') }.join('\n')
+        meta.collect { field, value -> [ field, ( value == null ? '' : value ) ].join(',') }.join('\n')
     """
     # Create parameter samplesheet
     echo -e "${meta_csv}" > meta.csv

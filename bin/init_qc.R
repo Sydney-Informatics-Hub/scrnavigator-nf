@@ -57,12 +57,12 @@ p_fvc_pre_filtered <- sample_metadata %>%
   annotation_logticks(colour = "lightgrey")
 
 # Apply hard filtering thresholds
-min_ncount <- params$value[match("min_ncount", params$param)]
-max_ncount <- params$value[match("max_ncount", params$param)]
-min_nfeature <- params$value[match("min_nfeature", params$param)]
-max_nfeature <- params$value[match("max_nfeature", params$param)]
-min_mt_pct <- params$value[match("min_mt_pct", params$param)]
-max_mt_pct <- params$value[match("max_mt_pct", params$param)]
+min_ncount <- as.numeric(params$value[match("min_ncount", params$param)])
+max_ncount <- as.numeric(params$value[match("max_ncount", params$param)])
+min_nfeature <- as.numeric(params$value[match("min_nfeature", params$param)])
+max_nfeature <- as.numeric(params$value[match("max_nfeature", params$param)])
+min_mt_pct <- as.numeric(params$value[match("min_mt_pct", params$param)])
+max_mt_pct <- as.numeric(params$value[match("max_mt_pct", params$param)])
 
 # Handle NAs and validate
 if (is.na(min_ncount)) {

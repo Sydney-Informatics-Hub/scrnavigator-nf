@@ -1,6 +1,5 @@
 // Load modules
-include { PREPROCESS_RDS } from './modules/preprocess_rds.nf'
-include { INIT_QC } from './modules/init_qc.nf'
+include { QUALITY_CONTROL } from './subworkflows/qc'
 
 // Required pipeline parameters
 params.help = false
@@ -55,7 +54,7 @@ workflow {
                 min_mt_pct:min_mt_pct,
                 max_mt_pct:max_mt_pct
             ]
-            def skip_keys = [ 'sample', 'rds_path' ] + sample_params.collect { key, _value -> key }
+            def skip_keys = [ 'sample', 'rds' ] + sample_params.collect { key, _value -> key }
             def sample_meta = row.findAll { key, _value -> !skip_keys.contains(key) }
             return [
                 sample:sample,
@@ -75,21 +74,15 @@ workflow {
             return [ sample, rds_paths ]
         }}
 
-    // Pre-process RDS files
-    rds_files = samplesheet
-        .map { row -> [ row.sample, row.rds_path, row.meta ] }
-
-    PREPROCESS_RDS(rds_files)
-
-    // Conduct initial QC
-    sample_parameters = samplesheet
-        .map { sample_id, _rds_path, sample_params, _sample_meta -> [ sample_id, sample_params ] }
-    init_qc_in = PREPROCESS_RDS.out.preprocessed_rds
-        .join(sample_parameters, by: 0)
+    // Run initial quality control
     all_resolutions = channel.value(params.resolutions)
     cluster_method = channel.value(params.cluster_method)
 
-    INIT_QC(init_qc_in, all_resolutions, cluster_method)
+    QUALITY_CONTROL(samplesheet, all_resolutions, cluster_method)
 
+    // If only running QC, stop here, otherwise continue on
+    if (!params.qc_only) {
+        // TODO: Doublet detection, integration, annotation, DE, FEA
+    }
 
 }

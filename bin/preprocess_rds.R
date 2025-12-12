@@ -1,3 +1,4 @@
+#!/usr/bin/env -S Rscript --vanilla
 library(Seurat)
 library(tidyverse)
 
@@ -16,11 +17,11 @@ metadata <- read_csv(metadata_file)
 
 # Update metadata
 so@project.name <- sample_id
-so@orig.ident <- as.factor(sample_id)
+so$orig.ident <- as.factor(sample_id)
 
 # Add in additional sample metadata
-for (field in names(metadata)) {
-  so[[field]] <- metadata[[field]]
+for (field in metadata$field) {
+  so[[field]] <- metadata$value[match(field, metadata$field)]
 }
 
 # Ensure both gene symbols and Ensembl IDs are present in the RNA assay metadata

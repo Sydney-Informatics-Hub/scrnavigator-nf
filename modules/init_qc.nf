@@ -1,4 +1,6 @@
 process INIT_QC {
+    publishDir "${params.outdir}/qc/${sample}", mode: 'copy'
+
     input:
     tuple val(sample), path(rds_path), val(meta)
     val resolutions
@@ -10,7 +12,7 @@ process INIT_QC {
 
     script:
     def params_csv = 'param,value\n' +
-        meta.collect { param, value -> [ param, ( value ? value : '' ) ].join(',') }.join('\n') +
+        meta.collect { param, value -> [ param, ( value == null ? '' : value ) ].join(',') }.join('\n') +
         "\nresolutions,${resolutions}" +
         "\ncluster_method,${cluster_method}\n"
     """
