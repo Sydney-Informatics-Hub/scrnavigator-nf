@@ -42,10 +42,11 @@ workflow {
             def max_nfeature = row.max_nfeature ? row.max_nfeature.toInteger() : null
             def min_mt_pct = row.min_mt_pct ? row.min_mt_pct.toInteger() : 0
             def max_mt_pct = row.max_mt_pct ? row.max_mt_pct.toInteger() : 100
+            def cells_to_remove = row.cells_to_remove ? file(row.cells_to_remove, checkIfExists: true) : null
 
             def sample_params = [
                 res:row.res,
-                clusters_to_remove:row.clusters_to_remove,
+                cells_to_remove:cells_to_remove,
                 multiplet_rate:row.multiplet_rate,
                 min_ncount:min_ncount,
                 max_ncount:max_ncount,

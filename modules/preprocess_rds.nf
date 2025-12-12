@@ -7,7 +7,7 @@ process PREPROCESS_RDS {
 
     script:
     def meta_csv = 'field,value\n' +
-        meta.collect { field, value -> [ field, value ].join(',') }.join('\n')
+        meta.collect { field, value -> [ field, ( value ? value : '' ) ].join(',') }.join('\n')
     """
     # Create parameter samplesheet
     echo -e "${meta_csv}" > meta.csv

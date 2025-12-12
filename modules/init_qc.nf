@@ -6,10 +6,11 @@ process INIT_QC {
 
     output:
     tuple val(sample), path("${sample}.qc.rds"), emit: qc_rds
+    tuple val(sample), path("qc_results"), emit: qc_results
 
     script:
     def params_csv = 'param,value\n' +
-        meta.collect { param, value -> [ param, value ].join(',') }.join('\n') +
+        meta.collect { param, value -> [ param, ( value ? value : '' ) ].join(',') }.join('\n') +
         "\nresolutions,${resolutions}" +
         "\ncluster_method,${cluster_method}\n"
     """
