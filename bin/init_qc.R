@@ -236,7 +236,7 @@ for (res in cluster_resolutions) {
 
 # Set a default cluster resolution
 default_res <- 1
-default_res_param <- params$value[match("res", params$param)]
+default_res_param <- as.numeric(params$value[match("res", params$param)])
 if (!is.na(default_res_param)) {
   default_res <- default_res_param
 }
