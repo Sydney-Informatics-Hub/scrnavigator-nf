@@ -74,6 +74,21 @@
                     "type": "string",
                     "description": "Path to an RDS file containing an AnnotationDb object for the Ensembl database (e.g. EnsDb.Hsapiens.v86). Required for species other than 'human' or 'mouse'.",
                     "default": null
+                },
+                "s_genes": {
+                    "type": "string",
+                    "description": "Path to a text file containing S gene IDs for cell cycle annotation. Not required when --species is 'human'.",
+                    "default": null
+                },
+                "g2m_genes": {
+                    "type": "string",
+                    "description": "Path to a text file containing G2M gene IDs for cell cycle annotation. Not required when --species is 'human'.",
+                    "default": null
+                },
+                "annotation_db": {
+                    "type": "string",
+                    "description": "Path to an RDS file containing a suitable reference dataset for cell type annotation with SingleR. When --species is 'human', the Human Primary Cell Atlas (HPCA) data from the celldex package will be used by default. As per the SingleR documentaiton, this must be 'a numeric matrix of single-cell expression values where rows are genes and columns are cells. Alternatively, a SummarizedExperiment object containing such a matrix'",
+                    "default": null
                 }
             }
         },

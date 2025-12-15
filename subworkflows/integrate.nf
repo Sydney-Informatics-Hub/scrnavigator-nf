@@ -18,6 +18,6 @@ workflow INTEGRATE {
     CLUSTER_INTEGRATED(cluster_input)
 
     emit:
-    rds = CLUSTER_INTEGRATED.out.integrated_rds
+    integrated_rds = CLUSTER_INTEGRATED.out.integrated_rds
     qc_results = CLUSTER_INTEGRATED.out.qc_results
 }

@@ -2,6 +2,7 @@
 include { QUALITY_CONTROL } from './subworkflows/qc'
 include { DETECT_DOUBLETS } from './modules/doublet'
 include { INTEGRATE } from './subworkflows/integrate'
+include { ANNOTATE } from './subworkflows/annotate'
 
 // Required pipeline parameters
 params.help = false
@@ -37,13 +38,16 @@ workflow {
             "Error: If --species is neither 'human' nor 'mouse', --mt_gene_list must be provided."
     }
     assert ['human', 'mouse'].contains(params.species.toLowerCase()) ||
-            !!params.ens_db_rds :
-            "Error: If --species is neither 'human' nor 'mouse', --ens_db_rds must be provided."
+        !!params.ens_db_rds :
+        "Error: If --species is neither 'human' nor 'mouse', --ens_db_rds must be provided."
     species_params = channel.value([
         species:params.species.toLowerCase(),
         annotate_mt:!params.no_mt,
         mt_gene_list:(!!params.mt_gene_list ? file(params.mt_gene_list, checkIfExists: true) : null),
-        ens_db_rds:(!!params.ens_db_rds ? file(params.ens_db_rds, checkIfExists: true) : null)
+        ens_db_rds:(!!params.ens_db_rds ? file(params.ens_db_rds, checkIfExists: true) : null),
+        s_genes:(!!params.s_genes ? file(params.s_genes, checkIfExists: true) : null),
+        g2m_genes:(!!params.g2m_genes ? file(params.g2m_genes, checkIfExists: true) : null),
+        annotation_db:(!!params.annotation_db ? file(params.annotation_db, checkIfExists: true) : null),
     ])
 
     // Read in samplesheet
@@ -121,8 +125,8 @@ workflow {
     }
 
     if (!params.qc_only && !params.no_analysis) {
+        ANNOTATE(INTEGRATE.out.integrated_rds, species_params)
         // TODO:
-        // ANNOTATE()
         // PSEUDO()
         // DE()
         // FEA

@@ -28,6 +28,31 @@ sample_names <- sapply(
 )
 names(all_so) <- sample_names
 
+# Ensure all gene IDs are the same (symbols or Ensembl IDs)
+using_ens_ids <- sapply(all_so, function(so) {
+  all(startsWith(rownames(so@assays$RNA), "ENS"))
+})
+
+if (any(using_ens_ids) && !all(using_ens_ids)) {
+  all_so <- lapply(all_so, function(so) {
+    if (all(startsWith(rownames(so@assays$RNA), "ENS"))) {
+      return(so)
+    }
+    if (any(duplicated(so@assays$RNA@meta.data$gene_versions))) {
+      warning("Duplicated Ensembl IDs have been detected when converting from gene symbols. For each duplicated ID, the first will be kept and the rest will be dropped.")
+      keep <- !duplicated(so@assays$RNA@meta.data$gene_versions)
+      s <- s[keep, ]
+    }
+    if (any(is.na(so@assays$RNA@meta.data$gene_versions))) {
+      warning("Missing Ensembl IDs have been detected when converting from gene symbols. These will be dropped.")
+      keep <- !is.na(so@assays$RNA@meta.data$gene_versions)
+      s <- s[keep, ]
+    }
+    rownames(so@assays$RNA) <- so@assays$RNA@meta.data$gene_versions
+    return(so)
+  })
+}
+
 # Merge data
 first_so <- all_so[[1]]
 remaining_so <- all_so[2:length(all_so)]

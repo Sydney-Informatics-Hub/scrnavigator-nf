@@ -12,7 +12,6 @@ process INTEGRATION {
     script:
     def all_rds_paths = rds_paths.collect { f -> "'${f}'" }.join(' ')
     """
-    # Create parameter samplesheet
     integrate.R "${cohort_name}" ${all_rds_paths}
     """
 }

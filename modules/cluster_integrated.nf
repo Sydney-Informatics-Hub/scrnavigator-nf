@@ -16,7 +16,6 @@ process CLUSTER_INTEGRATED {
     # Create parameter samplesheet
     echo -e "${params_csv}" > params.csv
 
-    # Create parameter samplesheet
     cluster_integrated.R "${cohort_name}" "${rds_path}" params.csv
     """
 }
