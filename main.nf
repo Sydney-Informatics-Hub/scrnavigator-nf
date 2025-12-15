@@ -1,7 +1,7 @@
 // Load modules
 include { QUALITY_CONTROL } from './subworkflows/qc'
 include { DETECT_DOUBLETS } from './modules/doublet'
-include { INTEGRATE } from './modules/integrate'
+include { INTEGRATE } from './subworkflows/integrate'
 
 // Required pipeline parameters
 params.help = false
@@ -91,12 +91,19 @@ workflow {
         all_rds_to_integrate = DETECT_DOUBLETS.out.doublets_removed_rds
             .map { _sample, rds, _meta -> rds }
             .collect()
+        integration_params = channel.of([
+            params.cohort_id,
+            [
+                resolutions:params.resolutions,
+                integrated_resolution:params.integrated_resolution,
+                cluster_method:params.cluster_method
+            ]
+        ])
         cohort_id = channel.value(params.cohort_id)
-        integrated_resolution = channel.value(params.integrated_resolution)
-        INTEGRATE(all_rds_to_integrate, cohort_id, all_resolutions, integrated_resolution, cluster_method)
+        INTEGRATE(all_rds_to_integrate, cohort_id, integration_params)
     }
 
-    if (!params.no_analysis) {
+    if (!params.qc_only && !params.no_analysis) {
         // TODO:
         // ANNOTATE()
         // PSEUDO()
