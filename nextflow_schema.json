@@ -55,6 +55,25 @@
                     "description": "Method to use for clustering. Either 'louvain' or 'leiden' (default: 'louvain').",
                     "default": "louvain",
                     "enum": ["louvain", "leiden"]
+                },
+                "species": {
+                    "type": "string",
+                    "description": "The species that the samples belong to."
+                },
+                "no_mt": {
+                    "type": "boolean",
+                    "description": "Specifies that annotation of mitochondrial gene percentages should be skipped.",
+                    "default": false
+                },
+                "mt_gene_list": {
+                    "type": "string",
+                    "description": "Path to a text file containing known mitochondrial genes in the species. Not required when --species is either 'human' or 'mouse'.",
+                    "default": null
+                },
+                "ens_db_rds": {
+                    "type": "string",
+                    "description": "Path to an RDS file containing an AnnotationDb object for the Ensembl database (e.g. EnsDb.Hsapiens.v86). Required for species other than 'human' or 'mouse'.",
+                    "default": null
                 }
             }
         },

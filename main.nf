@@ -29,6 +29,23 @@ workflow {
         System.exit(1)
     }
 
+    // Check species-related parameters are set
+    assert params.species : "Error: Must provide species name."
+    if (!params.no_mt) {
+        assert ['human', 'mouse'].contains(params.species.toLowerCase()) ||
+            !!params.mt_gene_list :
+            "Error: If --species is neither 'human' nor 'mouse', --mt_gene_list must be provided."
+    }
+    assert ['human', 'mouse'].contains(params.species.toLowerCase()) ||
+            !!params.ens_db_rds :
+            "Error: If --species is neither 'human' nor 'mouse', --ens_db_rds must be provided."
+    species_params = channel.value([
+        species:params.species.toLowerCase(),
+        annotate_mt:!params.no_mt,
+        mt_gene_list:(!!params.mt_gene_list ? file(params.mt_gene_list, checkIfExists: true) : null),
+        ens_db_rds:(!!params.ens_db_rds ? file(params.ens_db_rds, checkIfExists: true) : null)
+    ])
+
     // Read in samplesheet
     samplesheet = channel.fromPath(params.input)
         .splitCsv( header: true )
@@ -80,7 +97,7 @@ workflow {
     all_resolutions = channel.value(params.resolutions)
     cluster_method = channel.value(params.cluster_method)
 
-    QUALITY_CONTROL(samplesheet, all_resolutions, cluster_method)
+    QUALITY_CONTROL(samplesheet, all_resolutions, cluster_method, species_params)
 
     // If only running QC, stop here, otherwise continue on
     if (!params.qc_only) {
