@@ -30,7 +30,7 @@ workflow {
         System.exit(1)
     }
 
-    // Check species-related parameters are set
+    // Check annotation-related parameters are set
     assert params.species : "Error: Must provide species name."
     if (!params.no_mt) {
         assert ['human', 'mouse'].contains(params.species.toLowerCase()) ||
@@ -40,7 +40,7 @@ workflow {
     assert ['human', 'mouse'].contains(params.species.toLowerCase()) ||
         !!params.ens_db_rds :
         "Error: If --species is neither 'human' nor 'mouse', --ens_db_rds must be provided."
-    species_params = channel.value([
+    annotation_params = channel.value([
         species:params.species.toLowerCase(),
         annotate_mt:!params.no_mt,
         mt_gene_list:(!!params.mt_gene_list ? file(params.mt_gene_list, checkIfExists: true) : null),
@@ -48,6 +48,12 @@ workflow {
         s_genes:(!!params.s_genes ? file(params.s_genes, checkIfExists: true) : null),
         g2m_genes:(!!params.g2m_genes ? file(params.g2m_genes, checkIfExists: true) : null),
         annotation_db:(!!params.annotation_db ? file(params.annotation_db, checkIfExists: true) : null),
+        min_cells_for_annotation:(params.min_cells_for_annotation as Integer),
+        custom_marker_genes:(!!params.custom_marker_genes ? file(params.custom_marker_genes, checkIfExists: true) : null),
+        custom_annotation_mad_threshold:(params.custom_annotation_mad_threshold as Float),
+        cluster_annotation:(!!params.cluster_annotation ? params.cluster_annotation : null),
+        cell_type_proportion_threshold:(params.cell_type_proportion_threshold as Float),
+        manual_cluster_annotations:(!!params.manual_cluster_annotations ? file(params.manual_cluster_annotations, checkIfExists: true) : null)
     ])
 
     // Read in samplesheet
@@ -101,7 +107,7 @@ workflow {
     all_resolutions = channel.value(params.resolutions)
     cluster_method = channel.value(params.cluster_method)
 
-    QUALITY_CONTROL(samplesheet, all_resolutions, cluster_method, species_params)
+    QUALITY_CONTROL(samplesheet, all_resolutions, cluster_method, annotation_params)
 
     // If only running QC, stop here, otherwise continue on
     if (!params.qc_only) {
@@ -125,7 +131,9 @@ workflow {
     }
 
     if (!params.qc_only && !params.no_analysis) {
-        ANNOTATE(INTEGRATE.out.integrated_rds, species_params)
+        annotation_rds_input = INTEGRATE.out.integrated_rds
+            .map { cohort_name, rds_path, _meta -> [ cohort_name, rds_path ] }
+        ANNOTATE(INTEGRATE.out.integrated_rds, annotation_params)
         // TODO:
         // PSEUDO()
         // DE()

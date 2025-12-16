@@ -1,12 +1,12 @@
-process ANNOTATE_DATABASE {
-    publishDir "${params.outdir}/annotation/db", mode: 'copy'
+process ANNOTATE_CUSTOM {
+    publishDir "${params.outdir}/annotation/custom", mode: 'copy'
 
     input:
     tuple val(cohort_name), path(rds_path)
     val annotation_params
 
     output:
-    tuple val(cohort_name), path("${cohort_name}.annotated.database.rds"), emit: annotated_rds
+    tuple val(cohort_name), path("${cohort_name}.annotated.custom.rds"), emit: annotated_rds
     tuple val(cohort_name), path("available_annotations.txt"), emit: available_annotations
     tuple val(cohort_name), path("qc_results"), emit: qc_results
 
@@ -17,6 +17,6 @@ process ANNOTATE_DATABASE {
     # Create annotation samplesheet
     echo -e "${annotation_csv}" > annotation.csv
 
-    annotate_db.R "${cohort_name}" "${rds_path}" annotation.csv
+    annotate_custom.R "${cohort_name}" "${rds_path}" annotation.csv
     """
 }

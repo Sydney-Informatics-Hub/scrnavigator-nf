@@ -2,20 +2,21 @@ process ANNOTATE_CELL_CYCLE {
     publishDir "${params.outdir}/annotation/cell_cycle", mode: 'copy'
 
     input:
-    tuple val(cohort_name), path(rds_path), val(meta)
-    val species_params
+    tuple val(cohort_name), path(rds_path)
+    val annotation_params
 
     output:
-    tuple val(cohort_name), path("${cohort_name}.annotated.cell_cycle.rds"), val(meta), emit: annotated_rds
-    tuple val(cohort_name), path("qc_results")
+    tuple val(cohort_name), path("${cohort_name}.annotated.cell_cycle.rds"), emit: annotated_rds
+    tuple val(cohort_name), path("available_annotations.txt"), emit: available_annotations
+    tuple val(cohort_name), path("qc_results"), emit: qc_results
 
     script:
-    def species_csv = 'param,value\n' +
-        species_params.collect { param, value -> [ param, ( value == null ? '' : value ) ].join(',') }.join('\n')
+    def annotation_csv = 'param,value\n' +
+        annotation_params.collect { param, value -> [ param, ( value == null ? '' : value ) ].join(',') }.join('\n')
     """
-    # Create species samplesheet
-    echo -e "${species_csv}" > species.csv
+    # Create annotation samplesheet
+    echo -e "${annotation_csv}" > annotation.csv
 
-    annotate_cell_cycle.R "${cohort_name}" "${rds_path}" species.csv
+    annotate_cell_cycle.R "${cohort_name}" "${rds_path}" annotation.csv
     """
 }

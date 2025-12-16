@@ -101,6 +101,7 @@ for (res in cluster_resolutions) {
     cluster_cells <- rownames(sct@meta.data[sct@meta.data[[res_named]] == cls,])
     sink(cluster_file)
     cat(paste(cluster_cells, collapse = "\n"))
+    cat("\n")
     sink()
   }
 }

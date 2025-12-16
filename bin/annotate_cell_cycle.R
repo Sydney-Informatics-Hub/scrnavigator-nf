@@ -1,13 +1,14 @@
 #!/usr/bin/env -S Rscript --vanilla
 library(Seurat)
 library(tidyverse)
+library(ggplot2)
 
 # Get commandline arguments
 args <- commandArgs(trailingOnly = TRUE)
 
-sample_id <- args[1]
+cohort_id <- args[1]
 rds_path <- args[2]
-species_file <- args[3]
+annotation_file <- args[3]
 
 # Read in Seurat object from RDS file
 integrated <- readRDS(rds_path)
@@ -15,16 +16,16 @@ integrated <- readRDS(rds_path)
 # Read in sample metadata
 metadata <- read_csv(metadata_file)
 
-# Read in species parameters
-species_params <- read_csv(species_file)
+# Read in annotation parameters
+annotation_params <- read_csv(annotation_file)
 
 # Create QC output directory
 dir.create("qc_results")
 
 # Get cell cycle genes for species
-species <- species_params$value[match("species", species_params$param)]
-s_genes_file <- species_params$value[match("s_genes", species_params$param)]
-g2m_genes_file <- species_params$value[match("g2m_genes", species_params$param)]
+species <- annotation_params$value[match("species", annotation_params$param)]
+s_genes_file <- annotation_params$value[match("s_genes", annotation_params$param)]
+g2m_genes_file <- annotation_params$value[match("g2m_genes", annotation_params$param)]
 
 if (!is.na(s_genes_file) && !is.na(g2m_genes_file)) {
   s_genes <- scan(s_genes_file, character())
@@ -37,7 +38,7 @@ if (!is.na(s_genes_file) && !is.na(g2m_genes_file)) {
 }
 
 # Convert cell cycle genes between symbols and Ensembl IDs where necessary
-ensdb_file <- species_params$value[match("ens_db_rds", species_params$param)]
+ensdb_file <- annotation_params$value[match("ens_db_rds", annotation_params$param)]
 
 if (!is.na(ensdb_file)) {
   endsb <- readRDS(ensdb_file)
@@ -101,4 +102,9 @@ p_cell_cycle_umap <- DimPlot(integrated, reduction = "umap", group.by = "Phase")
 ggsave(paste0("qc_results/", cohort_id, ".umap.cell_cycle.png"), p_cell_cycle_umap)
 
 # Save pre-processed data to file
-SaveSeuratRds(integrated, paste0(sample_id, ".annotated.cell_cycle.rds"))
+SaveSeuratRds(integrated, paste0(cohort_id, ".annotated.cell_cycle.rds"))
+
+# Save available annotations to file
+sink("available_annotations.txt")
+cat("Phase\n")
+sink()

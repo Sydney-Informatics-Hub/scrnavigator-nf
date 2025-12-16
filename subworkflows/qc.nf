@@ -8,14 +8,14 @@ workflow QUALITY_CONTROL {
     samplesheet
     all_resolutions
     cluster_method
-    species_params
+    annotation_params
 
     main:
     // Pre-process RDS files
     rds_files = samplesheet
         .map { row -> [ row.sample, row.rds_path, row.meta ] }
 
-    PREPROCESS_RDS(rds_files, species_params)
+    PREPROCESS_RDS(rds_files, annotation_params)
 
     // Conduct initial QC
     sample_parameters = samplesheet

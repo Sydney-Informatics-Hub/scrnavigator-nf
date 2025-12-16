@@ -8,7 +8,7 @@ args <- commandArgs(trailingOnly = TRUE)
 sample_id <- args[1]
 rds_path <- args[2]
 metadata_file <- args[3]
-species_file <- args[4]
+annotation_file <- args[4]
 
 # Read in Seurat object from RDS file
 so <- readRDS(rds_path)
@@ -16,8 +16,8 @@ so <- readRDS(rds_path)
 # Read in sample metadata
 metadata <- read_csv(metadata_file)
 
-# Read in species parameters
-species_params <- read_csv(species_file)
+# Read in annotation parameters
+annotation_params <- read_csv(annotation_file)
 
 # Update metadata
 so@project.name <- sample_id
@@ -29,8 +29,8 @@ for (field in metadata$field) {
 }
 
 # Ensure both gene symbols and Ensembl IDs are present in the RNA assay metadata
-species <- species_params$value[match("species", species_params$param)]
-ensdb_file <- species_params$value[match("ens_db_rds", species_params$param)]
+species <- annotation_params$value[match("species", annotation_params$param)]
+ensdb_file <- annotation_params$value[match("ens_db_rds", annotation_params$param)]
 
 if (!is.na(ensdb_file)) {
   endsb <- readRDS(ensdb_file)
@@ -74,7 +74,7 @@ if (!have_gene_symbols) {
 }
 
 # Add mitochondrial gene percentage per cell
-annotate_mt <- as.logical(species_params$value[match("annotate_mt", species_params$param)])
+annotate_mt <- as.logical(annotation_params$value[match("annotate_mt", annotation_params$param)])
 
 mt_pattern <- NULL
 mt_list <- NULL
@@ -86,7 +86,7 @@ if (!annotate_mt) {
 } else if (species == "mouse") {
   mt_pattern <- "^mt-"
 } else {
-  mt_list_file <- species_params$value[match("mt_gene_list", species_params$param)]
+  mt_list_file <- annotation_params$value[match("mt_gene_list", annotation_params$param)]
   mt_list <- scan(mt_list_file, character())
 }
 

@@ -87,7 +87,37 @@
                 },
                 "annotation_db": {
                     "type": "string",
-                    "description": "Path to an RDS file containing a suitable reference dataset for cell type annotation with SingleR. When --species is 'human', the Human Primary Cell Atlas (HPCA) data from the celldex package will be used by default. As per the SingleR documentaiton, this must be 'a numeric matrix of single-cell expression values where rows are genes and columns are cells. Alternatively, a SummarizedExperiment object containing such a matrix'",
+                    "description": "Path to an RDS file containing a suitable reference dataset for cell type annotation with SingleR. Must contain a field called 'label' with the cell type labels. When --species is 'human', the Human Primary Cell Atlas (HPCA) data from the celldex package will be used by default. As per the SingleR documentaiton, this must be 'a numeric matrix of single-cell expression values where rows are genes and columns are cells. Alternatively, a SummarizedExperiment object containing such a matrix'",
+                    "default": null
+                },
+                "min_cells_for_annotation": {
+                    "type": "integer",
+                    "description": "The minimum number of cells required to keep a cell type annotation.",
+                    "default": 10
+                },
+                "custom_marker_genes": {
+                    "type": "string",
+                    "description": "Path to a CSV file containing custom marker gene sets for annotation of cell types. Must contain two columns: 'cell_type' and 'gene_ids', where 'gene_ids' is a semicolon-delimited list of gene IDs.",
+                    "default": null
+                },
+                "custom_annotation_mad_threshold": {
+                    "type": "number",
+                    "description": "Median absolute difference (MAD) threshold to use when determining cell type based on custom gene programs.",
+                    "default": 1
+                },
+                "cluster_annotation": {
+                    "type": "string",
+                    "description": "The annotation label to use for annotating clusters. If not supplied, defaults to the first of the following that exists: 'custom_cell_type', 'custom_cell_type.max_score', 'SingleR.annotation', 'SingleR.hpca_main', 'SingleR.hpca_fine', 'Phase'.",
+                    "default": null
+                },
+                "cell_type_proportion_threshold": {
+                    "type": "number",
+                    "description": "Proportion of cells in a cluster that must be of the same cell type before calling the cell type for the cluster.",
+                    "default": 0.67
+                },
+                "manual_cluster_annotations": {
+                    "type": "string",
+                    "description": "Path to a CSV file to manually set cluster annotations. Must have two columns: 'cluster' and 'cell_type'.",
                     "default": null
                 }
             }

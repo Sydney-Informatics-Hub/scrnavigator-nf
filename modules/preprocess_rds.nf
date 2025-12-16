@@ -3,7 +3,7 @@ process PREPROCESS_RDS {
 
     input:
     tuple val(sample), path(rds_path), val(meta)
-    val species_params
+    val annotation_params
 
     output:
     tuple val(sample), path("${sample}.preprocessed.rds"), emit: preprocessed_rds
@@ -11,15 +11,15 @@ process PREPROCESS_RDS {
     script:
     def meta_csv = 'field,value\n' +
         meta.collect { field, value -> [ field, ( value == null ? '' : value ) ].join(',') }.join('\n')
-    def species_csv = 'param,value\n' +
-        species_params.collect { param, value -> [ param, ( value == null ? '' : value ) ].join(',') }.join('\n')
+    def annotation_csv = 'param,value\n' +
+        annotation_params.collect { param, value -> [ param, ( value == null ? '' : value ) ].join(',') }.join('\n')
     """
     # Create parameter samplesheet
     echo -e "${meta_csv}" > meta.csv
 
-    # Create species samplesheet
-    echo -e "${species_csv}" > species.csv
+    # Create annotation samplesheet
+    echo -e "${annotation_csv}" > annotation.csv
 
-    preprocess_rds.R "${sample}" "${rds_path}" meta.csv species.csv
+    preprocess_rds.R "${sample}" "${rds_path}" meta.csv annotation.csv
     """
 }
