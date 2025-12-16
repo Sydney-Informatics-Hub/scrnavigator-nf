@@ -11,7 +11,6 @@ args <- commandArgs(trailingOnly = TRUE)
 cohort_id <- args[1]
 rds_path <- args[2]
 annotation_file <- args[3]
-manual_annotations_file <- args[4]  # May be NA
 
 # Read in Seurat object from RDS file
 integrated <- readRDS(rds_path)
@@ -28,6 +27,7 @@ dir.create("qc_results")
 # Get species information
 species <- annotation_params$value[match("species", annotation_params$param)]
 
+manual_annotations_file <- annotation_params$value[match("manual_cluster_annotations", annotation_params$param)]
 if (!is.na(manual_annotations_file)) {
   cluster_cell_type_assignments <- read_csv(manual_annotations_file)
 } else {

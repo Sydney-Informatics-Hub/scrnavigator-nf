@@ -54,14 +54,14 @@ workflow {
     cell_type_proportion_threshold  = channel.value(params.cell_type_proportion_threshold as Float)
 
     // Optional parameters
-    cluster_annotation         = !!params.cluster_annotation         ? channel.value(params.cluster_annotation)                                         : channel.value(null)
-    mt_gene_list               = !!params.mt_gene_list               ? channel.fromPath(params.mt_gene_list, checkIfExists: true).first()               : channel.value(null)
-    ens_db_rds                 = !!params.ens_db_rds                 ? channel.fromPath(params.ens_db_rds, checkIfExists: true).first()                 : channel.value(null)
-    s_genes                    = !!params.s_genes                    ? channel.fromPath(params.s_genes, checkIfExists: true).first()                    : channel.value(null)
-    g2m_genes                  = !!params.g2m_genes                  ? channel.fromPath(params.g2m_genes, checkIfExists: true).first()                  : channel.value(null)
-    annotation_db              = !!params.annotation_db              ? channel.fromPath(params.annotation_db, checkIfExists: true).first()              : channel.value(null)
-    custom_marker_genes        = !!params.custom_marker_genes        ? channel.fromPath(params.custom_marker_genes, checkIfExists: true).first()        : channel.value(null)
-    manual_cluster_annotations = !!params.manual_cluster_annotations ? channel.fromPath(params.manual_cluster_annotations, checkIfExists: true).first() : channel.value(null)
+    cluster_annotation         = !!params.cluster_annotation         ? channel.value(params.cluster_annotation)                                         : channel.value([null])
+    mt_gene_list               = !!params.mt_gene_list               ? channel.fromPath(params.mt_gene_list, checkIfExists: true).first()               : channel.value([null])
+    ens_db_rds                 = !!params.ens_db_rds                 ? channel.fromPath(params.ens_db_rds, checkIfExists: true).first()                 : channel.value([null])
+    s_genes                    = !!params.s_genes                    ? channel.fromPath(params.s_genes, checkIfExists: true).first()                    : channel.value([null])
+    g2m_genes                  = !!params.g2m_genes                  ? channel.fromPath(params.g2m_genes, checkIfExists: true).first()                  : channel.value([null])
+    annotation_db              = !!params.annotation_db              ? channel.fromPath(params.annotation_db, checkIfExists: true).first()              : channel.value([null])
+    custom_marker_genes        = !!params.custom_marker_genes        ? channel.fromPath(params.custom_marker_genes, checkIfExists: true).first()        : channel.value([null])
+    manual_cluster_annotations = !!params.manual_cluster_annotations ? channel.fromPath(params.manual_cluster_annotations, checkIfExists: true).first() : channel.value([null])
 
     // Read in samplesheet
     samplesheet = channel.fromPath(params.input)

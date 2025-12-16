@@ -2,8 +2,7 @@ process ANNOTATE_DATABASE {
     publishDir "${params.outdir}/annotation/db", mode: 'copy'
 
     input:
-    tuple val(cohort_name), path(rds_path)
-    val annotation_params
+    tuple val(cohort_name), path(rds_path), val(species), val(min_cells_for_annotation), path(annotation_db)
 
     output:
     tuple val(cohort_name), path("${cohort_name}.annotated.database.rds"), emit: annotated_rds
@@ -12,7 +11,9 @@ process ANNOTATE_DATABASE {
 
     script:
     def annotation_csv = 'param,value\n' +
-        annotation_params.collect { param, value -> [ param, ( value == null ? '' : value ) ].join(',') }.join('\n')
+        "species,${species}\n" +
+        "min_cells_for_annotation,${min_cells_for_annotation}\n" +
+        "annotation_db,${annotation_db}\n"
     """
     # Create annotation samplesheet
     echo -e "${annotation_csv}" > annotation.csv
