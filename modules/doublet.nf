@@ -2,20 +2,21 @@ process DETECT_DOUBLETS {
     publishDir "${params.outdir}/qc/${sample}/doublets", mode: 'copy'
 
     input:
-    tuple val(sample), path(rds_path, stageAs: "input/*"), val(meta)
-    val resolutions
-    val cluster_method
+    tuple val(sample), path(rds_path, stageAs: "input/*"), val(multiplet_rate), val(default_res), val(all_resolutions), val(cluster_method)
 
     output:
-    tuple val(sample), path("${sample}.doublets_removed.sct_clustered.rds"), val(meta), emit: doublets_removed_rds
-    tuple val(sample), path("${sample}.doublets_detected.rds"), val(meta), emit: doublets_marked_rds
+    tuple val(sample), path("${sample}.doublets_removed.sct_clustered.rds"), emit: doublets_removed_rds
+    tuple val(sample), path("${sample}.doublets_detected.rds"), emit: doublets_marked_rds
     tuple val(sample), path("qc_results"), emit: qc_results
 
     script:
+    def mr = multiplet_rate == null ? '' : multiplet_rate
+    def res = default_res == null ? '' : default_res
     def params_csv = 'param,value\n' +
-        meta.collect { param, value -> [ param, ( value == null ? '' : value ) ].join(',') }.join('\n') +
-        "\nresolutions,${resolutions}" +
-        "\ncluster_method,${cluster_method}\n"
+        "multiplet_rate,${mr}\n" +
+        "res,${res}\n" +
+        "resolutions,${all_resolutions}\n" +
+        "cluster_method,${cluster_method}\n"
     """
     # Create parameter samplesheet
     echo -e "${params_csv}" > params.csv

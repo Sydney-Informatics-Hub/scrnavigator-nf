@@ -6,7 +6,9 @@ workflow INTEGRATE {
     take:
     all_rds_to_integrate
     cohort_id
-    integration_params
+    all_resolutions
+    cluster_method
+    integrated_resolution
 
     main:
     // Perform integration

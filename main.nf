@@ -40,21 +40,28 @@ workflow {
     assert ['human', 'mouse'].contains(params.species.toLowerCase()) ||
         !!params.ens_db_rds :
         "Error: If --species is neither 'human' nor 'mouse', --ens_db_rds must be provided."
-    annotation_params = channel.value([
-        species:params.species.toLowerCase(),
-        annotate_mt:!params.no_mt,
-        mt_gene_list:(!!params.mt_gene_list ? file(params.mt_gene_list, checkIfExists: true) : null),
-        ens_db_rds:(!!params.ens_db_rds ? file(params.ens_db_rds, checkIfExists: true) : null),
-        s_genes:(!!params.s_genes ? file(params.s_genes, checkIfExists: true) : null),
-        g2m_genes:(!!params.g2m_genes ? file(params.g2m_genes, checkIfExists: true) : null),
-        annotation_db:(!!params.annotation_db ? file(params.annotation_db, checkIfExists: true) : null),
-        min_cells_for_annotation:(params.min_cells_for_annotation as Integer),
-        custom_marker_genes:(!!params.custom_marker_genes ? file(params.custom_marker_genes, checkIfExists: true) : null),
-        custom_annotation_mad_threshold:(params.custom_annotation_mad_threshold as Float),
-        cluster_annotation:(!!params.cluster_annotation ? params.cluster_annotation : null),
-        cell_type_proportion_threshold:(params.cell_type_proportion_threshold as Float),
-        manual_cluster_annotations:(!!params.manual_cluster_annotations ? file(params.manual_cluster_annotations, checkIfExists: true) : null)
-    ])
+
+    // Create channels from params
+    // Required parameters and parameters with defaults
+    all_resolutions                 = channel.value(params.resolutions)
+    cluster_method                  = channel.value(params.cluster_method)
+    integrated_resolution           = channel.value(params.integrated_resolution)
+    cohort_id                       = channel.value(params.cohort_id)
+    species                         = channel.value(params.species.toLowerCase())
+    annotate_mt                     = channel.value(!params.no_mt)
+    min_cells_for_annotation        = channel.value(params.min_cells_for_annotation as Integer)
+    custom_annotation_mad_threshold = channel.value(params.custom_annotation_mad_threshold as Float)
+    cell_type_proportion_threshold  = channel.value(params.cell_type_proportion_threshold as Float)
+
+    // Optional parameters
+    cluster_annotation         = !!params.cluster_annotation         ? channel.value(params.cluster_annotation)                                         : channel.value(null)
+    mt_gene_list               = !!params.mt_gene_list               ? channel.fromPath(params.mt_gene_list, checkIfExists: true).first()               : channel.value([])
+    ens_db_rds                 = !!params.ens_db_rds                 ? channel.fromPath(params.ens_db_rds, checkIfExists: true).first()                 : channel.value([])
+    s_genes                    = !!params.s_genes                    ? channel.fromPath(params.s_genes, checkIfExists: true).first()                    : channel.value([])
+    g2m_genes                  = !!params.g2m_genes                  ? channel.fromPath(params.g2m_genes, checkIfExists: true).first()                  : channel.value([])
+    annotation_db              = !!params.annotation_db              ? channel.fromPath(params.annotation_db, checkIfExists: true).first()              : channel.value([])
+    custom_marker_genes        = !!params.custom_marker_genes        ? channel.fromPath(params.custom_marker_genes, checkIfExists: true).first()        : channel.value([])
+    manual_cluster_annotations = !!params.manual_cluster_annotations ? channel.fromPath(params.manual_cluster_annotations, checkIfExists: true).first() : channel.value([])
 
     // Read in samplesheet
     samplesheet = channel.fromPath(params.input)
@@ -70,11 +77,10 @@ workflow {
             def max_nfeature = row.max_nfeature ? row.max_nfeature.toInteger() : null
             def min_mt_pct = row.min_mt_pct ? row.min_mt_pct.toInteger() : 0
             def max_mt_pct = row.max_mt_pct ? row.max_mt_pct.toInteger() : 100
-            def cells_to_remove = row.cells_to_remove ? file(row.cells_to_remove, checkIfExists: true) : null
+            def cells_to_remove = row.cells_to_remove ? file(row.cells_to_remove, checkIfExists: true) : []
 
             def sample_params = [
                 res:row.res,
-                cells_to_remove:cells_to_remove,
                 multiplet_rate:row.multiplet_rate,
                 min_ncount:min_ncount,
                 max_ncount:max_ncount,
@@ -83,13 +89,14 @@ workflow {
                 min_mt_pct:min_mt_pct,
                 max_mt_pct:max_mt_pct
             ]
-            def skip_keys = [ 'sample', 'rds' ] + sample_params.collect { key, _value -> key }
+            def skip_keys = [ 'sample', 'rds', 'cells_to_remove' ] + sample_params.collect { key, _value -> key }
             def sample_meta = row.findAll { key, _value -> !skip_keys.contains(key) }
             return [
                 sample:sample,
                 rds_path:rds_path,
                 params:sample_params,
-                meta:sample_meta
+                meta:sample_meta,
+                cells_to_remove:cells_to_remove
             ]
         }}
 
@@ -104,36 +111,43 @@ workflow {
         }}
 
     // Run initial quality control
-    all_resolutions = channel.value(params.resolutions)
-    cluster_method = channel.value(params.cluster_method)
-
-    QUALITY_CONTROL(samplesheet, all_resolutions, cluster_method, annotation_params)
+    QUALITY_CONTROL(
+        samplesheet,
+        all_resolutions,
+        cluster_method,
+        species,
+        ens_db_rds,
+        annotate_mt,
+        mt_gene_list
+    )
 
     // If only running QC, stop here, otherwise continue on
     if (!params.qc_only) {
         // Doublet detection
-        DETECT_DOUBLETS(QUALITY_CONTROL.out.rds, all_resolutions, cluster_method)
+        doublet_params = samplesheet
+            .map { row -> [ row.sample, row.multiplet_rate, row.res ]}
+            .merge(all_resolutions)
+            .merge(cluster_method)
+        doublet_in = QUALITY_CONTROL.out.rds
+            .join(doublet_params, by: 0)
+        DETECT_DOUBLETS(doublet_in)
 
         // Integration
         all_rds_to_integrate = DETECT_DOUBLETS.out.doublets_removed_rds
-            .map { _sample, rds, _meta -> rds }
+            .map { _sample, rds -> rds }
             .collect()
-        integration_params = channel.of([
-            params.cohort_id,
-            [
-                resolutions:params.resolutions,
-                integrated_resolution:params.integrated_resolution,
-                cluster_method:params.cluster_method
-            ]
-        ])
-        cohort_id = channel.value(params.cohort_id)
-        INTEGRATE(all_rds_to_integrate, cohort_id, integration_params)
+        INTEGRATE(
+            all_rds_to_integrate,
+            cohort_id,
+            all_resolutions,
+            cluster_method,
+            integrated_resolution
+        )
     }
 
     if (!params.qc_only && !params.no_analysis) {
         annotation_rds_input = INTEGRATE.out.integrated_rds
-            .map { cohort_name, rds_path, _meta -> [ cohort_name, rds_path ] }
-        ANNOTATE(INTEGRATE.out.integrated_rds, annotation_params)
+        // ANNOTATE(annotation_rds_input)
         // TODO:
         // PSEUDO()
         // DE()

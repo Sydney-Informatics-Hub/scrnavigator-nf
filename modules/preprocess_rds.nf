@@ -2,8 +2,7 @@ process PREPROCESS_RDS {
     publishDir "${params.outdir}/qc/${sample}/preprocess", mode: 'copy'
 
     input:
-    tuple val(sample), path(rds_path), val(meta)
-    val annotation_params
+    tuple val(sample), path(rds_path), val(meta), val(species), path(ens_db_rds), val(annotate_mt), path(mt_gene_list)
 
     output:
     tuple val(sample), path("${sample}.preprocessed.rds"), emit: preprocessed_rds
@@ -12,7 +11,10 @@ process PREPROCESS_RDS {
     def meta_csv = 'field,value\n' +
         meta.collect { field, value -> [ field, ( value == null ? '' : value ) ].join(',') }.join('\n')
     def annotation_csv = 'param,value\n' +
-        annotation_params.collect { param, value -> [ param, ( value == null ? '' : value ) ].join(',') }.join('\n')
+        "species,${species}\n" +
+        "ens_db_rds,${ens_db_rds}\n" +
+        "annotate_mt,${annotate_mt}\n" +
+        "mt_gene_list,${mt_gene_list}\n"
     """
     # Create parameter samplesheet
     echo -e "${meta_csv}" > meta.csv

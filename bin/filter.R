@@ -11,6 +11,7 @@ args <- commandArgs(trailingOnly = TRUE)
 sample_id <- args[1]
 rds_path <- args[2]
 params_file <- args[3]
+cells_to_remove_file <- args[4]
 
 # Read in Seurat object from RDS file
 so <- readRDS(rds_path)
@@ -110,7 +111,6 @@ so@meta.data <- so@meta.data %>%
 so_filtered <- subset(so, subset = (qc_threshold == "keep"))
 
 # Remove any additional cells that user specifies within file provided to the cells_to_remove parameter
-cells_to_remove_file <- params$value[match("cells_to_remove", params$param)]
 if (!is.na(cells_to_remove_file) && cells_to_remove_file != "") {
   cells_to_remove <- scan(cells_to_remove_file, character())
   rm_cells <- rownames(so_filtered@meta.data) %in% cells_to_remove
