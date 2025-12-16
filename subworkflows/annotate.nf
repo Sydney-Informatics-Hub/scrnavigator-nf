@@ -7,16 +7,37 @@ include { ANNOTATE_CLUSTERS } from '../modules/annotate_clusters'
 workflow ANNOTATE {
     take:
     integrated_rds
-    annotation_params
+    species
+    s_genes
+    g2m_genes
+    ens_db_rds
+    min_cells_for_annotation
+    annotation_db
+    custom_marker_genes
+    custom_annotation_mad_threshold
+    cluster_annotation
+    cell_type_proportion_threshold
+    manual_cluster_annotations
 
     main:
     // Perform cell cycle annotation if required annotation data is provided
-    valid_cc_annotation_params = annotation_params.filter { p -> {
-        p.species == 'human' || (
-            p.s_genes != null &&
-            p.g2m_genes != null
-        )
-    } }
+    cc_annotation_params = species
+        .merge(s_genes)
+        .merge(g2m_genes)
+        .merge(ens_db_rds)
+    valid_cc_annotation_params = cc_annotation_params
+        .filter { spc, sg, gg, _ens -> {
+            spc == 'human' || (
+                sg != null &&
+                gg != null
+            )
+        } }
+        .map { spc, sg, gg, ens -> [
+            spc,
+            (sg != null ? sg : []),
+            (gg != null ? gg : []),
+            (ens != null ? ens : [])
+        ] }
     ANNOTATE_CELL_CYCLE(integrated_rds, valid_cc_annotation_params)
 
     // Perform database-based annotation if required annotation data is provided

@@ -16,7 +16,9 @@ workflow INTEGRATE {
 
     // Cluster integrated data
     cluster_input = INTEGRATION.out.integrated_rds
-        .join(integration_params, by: 0)
+        .merge(all_resolutions)
+        .merge(cluster_method)
+        .merge(integrated_resolution)
     CLUSTER_INTEGRATED(cluster_input)
 
     emit:
