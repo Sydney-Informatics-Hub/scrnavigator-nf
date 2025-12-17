@@ -119,6 +119,16 @@
                     "type": "string",
                     "description": "Path to a CSV file to manually set cluster annotations. Must have two columns: 'cluster' and 'cell_type'.",
                     "default": null
+                },
+                "pseudo_groups": {
+                    "type": "string",
+                    "description": "A comma-separated list of metadata variables to be used for grouping cells for pseudobulking and differential experession analysis.",
+                    "default": null
+                },
+                "comparisons": {
+                    "type": "string",
+                    "description": "A path to a CSV file containing comparisons to be used for differential expression analysis.",
+                    "default": null
                 }
             }
         },

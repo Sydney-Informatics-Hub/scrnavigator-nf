@@ -4,6 +4,7 @@ include { DETECT_DOUBLETS } from './modules/doublet'
 include { INTEGRATE } from './subworkflows/integrate'
 include { ANNOTATE } from './subworkflows/annotate'
 include { PSEUDOBULK } from './modules/pseudobulk'
+include { DIFFERENTIAL_EXPRESSION } from './modules/de'
 
 // Required pipeline parameters
 params.help = false
@@ -166,14 +167,48 @@ workflow {
         )
 
         // Pseudobulking
-        PSEUDOBULK()
+        pseudo_in = ANNOTATE.out.rds
+            .merge(pseudo_groups)
+            .filter { _id, _rds, grps -> {
+                grps != null
+            } }
+        PSEUDOBULK(pseudo_in)
 
-        // TODO:
         // Differential expression
-        // DE()
+        comparisons = !params.comparisons ? channel.empty() : (
+            channel.fromPath(params.comparisons)
+                .splitCsv( header: true )
+                .map { row -> {
+                    assert row.ref != null && row.ref != ''
+                    assert row.test != null && row.test != ''
+                    [ row.ref, row.test ]
+                } }
+        )
+        de_in = PSEUDOBULK.out.pseudobulked_rds
+            .combine(comparisons)
+        DIFFERENTIAL_EXPRESSION(de_in)
+
+        // Merge and analyse DE results
+        all_de_results = DIFFERENTIAL_EXPRESSION.out.de_csv
+            .map { cohort, csv, _ref, _test -> [ cohort, csv ] }
+            .groupTuple(by: 0)
+        all_de_meta = DIFFERENTIAL_EXPRESSION.out.de_csv
+            .map { _cohort, csv, ref, test -> {
+                [ "${csv.baseName}": [ ref:ref, test:test ] ]
+            } }
+            .reduce { a, b -> a + b }
+        // ANALYSE_DE(all_de_results, all_de_meta)
 
         // Functional enrichment analysis
-        // FEA()
+        // ORA()
+        // GSEA()
+
+        // Merge and analyse FEA results
+        // ANALYSE_ORA()
+        // ANALYSE_GSEA()
     }
+
+    // Summary report
+    // MULTIQC()
 
 }

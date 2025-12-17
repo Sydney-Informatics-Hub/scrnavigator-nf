@@ -6,6 +6,7 @@ process PSEUDOBULK {
 
     output:
     tuple val(cohort_name), path("${cohort_name}.pseudobulk.rds"), emit: pseudobulked_rds
+    tuple val(cohort_name), path("${cohort_name}.comparison_groups.txt"), emit: comparison_groups
 
     script:
     """

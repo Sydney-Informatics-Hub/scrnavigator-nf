@@ -81,6 +81,9 @@ workflow ANNOTATE {
         .merge(cluster_annotation)
         .merge(cell_type_proportion_threshold)
         .merge(manual_cluster_annotations)
+        .filter { _spc, clu, _ctprop, _annfile -> {
+            clu != null
+        } }
         .map { spc, clu, ctprop, annfile -> {
             def annfile_opt = annfile == null ? [] : annfile
             return [ spc, clu, ctprop, annfile_opt ]
@@ -91,8 +94,13 @@ workflow ANNOTATE {
         .merge(valid_cluster_annotation_params)
     ANNOTATE_CLUSTERS(cluster_annotation_in)
 
+    annotated_rds = ANNOTATE_CUSTOM.out.annotated_rds
+        .ifEmpty(ANNOTATE_DATABASE.out.annotated_rds)
+        .ifEmpty(ANNOTATE_CELL_CYCLE.out.annotated_rds)
+        .ifEmpty(ANNOTATE_CLUSTERS.out.annotated_rds)
+
     emit:
-    rds = ANNOTATE_CLUSTERS.out.annotated_rds
+    rds = annotated_rds
     cell_cycle_annotation_qc_results = ANNOTATE_CELL_CYCLE.out.qc_results
     db_annotation_qc_results = ANNOTATE_DATABASE.out.qc_results
     custom_annotation_qc_results = ANNOTATE_CUSTOM.out.qc_results

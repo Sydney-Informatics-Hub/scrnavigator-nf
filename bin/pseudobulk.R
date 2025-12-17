@@ -38,3 +38,6 @@ pseudo <- NormalizeData(pseudo, assay = "RNA", verbose = TRUE)
 # Save pre-processed data to file
 SaveSeuratRds(pseudo, paste0(cohort_id, ".pseudobulk.rds"))
 
+# Save a table of comparison groups and the number of samples for each group
+table(pseudo$comparison_group) %>%
+  write_csv(paste0(cohort_id, ".comparison_groups.txt"))
