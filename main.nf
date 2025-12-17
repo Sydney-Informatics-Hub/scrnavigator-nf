@@ -3,6 +3,7 @@ include { QUALITY_CONTROL } from './subworkflows/qc'
 include { DETECT_DOUBLETS } from './modules/doublet'
 include { INTEGRATE } from './subworkflows/integrate'
 include { ANNOTATE } from './subworkflows/annotate'
+include { PSEUDOBULK } from './modules/pseudobulk'
 
 // Required pipeline parameters
 params.help = false
@@ -62,6 +63,7 @@ workflow {
     annotation_db              = !!params.annotation_db              ? channel.fromPath(params.annotation_db, checkIfExists: true).first()              : channel.value([null])
     custom_marker_genes        = !!params.custom_marker_genes        ? channel.fromPath(params.custom_marker_genes, checkIfExists: true).first()        : channel.value([null])
     manual_cluster_annotations = !!params.manual_cluster_annotations ? channel.fromPath(params.manual_cluster_annotations, checkIfExists: true).first() : channel.value([null])
+    pseudo_groups              = !!params.pseudo_groups              ? channel.value(params.pseudo_groups)                                              : channel.value([null])
 
     // Read in samplesheet
     samplesheet = channel.fromPath(params.input)
@@ -146,6 +148,7 @@ workflow {
     }
 
     if (!params.qc_only && !params.no_analysis) {
+        // Annotation
         annotation_rds_input = INTEGRATE.out.integrated_rds
         ANNOTATE(
             annotation_rds_input,
@@ -161,10 +164,16 @@ workflow {
             cell_type_proportion_threshold,
             manual_cluster_annotations
         )
+
+        // Pseudobulking
+        PSEUDOBULK()
+
         // TODO:
-        // PSEUDO()
+        // Differential expression
         // DE()
-        // FEA
+
+        // Functional enrichment analysis
+        // FEA()
     }
 
 }
