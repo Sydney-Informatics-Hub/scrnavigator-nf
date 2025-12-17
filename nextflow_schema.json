@@ -129,6 +129,16 @@
                     "type": "string",
                     "description": "A path to a CSV file containing comparisons to be used for differential expression analysis.",
                     "default": null
+                },
+                "p_value_threshold": {
+                    "type": "number",
+                    "description": "P-value threshold for differential expression analysis. Default is 0.05",
+                    "default": 0.05
+                },
+                "fc_threshold": {
+                    "type": "number",
+                    "description": "Fold-change threshold for differential expression analysis. No threshold is applied by default.",
+                    "default": null
                 }
             }
         },

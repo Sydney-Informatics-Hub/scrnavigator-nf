@@ -5,6 +5,11 @@ include { INTEGRATE } from './subworkflows/integrate'
 include { ANNOTATE } from './subworkflows/annotate'
 include { PSEUDOBULK } from './modules/pseudobulk'
 include { DIFFERENTIAL_EXPRESSION } from './modules/de'
+include { ANALYSE_DE } from './modules/analyse_de'
+include { ORA } from './modules/ora'
+include { GSEA } from './modules/gsea'
+include { ANALYSE_ORA } from './modules/analyse_ora'
+include { ANALYSE_GSEA } from './modules/analyse_gsea'
 
 // Required pipeline parameters
 params.help = false
@@ -54,6 +59,7 @@ workflow {
     min_cells_for_annotation        = channel.value(params.min_cells_for_annotation as Integer)
     custom_annotation_mad_threshold = channel.value(params.custom_annotation_mad_threshold as Float)
     cell_type_proportion_threshold  = channel.value(params.cell_type_proportion_threshold as Float)
+    p_value_threshold               = channel.value(params.p_value_threshold as Float)
 
     // Optional parameters
     cluster_annotation         = !!params.cluster_annotation         ? channel.value(params.cluster_annotation)                                         : channel.value([null])
@@ -65,6 +71,7 @@ workflow {
     custom_marker_genes        = !!params.custom_marker_genes        ? channel.fromPath(params.custom_marker_genes, checkIfExists: true).first()        : channel.value([null])
     manual_cluster_annotations = !!params.manual_cluster_annotations ? channel.fromPath(params.manual_cluster_annotations, checkIfExists: true).first() : channel.value([null])
     pseudo_groups              = !!params.pseudo_groups              ? channel.value(params.pseudo_groups)                                              : channel.value([null])
+    fc_threshold               = !!params.fc_threshold               ? channel.value(params.fc_threshold as Float)                                      : channel.value([null])
 
     // Read in samplesheet
     samplesheet = channel.fromPath(params.input)
@@ -189,23 +196,19 @@ workflow {
         DIFFERENTIAL_EXPRESSION(de_in)
 
         // Merge and analyse DE results
-        all_de_results = DIFFERENTIAL_EXPRESSION.out.de_csv
-            .map { cohort, csv, _ref, _test -> [ cohort, csv ] }
-            .groupTuple(by: 0)
-        all_de_meta = DIFFERENTIAL_EXPRESSION.out.de_csv
-            .map { _cohort, csv, ref, test -> {
-                [ "${csv.baseName}": [ ref:ref, test:test ] ]
-            } }
-            .reduce { a, b -> a + b }
-        // ANALYSE_DE(all_de_results, all_de_meta)
+        all_de_results = DIFFERENTIAL_EXPRESSION.out.de_rds
+            .groupTuple()
+            .merge(p_value_threshold)
+            .merge(fc_threshold)
+        ANALYSE_DE(all_de_results)
 
         // Functional enrichment analysis
-        // ORA()
-        // GSEA()
+        ORA()
+        GSEA()
 
         // Merge and analyse FEA results
-        // ANALYSE_ORA()
-        // ANALYSE_GSEA()
+        ANALYSE_ORA()
+        ANALYSE_GSEA()
     }
 
     // Summary report

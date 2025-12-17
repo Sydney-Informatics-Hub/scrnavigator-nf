@@ -33,5 +33,11 @@ de <- FindMarkers(
   min.cells.group = min_cells_per_group
 )
 
+# Add columns identifying the comparison
+de$cohort <- cohort_id
+de$test_group <- test_group
+de$ref_group <- ref_group
+
 # Save differential expression data to file
 write_csv(de, paste(cohort_id, "de", test_group, ref_group, "csv", sep = "."))
+saveRDS(de, paste(cohort_id, "de", test_group, ref_group, "Rds", sep = "."))
