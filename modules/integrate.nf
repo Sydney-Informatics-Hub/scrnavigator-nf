@@ -8,6 +8,7 @@ process INTEGRATION {
     output:
     tuple val(cohort_name), path("${cohort_name}.integrated.rds"), emit: integrated_rds
     tuple val(cohort_name), path("qc_results")
+    tuple val(cohort_name), path("gene_symbols.Rds"), emit: gene_symbols
 
     script:
     def all_rds_paths = rds_paths.collect { f -> "'${f}'" }.join(' ')

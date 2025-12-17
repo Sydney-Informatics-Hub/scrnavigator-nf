@@ -198,17 +198,34 @@ workflow {
         // Merge and analyse DE results
         all_de_results = DIFFERENTIAL_EXPRESSION.out.de_rds
             .groupTuple()
+            .join(INTEGRATE.out.gene_symbols)
             .merge(p_value_threshold)
             .merge(fc_threshold)
         ANALYSE_DE(all_de_results)
 
         // Functional enrichment analysis
-        ORA()
-        GSEA()
+        fea_in = ANALYSE_DE.out.de_rds
+            .combine(comparisons)
+            .merge(p_value_threshold)
+            .merge(fc_threshold)
+        ORA(fea_in)
+        GSEA(fea_in)
 
         // Merge and analyse FEA results
-        ANALYSE_ORA()
-        ANALYSE_GSEA()
+        all_ora_results_full = ORA.out.ora_rds
+            .groupTuple()
+        all_ora_results_reduced = ORA.out.ora_reduced_rds
+            .groupTuple()
+        all_ora_results = all_ora_results_full
+            .join(all_ora_results_reduced)
+        ANALYSE_ORA(all_ora_results)
+        all_gsea_results_full = GSEA.out.gsea_rds
+            .groupTuple()
+        all_gsea_results_reduced = GSEA.out.gsea_reduced_rds
+            .groupTuple()
+        all_gsea_results = all_gsea_results_full
+            .join(all_gsea_results_reduced)
+        ANALYSE_GSEA(all_gsea_results)
     }
 
     // Summary report
