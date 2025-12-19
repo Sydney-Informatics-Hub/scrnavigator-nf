@@ -72,6 +72,8 @@ workflow {
     manual_cluster_annotations = !!params.manual_cluster_annotations ? channel.fromPath(params.manual_cluster_annotations, checkIfExists: true).first() : channel.value([null])
     pseudo_groups              = !!params.pseudo_groups              ? channel.value(params.pseudo_groups)                                              : channel.value([null])
     fc_threshold               = !!params.fc_threshold               ? channel.value(params.fc_threshold as Float)                                      : channel.value([null])
+    ora_db                     = !!params.ora_db                     ? channel.fromPath(params.ora_db, checkIfExists: true).first()                     : channel.value([])
+    gsea_db                    = !!params.gsea_db                    ? channel.fromPath(params.gsea_db, checkIfExists: true).first()                    : channel.value([])
 
     // Read in samplesheet
     samplesheet = channel.fromPath(params.input)
@@ -206,10 +208,9 @@ workflow {
         // Functional enrichment analysis
         fea_in = ANALYSE_DE.out.de_rds
             .combine(comparisons)
-            .merge(p_value_threshold)
-            .merge(fc_threshold)
-        ORA(fea_in)
-        GSEA(fea_in)
+            .merge(species)
+        ORA(fea_in, ora_db)
+        GSEA(fea_in, gsea_db)
 
         // Merge and analyse FEA results
         all_ora_results = ORA.out.ora_rds

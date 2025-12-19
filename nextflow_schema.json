@@ -139,6 +139,16 @@
                     "type": "number",
                     "description": "Fold-change threshold for differential expression analysis. No threshold is applied by default.",
                     "default": null
+                },
+                "ora_db": {
+                    "type": "string",
+                    "description": "Path to a .gmt file containing an enrichment database for use with over representation analysis with WebGestaltR. Must contain three tab-delimited columns: category ID, external link, and gene ID.",
+                    "default": null
+                },
+                "gsea_db": {
+                    "type": "string",
+                    "description": "Path to a .gmt file containing an enrichment database for use with gene set enrichment analysis with WebGestaltR. Must contain three tab-delimited columns: category ID, external link, and gene ID.",
+                    "default": null
                 }
             }
         },

@@ -11,6 +11,8 @@ cohort_id <- args[1]
 rds_path <- args[2]
 ref_group_val <- args[3]
 test_group_val <- args[4]
+species <- args[5]
+opt_db_file <- args[6]
 
 # Read in DE results
 de <- readRDS(rds_path)
@@ -41,16 +43,47 @@ if (using_ens_ids) {
 comparison <- paste0(test_group_val, "_vs_", ref_group_val)
 dir.create(comparison, recursive = TRUE)
 
-databases <- listGeneSet()
+# Get organism ID for ORA
+organism_lookup <- c(
+  human = "hsapiens",
+  mouse = "mmusculus",
+  rat = "rnorvegicus",
+  chicken = "ggallus",
+  dog = "cfamiliaris",
+  cattle = "btaurus",
+  cow = "btaurus",
+  zebrafish = "drerio",
+  pig = "sscrofa",
+  fruit_fly = "dmelanogaster"
+)
+if (species %in% names(organism_lookup)) {
+  organism <- organism_lookup[species]
+} else if (organism %in% listOrganism()) {
+  organism <- species
+} else {
+  organism <- "others"
+}
+
+# Get database for ORA
+if (!is.na(opt_db_file)) {
+  enrichment_database <- NULL
+  enrichment_database_file <- opt_db_file
+} else {
+  databases <- listGeneSet()
+  enrichment_database <- databases$name[startsWith(databases$name, "pathway")]
+  enrichment_database_file <- NULL
+}
 
 # Run ORA
 WebGestaltR(
   enrichMethod = "ORA",
+  organism = organism,
   interestGene = sig_de$Gene,
   interestGeneType = gene_type,
   referenceGene = background_genes,
   referenceGeneType = gene_type,
-  enrichDatabase = databases$name[startsWith(databases$name, "pathway")],
+  enrichDatabase = enrichment_database,
+  enrichDatabaseFile = enrichment_database_file,
   isOutput = TRUE,
   nThreads = 1,
   outputDirectory = comparison,
