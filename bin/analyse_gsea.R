@@ -7,50 +7,56 @@ library(ggplot2)
 args <- commandArgs(trailingOnly = TRUE)
 
 cohort_id <- args[1]
-full_rds_paths_file <- args[2]
-reduced_rds_paths_file <- args[3]
+all_rds_paths_file <- args[2:length(args)]
 
 # Read in GSEA results from RDS files
-full_rds_paths <- scan(full_rds_paths_file, character())
-reduced_rds_paths <- scan(reduced_rds_paths_file, character())
-full_gsea_results <- lapply(full_rds_paths, readRDS) %>% bind_rows()
-reduced_gsea_results <- lapply(reduced_rds_paths, readRDS) %>% bind_rows()
+full_gsea_results <- lapply(all_rds_paths_file, readRDS) %>% bind_rows()
 
-# TODO: Recalculate FDR values across all tests
+# Recalculate FDR values across all tests
+full_gsea_results <- full_gsea_results %>%
+  mutate(FDR = p.adjust(pValue, method = "BH"))
 
-# TODO: Plot bar graphs of results
-# gsea_plots <- lapply(names(gsea_reduced_results), function(n) {
-#   x <- gsea_reduced_results[[n]]
-#   x %>%
-#     mutate(
-#       direction = case_when(normalizedEnrichmentScore > 0 ~ "Upregulated", .default = "Downregulated")
-#     ) %>%
-#     ggplot(aes(x = reorder(description, normalizedEnrichmentScore), y = normalizedEnrichmentScore, fill = direction)) +
-#     geom_bar(stat = "identity") +
-#     xlab(element_blank()) +
-#     ylab("log2 Enrichment Ratio") +
-#     theme(
-#       axis.title.x = element_text(size = 16),
-#       axis.text.y = element_text(size = 12),
-#       axis.text.x = element_text(size = 12),
-#       legend.title = element_text(size = 12),
-#       legend.text = element_text(size = 12)
-#     ) +
-#     geom_hline(yintercept = 0, linewidth = 1.5) +
-#     scale_fill_manual(name = "Direction", values = c(Upregulated = "orange", Downregulated = "royalblue2")) +
-#     coord_flip()
-# })
-# names(gsea_plots) <- names(gsea_reduced_results)
+# Reduce results down to one representative gene set per cluster
+reduced_gsea_results <- full_gsea_results %>%
+  filter(geneSet == top_gene_set)
 
-# gsea_plot_sizes <- lapply(names(gsea_plots), function(n) {
-#   p <- gsea_plots[[n]]
-#   df <- gsea_reduced_results[[n]]
-#   p_height <- 5 + dim(df)[1] * 0.2
-#   p_width <- 5 + max(nchar(df$description)) * 0.1
-#   return(list(height = p_height, width = p_width))
-# })
-# names(gsea_plot_sizes) <- names(gsea_plots)
+# Plot bar graphs of results
+reduced_gsea_results_split <- reduced_gsea_results %>%
+  group_by(ref_group, test_group) %>%
+  group_split()
 
-# Save differential expression data to file
+gsea_plots <- lapply(reduced_gsea_results_split, function(x) {
+  x %>%
+    mutate(
+      direction = case_when(normalizedEnrichmentScore > 0 ~ "Upregulated", .default = "Downregulated")
+    ) %>%
+    ggplot(aes(x = reorder(description, normalizedEnrichmentScore), y = normalizedEnrichmentScore, fill = direction)) +
+    geom_bar(stat = "identity") +
+    xlab(element_blank()) +
+    ylab("log2 Enrichment Ratio") +
+    theme(
+      axis.title.x = element_text(size = 16),
+      axis.text.y = element_text(size = 12),
+      axis.text.x = element_text(size = 12),
+      legend.title = element_text(size = 12),
+      legend.text = element_text(size = 12)
+    ) +
+    geom_hline(yintercept = 0, linewidth = 1.5) +
+    scale_fill_manual(name = "Direction", values = c(Upregulated = "orange", Downregulated = "royalblue2")) +
+    coord_flip()
+})
+names(gsea_plots) <- sapply(reduced_gsea_results_split, function(x) {
+  ref_group <- x$ref_group[1]
+  test_group <- x$test_group[1]
+  paste0(test_group, "_vs_", ref_group)
+})
+
+# Save plots to file
+for (n in names(gsea_plots)) {
+  p <- gsea_plots[[n]]
+  ggsave(paste0("plots/", cohort_id, ".gsea.", n, ".png"), p)
+}
+
+# Save results to file
 write_csv(full_gsea_results, paste(cohort_id, "gsea.full.csv", sep = "."))
 write_csv(reduced_gsea_results, paste(cohort_id, "gsea.full.reduced.csv", sep = "."))

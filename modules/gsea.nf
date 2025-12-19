@@ -7,8 +7,8 @@ process GSEA {
     output:
     tuple val(cohort_name), path("${cohort_name}.gsea.${test_group}.${ref_group}.Rds"), emit: gsea_rds, optional: true
     tuple val(cohort_name), path("${cohort_name}.gsea.${test_group}.${ref_group}.csv"), val(ref_group), val(test_group), emit: gsea_csv, optional: true
-    tuple val(cohort_name), path("${cohort_name}.gsea.${test_group}.${ref_group}.reduced.Rds"), emit: gsea_reduced_rds, optional: true
-    tuple val(cohort_name), path("${cohort_name}.gsea.${test_group}.${ref_group}.reduced.csv"), val(ref_group), val(test_group), emit: gsea_reduced_csv, optional: true
+    tuple val(cohort_name), path("${test_group}_vs_${ref_group}"), val(ref_group), val(test_group), emit: gsea_dir, optional: true
+
 
     script:
     """

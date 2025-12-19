@@ -212,19 +212,11 @@ workflow {
         GSEA(fea_in)
 
         // Merge and analyse FEA results
-        all_ora_results_full = ORA.out.ora_rds
+        all_ora_results = ORA.out.ora_rds
             .groupTuple()
-        all_ora_results_reduced = ORA.out.ora_reduced_rds
-            .groupTuple()
-        all_ora_results = all_ora_results_full
-            .join(all_ora_results_reduced)
         ANALYSE_ORA(all_ora_results)
-        all_gsea_results_full = GSEA.out.gsea_rds
+        all_gsea_results = GSEA.out.gsea_rds
             .groupTuple()
-        all_gsea_results_reduced = GSEA.out.gsea_reduced_rds
-            .groupTuple()
-        all_gsea_results = all_gsea_results_full
-            .join(all_gsea_results_reduced)
         ANALYSE_GSEA(all_gsea_results)
     }
 

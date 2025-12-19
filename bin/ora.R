@@ -59,35 +59,41 @@ WebGestaltR(
 
 # Get results files (if they exist)
 results_file <- paste0(comparison, "/Project_", comparison, "/enrichment_results_", comparison, ".txt")
-if (file.exists(results_file)) {
+ap_file <- paste0(comparison, "/Project_", comparison, "/enriched_geneset_ap_clusters_", comparison, ".txt")
+if (file.exists(results_file) && file.exists(ap_file)) {
+  # Read results file
   ora_results <- read_tsv(results_file, show_col_types = FALSE)
 
-  # Reduce to top gene set per cluster
+  # Read clusters file
   ap_file <- paste0(comparison, "/Project_", comparison, "/enriched_geneset_ap_clusters_", comparison, ".txt")
   ap_raw <- readLines(ap_file) %>% str_split("\t")
   ap_clusters <- lapply(1:length(ap_raw), function(x) {
     n <- paste0("cluster_", x)
     data.frame(cluster = n, gene_sets = ap_raw[[x]])
   }) %>%
-    do.call(rbind, .) %>%
-    group_by(cluster) %>%
-    dplyr::filter(row_number() == 1)
+    do.call(rbind, .)
 
-  ora_reduced_results <- ora_results %>%
-    left_join(ap_clusters, by = join_by(geneSet == gene_sets)) %>%
-    drop_na(cluster)
+  # Add cluster information to results file
+  top_ap_clusters <- ap_clusters %>%
+    group_by(cluster) %>%
+    dplyr::filter(row_number() == 1) %>%
+    rename(top_gene_set = gene_sets)
+  all_ap_clusters <- ap_clusters %>%
+    group_by(cluster) %>%
+    summarise(gene_sets_combined = paste(gene_sets, collapse = ";"))
+  ap_clusters <- ap_clusters %>%
+    left_join(all_ap_clusters, by = "cluster") %>%
+    left_join(top_ap_clusters, by = "cluster")
+
+  ora_results <- ora_results %>%
+    left_join(ap_clusters, by = join_by(geneSet == gene_sets))
 
   # Add comparison details to dataframes
   ora_results$cohort <- cohort_id
   ora_results$test_group <- test_group
   ora_results$ref_group <- ref_group
-  ora_reduced_results$cohort <- cohort_id
-  ora_reduced_results$test_group <- test_group
-  ora_reduced_results$ref_group <- ref_group
 
   # Save to file
   write_csv(ora_results, paste(cohort_id, "ora", test_group, ref_group, "csv", sep = "."))
   saveRDS(ora_results, paste(cohort_id, "ora", test_group, ref_group, "Rds", sep = "."))
-  write_csv(ora_reduced_results, paste(cohort_id, "ora", test_group, ref_group, "reduced.csv", sep = "."))
-  saveRDS(ora_reduced_results, paste(cohort_id, "ora", test_group, ref_group, "reduced.Rds", sep = "."))
 }
