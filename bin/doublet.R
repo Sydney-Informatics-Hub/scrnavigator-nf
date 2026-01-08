@@ -3,7 +3,7 @@ library(Seurat)
 library(tidyverse)
 library(DoubletFinder)
 
-options(future.globals.maxSize = 1000*1024^2)
+options(future.globals.maxSize = 3000*1024^2)
 
 # Function definitions
 find_min_pc <- function(seurat_obj) {

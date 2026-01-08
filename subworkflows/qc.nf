@@ -40,7 +40,7 @@ workflow QUALITY_CONTROL {
 
     // Run SCTransform
     cluster_params = samplesheet
-        .map { row -> [ row.sample, row.res ]}
+        .map { row -> [ row.sample, row.params.res ]}
         .merge(all_resolutions)
         .merge(cluster_method)
     sct_in = FILTER.out.qc_rds

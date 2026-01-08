@@ -137,7 +137,7 @@ workflow {
     if (!params.qc_only) {
         // Doublet detection
         doublet_params = samplesheet
-            .map { row -> [ row.sample, row.multiplet_rate, row.res ]}
+            .map { row -> [ row.sample, row.params.multiplet_rate, row.params.res ]}
             .merge(all_resolutions)
             .merge(cluster_method)
         doublet_in = QUALITY_CONTROL.out.rds

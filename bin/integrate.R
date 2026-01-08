@@ -118,6 +118,6 @@ ggsave(paste0("qc_results/", cohort_id, ".umap.integrated.png"), p_post_integrat
 SaveSeuratRds(integrated, paste0(cohort_id, ".integrated.rds"))
 
 # Save gene symbols and Ensembl IDs to an RDS file
-gene_symbols <- so@assays$RNA@meta.data %>%
+gene_symbols <- integrated@assays$RNA@meta.data %>%
   dplyr::select(gene_symbols, gene_versions)
 saveRDS(gene_symbols, "gene_symbols.Rds")

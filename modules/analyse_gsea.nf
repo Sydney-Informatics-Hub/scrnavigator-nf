@@ -6,7 +6,7 @@ process ANALYSE_GSEA {
 
     output:
     tuple val(cohort_name), path("${cohort_name}.gsea.full.csv"), emit: gsea_csv
-    tuple val(cohort_name, path("${cohort_name}.gsea.full.reduced.csv")), emit: gsea_reduced_csv
+    tuple val(cohort_name), path("${cohort_name}.gsea.full.reduced.csv"), emit: gsea_reduced_csv
     tuple val(cohort_name), path("plots"), emit: gsea_plots
 
     script:

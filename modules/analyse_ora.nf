@@ -6,7 +6,7 @@ process ANALYSE_ORA {
 
     output:
     tuple val(cohort_name), path("${cohort_name}.ora.full.csv"), emit: ora_csv
-    tuple val(cohort_name, path("${cohort_name}.ora.full.reduced.csv")), emit: ora_reduced_csv
+    tuple val(cohort_name), path("${cohort_name}.ora.full.reduced.csv"), emit: ora_reduced_csv
     tuple val(cohort_name), path("plots"), emit: ora_plots
 
     script:
