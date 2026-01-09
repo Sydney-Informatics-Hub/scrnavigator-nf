@@ -15,9 +15,6 @@ annotation_file <- args[3]
 # Read in Seurat object from RDS file
 integrated <- readRDS(rds_path)
 
-# Read in sample metadata
-metadata <- read_csv(metadata_file)
-
 # Read in annotation parameters
 annotation_params <- read_csv(annotation_file)
 
@@ -42,7 +39,7 @@ if (!is.na(manual_annotations_file)) {
       "SingleR.hpca_fine",
       "Phase"
     )
-    cluster_annotation <- which(annotation_priority %in% colnames(integrated@meta.data))[1]
+    cluster_annotation <- annotation_priority[which(annotation_priority %in% colnames(integrated@meta.data))[1]]
   } else {
     stopifnot(cluster_annotation %in% colnames(integrated@meta.data))
   }
@@ -51,7 +48,7 @@ if (!is.na(manual_annotations_file)) {
   cell_type_proportion_threshold <- as.numeric(annotation_params$value[match("cell_type_proportion_threshold", annotation_params$param)])
 
   # Call the cell type of the cluster
-  default_res_name <- Idents(integrated)
+  default_res_name <- Misc(integrated, slot = "default_resolution")
   cluster_annotations <- integrated@meta.data[c(default_res_name, cluster_annotation)]
   colnames(cluster_annotations) <- c("cluster", "cell_type")
   cluster_annotations$cell_id <- rownames(cluster_annotations)
@@ -111,7 +108,9 @@ if (!is.na(manual_annotations_file)) {
     ) %>%
     dplyr::select(cluster, cell_type_consensus) %>%
     ungroup() %>%
-    dplyr::rename(cell_type = cell_type_consensus) %>%
+    dplyr::rename(cell_type = cell_type_consensus)
+
+  cluster_cell_type_assignments %>%
     write_csv(paste0(cohort_id, ".cluster_cell_type_assignments.csv"))
 }
 

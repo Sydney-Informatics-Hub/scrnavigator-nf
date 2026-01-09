@@ -39,7 +39,15 @@ workflow ANNOTATE {
          } }
     cc_annotation_in = integrated_rds
         .merge(valid_cc_annotation_params)
+
     ANNOTATE_CELL_CYCLE(cc_annotation_in)
+
+    cc_annotation_out = ANNOTATE_CELL_CYCLE.out.annotated_rds
+        .join(integrated_rds, by: 0, remainder: true)
+        .map { cohort, cc_rds, int_rds -> {
+            def rds = cc_rds != null ? cc_rds : int_rds
+            return [ cohort, rds ]
+        } }
 
     // Perform database-based annotation if required annotation data is provided
     valid_db_annotation_params = species
@@ -52,10 +60,17 @@ workflow ANNOTATE {
             def anndb_opt = anndb == null ? [] : anndb
             return [ spc, mc, anndb_opt ]
         } }
-    db_annotation_in = ANNOTATE_CELL_CYCLE.out.annotated_rds
-        .ifEmpty(integrated_rds)
+    db_annotation_in = cc_annotation_out
         .merge(valid_db_annotation_params)
+
     ANNOTATE_DATABASE(db_annotation_in)
+
+    db_annotation_out = ANNOTATE_DATABASE.out.annotated_rds
+        .join(cc_annotation_out, by: 0, remainder: true)
+        .map { cohort, db_rds, cc_rds -> {
+            def rds = db_rds != null ? db_rds : cc_rds
+            return [ cohort, rds ]
+        } }
 
     // Perform custom cell type annotation if required annotation data is provided
     valid_custom_annotation_params = species
@@ -70,34 +85,43 @@ workflow ANNOTATE {
             def cus_opt = cus == null ? [] : cus
             return [ spc, ens_opt, cus_opt, mad ]
         } }
-    custom_annotation_in = ANNOTATE_DATABASE.out.annotated_rds
-        .ifEmpty(ANNOTATE_CELL_CYCLE.out.annotated_rds)
-        .ifEmpty(integrated_rds)
+    custom_annotation_in = db_annotation_out
         .merge(valid_custom_annotation_params)
-    ANNOTATE_CUSTOM(custom_annotation_in,)
+
+    ANNOTATE_CUSTOM(custom_annotation_in)
+
+    custom_annotation_out = ANNOTATE_CUSTOM.out.annotated_rds
+        .join(ANNOTATE_DATABASE.out.annotated_rds, by: 0, remainder: true)
+        .join(ANNOTATE_CELL_CYCLE.out.annotated_rds, by: 0, remainder: true)
+        .map { cohort, cus_rds, db_rds, cc_rds -> {
+            def rds = cus_rds != null ? cus_rds : ( db_rds != null ? db_rds : cc_rds )
+            return [ cohort, rds ]
+        } }
+        .filter { _cohort, rds -> rds != null }
 
     // Annotate clusters based on majority cell type
+    // Runs if any annotation has been performed
     valid_cluster_annotation_params = species
         .merge(cluster_annotation)
         .merge(cell_type_proportion_threshold)
         .merge(manual_cluster_annotations)
-        .filter { _spc, clu, _ctprop, _annfile -> {
-            clu != null
-        } }
         .map { spc, clu, ctprop, annfile -> {
             def annfile_opt = annfile == null ? [] : annfile
             return [ spc, clu, ctprop, annfile_opt ]
         } }
-    cluster_annotation_in = ANNOTATE_CUSTOM.out.annotated_rds
-        .ifEmpty(ANNOTATE_DATABASE.out.annotated_rds)
-        .ifEmpty(ANNOTATE_CELL_CYCLE.out.annotated_rds)
+    cluster_annotation_in = custom_annotation_out
         .merge(valid_cluster_annotation_params)
+
     ANNOTATE_CLUSTERS(cluster_annotation_in)
 
-    annotated_rds = ANNOTATE_CUSTOM.out.annotated_rds
-        .ifEmpty(ANNOTATE_DATABASE.out.annotated_rds)
-        .ifEmpty(ANNOTATE_CELL_CYCLE.out.annotated_rds)
-        .ifEmpty(ANNOTATE_CLUSTERS.out.annotated_rds)
+    // Return cluster-annotated RDS if any annotation was performed,
+    // otherwise return original integrated RDS
+    annotated_rds = ANNOTATE_CLUSTERS.out.annotated_rds
+        .join(integrated_rds, by: 0, remainder: true)
+        .map { cohort, clu_rds, int_rds -> {
+            def rds = clu_rds != null ? clu_rds : int_rds
+            return [ cohort, rds ]
+        } }
 
     emit:
     rds = annotated_rds

@@ -3,7 +3,7 @@ process GSEA {
 
     input:
     tuple val(cohort_name), path(de_rds_path), val(ref_group), val(test_group), val(species)
-    tuple path(gsea_db_file)
+    path gsea_db_file
 
     output:
     tuple val(cohort_name), path("${cohort_name}.gsea.${test_group}.${ref_group}.Rds"), emit: gsea_rds, optional: true

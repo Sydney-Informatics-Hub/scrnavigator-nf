@@ -13,9 +13,6 @@ annotation_file <- args[3]
 # Read in Seurat object from RDS file
 integrated <- readRDS(rds_path)
 
-# Read in sample metadata
-metadata <- read_csv(metadata_file)
-
 # Read in annotation parameters
 annotation_params <- read_csv(annotation_file)
 

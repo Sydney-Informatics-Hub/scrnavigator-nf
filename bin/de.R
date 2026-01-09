@@ -20,8 +20,8 @@ stopifnot(ref_group %in% names(all_comparison_groups))
 stopifnot(test_group %in% names(all_comparison_groups))
 
 # Check that the ref and test groups have at least 2 samples each
-stopifnot(all_comparison_groups[[ref_group]]) < 2
-stopifnot(all_comparison_groups[[test_group]]) < 2
+stopifnot(all_comparison_groups[[ref_group]] >= 2)
+stopifnot(all_comparison_groups[[test_group]] >= 2)
 min_cells_per_group <- min(all_comparison_groups[[ref_group]], all_comparison_groups[[test_group]])
 
 # Run differential expression

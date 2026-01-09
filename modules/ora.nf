@@ -3,7 +3,7 @@ process ORA {
 
     input:
     tuple val(cohort_name), path(de_rds_path), val(ref_group), val(test_group), val(species)
-    tuple path(ora_db_file)
+    path ora_db_file
 
     output:
     tuple val(cohort_name), path("${cohort_name}.ora.${test_group}.${ref_group}.Rds"), emit: ora_rds, optional: true

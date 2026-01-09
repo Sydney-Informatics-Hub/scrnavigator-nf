@@ -79,6 +79,7 @@ if (!is.na(default_res_param)) {
 }
 default_res_name <- paste0("SCT_snn_res.", default_res)
 Idents(integrated) <- default_res_name
+Misc(integrated, slot = "default_resolution") <- default_res_name
 
 # Plot UMAP with clusters at integrated resolution
 p_integrated_clustered_umap <- DimPlot(integrated, reduction = "umap", group.by = c("orig.ident", default_res_name), label = TRUE)

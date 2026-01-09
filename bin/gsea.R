@@ -64,7 +64,7 @@ if (species %in% names(organism_lookup)) {
 }
 
 # Get database for ORA
-if (!is.na(opt_db_file)) {
+if (!is.na(opt_db_file) && opt_db_file != "") {
   enrichment_database <- NULL
   enrichment_database_file <- opt_db_file
 } else {
@@ -121,10 +121,10 @@ if (file.exists(results_file) && file.exists(ap_file)) {
 
   # Add comparison details to dataframes
   gsea_results$cohort <- cohort_id
-  gsea_results$test_group <- test_group
-  gsea_results$ref_group <- ref_group
+  gsea_results$test_group <- test_group_val
+  gsea_results$ref_group <- ref_group_val
 
   # Save to file
-  write_csv(gsea_results, paste(cohort_id, "gsea", test_group, ref_group, "csv", sep = "."))
-  saveRDS(gsea_results, paste(cohort_id, "gsea", test_group, ref_group, "Rds", sep = "."))
+  write_csv(gsea_results, paste(cohort_id, "gsea", test_group_val, ref_group_val, "csv", sep = "."))
+  saveRDS(gsea_results, paste(cohort_id, "gsea", test_group_val, ref_group_val, "Rds", sep = "."))
 }

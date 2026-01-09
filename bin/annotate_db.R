@@ -4,6 +4,7 @@ library(tidyverse)
 library(SingleR)
 library(ggplot2)
 library(ggrepel)
+library(scuttle)
 
 # Get commandline arguments
 args <- commandArgs(trailingOnly = TRUE)
@@ -14,9 +15,6 @@ annotation_file <- args[3]
 
 # Read in Seurat object from RDS file
 integrated <- readRDS(rds_path)
-
-# Read in sample metadata
-metadata <- read_csv(metadata_file)
 
 # Read in annotation parameters
 annotation_params <- read_csv(annotation_file)
@@ -68,7 +66,7 @@ if (use_hpca) {
 }
 
 # Plot cell type assignment
-default_res_name <- Idents(integrated)
+default_res_name <- Misc(integrated, slot = "default_resolution")
 p_singler_annotation_umap <- DimPlot(
   integrated,
   reduction = "umap",

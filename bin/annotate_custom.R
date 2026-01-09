@@ -15,9 +15,6 @@ annotation_file <- args[3]
 # Read in Seurat object from RDS file
 integrated <- readRDS(rds_path)
 
-# Read in sample metadata
-metadata <- read_csv(metadata_file)
-
 # Read in annotation parameters
 annotation_params <- read_csv(annotation_file)
 
@@ -105,7 +102,7 @@ colnames(integrated@meta.data)[colnames(integrated@meta.data) %in% numeric_suffi
 stopifnot(all(names(custom_marker_genes) %in% colnames(integrated@meta.data)))  # Sanity check
 
 # Summarise scores for each gene program
-default_res_name <- Idents(integrated)
+default_res_name <- Misc(integrated, slot = "default_resolution")
 custom_scores <- integrated@meta.data %>%
   dplyr::select(Cluster = all_of(default_res_name), all_of(custom_programs)) %>%
   pivot_longer(
@@ -158,7 +155,7 @@ if (length(custom_programs) > 3) {
   # If the top two scores are too close, mark the cell as ambiguous
   integrated@meta.data <- integrated@meta.data %>% mutate(
     custom_cell_type = case_when(
-      custom_cell_type.top_2_score_mad_diff >= mad_threshold ~ custom_cell_type.max_score,
+      custom_cell_type.top_2_score_mad_diff >= custom_annotation_mad_threshold ~ custom_cell_type.max_score,
       .default = "Ambiguous"
     )
   )
@@ -181,7 +178,7 @@ p_custom_annotation_umap <- DimPlot(
   repel = TRUE,
   label.box = TRUE
 )
-ggsave(paste0("qc_results/", cohort_id, ".umap.custom_annotation.png"), p_singler_annotation_umap)
+ggsave(paste0("qc_results/", cohort_id, ".umap.custom_annotation.png"), p_custom_annotation_umap)
 
 # Plot assignments per cluster
 p_custom_annotations_per_cluster <- integrated@meta.data %>%

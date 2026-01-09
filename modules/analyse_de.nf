@@ -2,7 +2,7 @@ process ANALYSE_DE {
     publishDir "${params.outdir}/analysis/differential_expression", mode: 'copy'
 
     input:
-    tuple val(cohort_name), path(gene_symbols), path(de_rds_paths), val(p_thresh), val(fc_thresh)
+    tuple val(cohort_name), path(de_rds_paths), path(gene_symbols), val(p_thresh), val(fc_thresh)
 
     output:
     tuple val(cohort_name), path("${cohort_name}.de.full.Rds"), emit: de_rds
