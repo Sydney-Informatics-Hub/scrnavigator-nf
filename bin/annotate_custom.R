@@ -234,7 +234,7 @@ for (ct in custom_programs) {
       high = 'indianred2',
       midpoint = 0
     )
-  ggsave(paste0("qc_results/", cohort_id, ".custom_annotation_scores.png"), p_custom_annotation_scores)
+  ggsave(paste0("qc_results/", cohort_id, ".custom_annotation_scores.", ct,".png"), p_custom_annotation_scores)
 }
 
 # Save pre-processed data to file

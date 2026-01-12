@@ -89,18 +89,17 @@ if (dim(sig_de)[1] > 0) {
     isOutput = TRUE,
     nThreads = 1,
     outputDirectory = comparison,
-    projectName = comparison
+    projectName = "ora"
   )
 
   # Get results files (if they exist)
-  results_file <- paste0(comparison, "/Project_", comparison, "/enrichment_results_", comparison, ".txt")
-  ap_file <- paste0(comparison, "/Project_", comparison, "/enriched_geneset_ap_clusters_", comparison, ".txt")
+  results_file <- paste0(comparison, "/Project_ora/enrichment_results_ora.txt")
+  ap_file <- paste0(comparison, "/Project_ora/enriched_geneset_ap_clusters_ora.txt")
   if (file.exists(results_file) && file.exists(ap_file)) {
     # Read results file
     ora_results <- read_tsv(results_file, show_col_types = FALSE)
 
     # Read clusters file
-    ap_file <- paste0(comparison, "/Project_", comparison, "/enriched_geneset_ap_clusters_", comparison, ".txt")
     ap_raw <- readLines(ap_file) %>% str_split("\t")
     ap_clusters <- lapply(1:length(ap_raw), function(x) {
       n <- paste0("cluster_", x)

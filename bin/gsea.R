@@ -86,12 +86,12 @@ WebGestaltR(
   isOutput = TRUE,
   nThreads = 1,
   outputDirectory = comparison,
-  projectName = comparison
+  projectName = "gsea"
 )
 
 # Get results files (if they exist)
-results_file <- paste0(comparison, "/Project_", comparison, "/enrichment_results_", comparison, ".txt")
-ap_file <- paste0(comparison, "/Project_", comparison, "/enriched_geneset_ap_clusters_", comparison, ".txt")
+results_file <- paste0(comparison, "/Project_gsea/enrichment_results_gsea.txt")
+ap_file <- paste0(comparison, "/Project_gsea/enriched_geneset_ap_clusters_gsea.txt")
 if (file.exists(results_file) && file.exists(ap_file)) {
   # Read results file
   gsea_results <- read_tsv(results_file, show_col_types = FALSE)
