@@ -52,6 +52,7 @@ names(gsea_plots) <- sapply(reduced_gsea_results_split, function(x) {
 })
 
 # Save plots to file
+dir.create("plots")
 for (n in names(gsea_plots)) {
   p <- gsea_plots[[n]]
   ggsave(paste0("plots/", cohort_id, ".gsea.", n, ".png"), p)

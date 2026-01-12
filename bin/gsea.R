@@ -116,7 +116,7 @@ if (file.exists(results_file) && file.exists(ap_file)) {
     left_join(all_ap_clusters, by = "cluster") %>%
     left_join(top_ap_clusters, by = "cluster")
 
-  gsea_reduced_results <- gsea_results %>%
+  gsea_results <- gsea_results %>%
     left_join(ap_clusters, by = join_by(geneSet == gene_sets))
 
   # Add comparison details to dataframes

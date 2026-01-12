@@ -53,6 +53,7 @@ names(ora_plots) <- sapply(reduced_ora_results_split, function(x) {
 })
 
 # Save plots to file
+dir.create("plots")
 for (n in names(ora_plots)) {
   p <- ora_plots[[n]]
   ggsave(paste0("plots/", cohort_id, ".ora.", n, ".png"), p)
