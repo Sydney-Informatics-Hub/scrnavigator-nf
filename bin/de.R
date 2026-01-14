@@ -34,6 +34,7 @@ de <- FindMarkers(
 )
 
 # Add columns identifying the comparison
+de$Gene <- rownames(de)
 de$cohort <- cohort_id
 de$test_group <- test_group
 de$ref_group <- ref_group

@@ -58,7 +58,6 @@ all_de_results <- all_de_results %>%
   )
 
 # Add gene symbols if using Ensembl IDs
-all_de_results$Gene <- rownames(all_de_results)
 using_ens_ids <- all(startsWith(all_de_results$Gene, "ENS"))
 if (using_ens_ids) {
   idx <- match(all_de_results$Gene, gene_symbols$gene_versions)

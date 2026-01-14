@@ -14,10 +14,11 @@ process ANALYSE_DE {
     def de_params_csv = 'param,value\n' +
         "p_val_cutoff,${p_thresh}\n" +
         "fc_cutoff,${fc_thresh_param}\n"
+    def all_rds_paths = de_rds_paths.collect { f -> "'${f}'" }.join(' ')
     """
     # Create parameter samplesheet
     echo -e "${de_params_csv}" > params.csv
 
-    analyse_de.R "${cohort_name}" "${gene_symbols}" params.csv "${de_rds_paths}"
+    analyse_de.R "${cohort_name}" "${gene_symbols}" params.csv ${de_rds_paths}
     """
 }
