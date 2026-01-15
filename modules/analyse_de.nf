@@ -1,5 +1,7 @@
 process ANALYSE_DE {
     publishDir "${params.outdir}/analysis/differential_expression", mode: 'copy'
+    ext input_size: { new InputFileSizes(de_rds_paths) }
+    memory { task.ext.input_size.getSizeMB() * 2 + 1.GB }
 
     input:
     tuple val(cohort_name), path(de_rds_paths), path(gene_symbols), val(p_thresh), val(fc_thresh)

@@ -1,5 +1,7 @@
 process ANNOTATE_CLUSTERS {
     publishDir "${params.outdir}/annotation/clusters", mode: 'copy'
+    ext input_size: { new InputFileSizes(rds_path) }
+    memory { task.ext.input_size.getSizeMB() * 2 + 1.GB }
 
     input:
     tuple val(cohort_name), path(rds_path), val(species), val(cluster_annotation), val(cell_type_proportion_threshold), path(manual_cluster_annotations)

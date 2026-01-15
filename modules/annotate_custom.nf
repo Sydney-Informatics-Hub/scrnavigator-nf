@@ -1,5 +1,7 @@
 process ANNOTATE_CUSTOM {
     publishDir "${params.outdir}/annotation/custom", mode: 'copy'
+    ext input_size: { new InputFileSizes(rds_path) + new InputFileSizes(ens_db_rds) }
+    memory { task.ext.input_size.getSizeMB() * 2 + 1.GB }
 
     input:
     tuple val(cohort_name), path(rds_path), val(species), path(ens_db_rds), path(custom_marker_genes), val(custom_annotation_mad_threshold)

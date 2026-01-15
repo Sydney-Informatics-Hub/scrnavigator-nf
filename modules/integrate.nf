@@ -1,5 +1,7 @@
 process INTEGRATION {
     publishDir "${params.outdir}/integration", mode: 'copy'
+    ext input_size: { new InputFileSizes(rds_paths) }
+    memory { task.ext.input_size.getSizeMB() * 2 + 1.GB }
 
     input:
     path rds_paths

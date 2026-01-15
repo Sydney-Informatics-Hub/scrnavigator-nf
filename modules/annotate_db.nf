@@ -1,5 +1,7 @@
 process ANNOTATE_DATABASE {
     publishDir "${params.outdir}/annotation/db", mode: 'copy'
+    ext input_size: { new InputFileSizes(rds_path) + new InputFileSizes(annotation_db) }
+    memory { task.ext.input_size.getSizeMB() * 2 + 1.GB }
 
     input:
     tuple val(cohort_name), path(rds_path), val(species), val(min_cells_for_annotation), path(annotation_db)

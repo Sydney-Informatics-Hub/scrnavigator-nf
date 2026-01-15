@@ -1,5 +1,7 @@
 process DIFFERENTIAL_EXPRESSION {
     publishDir "${params.outdir}/analysis/differential_expression", mode: 'copy'
+    ext input_size: { new InputFileSizes(rds_path) }
+    memory { task.ext.input_size.getSizeMB() * 2 + 1.GB }
 
     input:
     tuple val(cohort_name), path(rds_path), val(ref_group), val(test_group)
