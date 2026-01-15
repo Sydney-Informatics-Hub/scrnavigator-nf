@@ -1,7 +1,8 @@
 process ANALYSE_ORA {
     publishDir "${params.outdir}/analysis/fea/ora", mode: 'copy'
-    ext input_size: { new InputFileSizes(rds_paths) }
-    memory { task.ext.input_size.getSizeMB() * 2 + 1.GB }
+    // ext input_size: { new InputFileSizes(rds_paths) }
+    ext input_size: { rds_paths instanceof Collection ? rds_paths.inject(0) { sum, f -> sum + f.size() } : rds_paths.size() }
+    memory { task.ext.input_size.B * 2 + 1.GB }
 
     input:
     tuple val(cohort_name), path(rds_paths)

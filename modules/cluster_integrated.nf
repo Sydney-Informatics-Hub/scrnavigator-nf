@@ -1,7 +1,8 @@
 process CLUSTER_INTEGRATED {
     publishDir "${params.outdir}/integration/clustering", mode: 'copy'
-    ext input_size: { new InputFileSizes(rds_path) }
-    memory { task.ext.input_size.getSizeMB() * 2 + 1.GB }
+    // ext input_size: { new InputFileSizes(rds_path) }
+    ext input_size: { rds_path.size() }
+    memory { task.ext.input_size.B * 2 + 1.GB }
 
     input:
     tuple val(cohort_name), path(rds_path), val(all_resolutions), val(cluster_method), val(integrated_resolution)

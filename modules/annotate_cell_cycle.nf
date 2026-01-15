@@ -1,7 +1,8 @@
 process ANNOTATE_CELL_CYCLE {
     publishDir "${params.outdir}/annotation/cell_cycle", mode: 'copy'
-    ext input_size: { new InputFileSizes(rds_path) + new InputFileSizes(ens_db_rds) }
-    memory { task.ext.input_size.getSizeMB() * 2 + 1.GB }
+    // ext input_size: { new InputFileSizes(rds_path) + new InputFileSizes(ens_db_rds) }
+    ext input_size: { rds_path.size() + ( ens_db_rds ? ens_db_rds.size() : 0 ) }
+    memory { task.ext.input_size.B * 2 + 1.GB }
 
     input:
     tuple val(cohort_name), path(rds_path), val(species), path(s2_genes), path(g2m_genes), path(ens_db_rds)

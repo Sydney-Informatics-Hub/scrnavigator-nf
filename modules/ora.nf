@@ -1,7 +1,8 @@
 process ORA {
     publishDir "${params.outdir}/analysis/fea/ora", mode: 'copy'
-    ext input_size: { new InputFileSizes(de_rds_path) + new InputFileSizes(ora_db_file) }
-    memory { task.ext.input_size.getSizeMB() * 2 + 1.GB }
+    // ext input_size: { new InputFileSizes(de_rds_path) + new InputFileSizes(ora_db_file) }
+    ext input_size: { de_rds_path.size() + ( ora_db_file ? ora_db_file.size() : 0 ) }
+    memory { task.ext.input_size.B * 2 + 1.GB }
 
     input:
     tuple val(cohort_name), path(de_rds_path), val(ref_group), val(test_group), val(species)
