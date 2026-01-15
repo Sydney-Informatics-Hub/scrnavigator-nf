@@ -21,6 +21,6 @@ process ANALYSE_DE {
     # Create parameter samplesheet
     echo -e "${de_params_csv}" > params.csv
 
-    analyse_de.R "${cohort_name}" "${gene_symbols}" params.csv ${de_rds_paths}
+    analyse_de.R "${cohort_name}" "${gene_symbols}" params.csv ${all_rds_paths}
     """
 }
