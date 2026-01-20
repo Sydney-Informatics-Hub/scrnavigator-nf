@@ -1,0 +1,87 @@
+---
+title: "scRNAvigator Report"
+format: html
+---
+
+```{r}
+#| echo: false
+#| results: hide
+#| warning: false
+#| error: false
+#| message: false
+library(tidyverse)
+library(DT)
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+# QC filter
+# Get filter summaries
+filter_summary_files <- dir(
+  "qc_filter",
+  pattern = ".*\\.hard_filter_summary\\.csv$",
+  recursive = TRUE,
+  full.names = TRUE
+)
+filter_summaries <- lapply(filter_summary_files, function(f) {
+  read_csv(f)
+})
+filter_summary <- bind_rows(filter_summaries) %>%
+  mutate(prop_filtered = prop_filtered * 100) %>%
+  mutate(across(where(is.numeric), ~ round(.x, 4)))
+
+# Get sample names and map them to directory names
+samples <- sapply(filter_summary_files, function(s) {
+  gsub("^qc_filter\\/.*\\/(.*)\\.hard_filter_summary\\.csv", "\\1", s)
+})
+names(samples) <- sapply(names(samples), function(s) {
+  gsub("^qc_filter\\/(.*)\\/.*$", "\\1", s)
+})
+sample_map <- setNames(names(samples), samples)
+
+# Get count distribution graphs
+cdist_graph_files <- sapply(sample_map, function(i) {
+  s <- samples[[i]]
+  paste("qc_filter", i, paste(s, "count_distributions.log.png", sep = "."), sep = "/")
+})
+
+# Get pre- and post-filtering plots
+pre_filter_plots <- sapply(sample_map, function(i) {
+  s <- samples[[i]]
+  paste("qc_filter", i, paste(s, "feature_count_plot.pre_filtered.png", sep = "."), sep = "/")
+})
+post_filter_plots <- sapply(sample_map, function(i) {
+  s <- samples[[i]]
+  paste("qc_filter", i, paste(s, "feature_count_plot.post_filtered.png", sep = "."), sep = "/")
+})
+```
+
+:::panel-tabset
+
+```{r}
+#| results: asis
+# Display pre- and post-filter plots
+purrr::walk(
+  sort(names(pre_filter_plots)),
+  function(n) {
+    f_pre <- pre_filter_plots[[n]]
+    f_post <- post_filter_plots[[n]]
+    cat(paste("###", n, "\n\n"))
+    cat(paste0('<img src="', f_pre, '" alt="pre-filter plot: ', n, '" width="100%">\n\n'))
+    cat(paste0('<img src="', f_post, '" alt="post-filter plot: ', n, '" width="100%">\n\n'))
+  }
+)
+```
+
+:::
+
+```{r}
+#| echo: false
+datatable(
+  filter_summary,
+  colnames = c("Sample", "# Cells Pre-Filtering", "# Cells Post-Filtering", "% Filtered")
+)
+```
