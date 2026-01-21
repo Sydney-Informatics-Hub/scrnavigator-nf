@@ -1,5 +1,5 @@
 ---
-title: "scRNAvigator Report"
+title: "Quality Control: Initial Filtering"
 format: html
 ---
 
@@ -35,7 +35,7 @@ filter_summary <- bind_rows(filter_summaries) %>%
 
 # Get sample names and map them to directory names
 samples <- sapply(filter_summary_files, function(s) {
-  gsub("^qc_filter\\/.*\\/(.*)\\.hard_filter_summary\\.csv", "\\1", s)
+  gsub("^qc_filter\\/.*\\/(.*)\\.hard_filter_summary\\.csv$", "\\1", s)
 })
 names(samples) <- sapply(names(samples), function(s) {
   gsub("^qc_filter\\/(.*)\\/.*$", "\\1", s)

@@ -1,0 +1,82 @@
+---
+title: "Quality Control: Clustering"
+format: html
+---
+
+```{r}
+#| echo: false
+#| results: hide
+#| warning: false
+#| error: false
+#| message: false
+library(tidyverse)
+library(DT)
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+# QC cluster
+# Get clustree plot
+clustree_plot_files <- dir(
+  "qc_cluster",
+  pattern = ".*\\.clustree\\.png$",
+  recursive = TRUE,
+  full.names = TRUE
+)
+
+# Get sample names and map them to directory names
+samples <- sapply(clustree_plot_files, function(s) {
+  gsub("^qc_cluster\\/.*\\/(.*)\\.clustree\\.png$", "\\1", s)
+})
+names(samples) <- sapply(names(samples), function(s) {
+  gsub("^qc_cluster\\/(.*)\\/.*$", "\\1", s)
+})
+sample_map <- setNames(names(samples), samples)
+names(clustree_plot_files) <- samples
+
+# Get feature-count plots for each clustering resolution
+feature_count_plot_files <- lapply(sample_map, function(i) {
+  s <- samples[[i]]
+  dir(
+    paste("qc_cluster", i, sep = "/"),
+    pattern = paste(s, "feature_count_plot", "cluster", ".*","png", sep = "\\."),
+    full.names = TRUE
+  )
+})
+
+# Get cluster resolutions for each sample (should be the same)
+cluster_res <- lapply(feature_count_plot_files, function(f) {
+  as.numeric(gsub("^.*\\.feature_count_plot\\.cluster\\.(.*)\\.png$", "\\1", f))
+})
+for (n in names(feature_count_plot_files)) {
+  names(feature_count_plot_files[[n]]) <- cluster_res[[n]]
+}
+```
+
+:::panel-tabset
+
+```{r}
+#| results: asis
+# Display clustree plots and per-resolution feature-count plots
+purrr::walk(
+  sort(samples),
+  function(n) {
+    p_clustree <- clustree_plot_files[[n]]
+    p_fc_plot_list <- feature_count_plot_files[[n]]
+    cat(paste("###", n, "\n\n"))
+    cat(paste("####", "Clustree plot", "\n\n"))
+    cat(paste0('<img src="', p_clustree, '" alt="clustree plot: ', n, '" width="100%">\n\n'))
+    cat(paste("####", "Per-cluster feature-count plots", "\n\n"))
+    for (res in sort(names(p_fc_plot_list))) {
+      p_fc_plot <- p_fc_plot_list[[res]]
+      cat(paste("#####", "Cluster resolution:", res, "\n\n"))
+      cat(paste0('<img src="', p_fc_plot, '" alt="Per-cluster feature-count plot: ', n, '; res: ', res, '" width="100%">\n\n'))
+    }
+  }
+)
+```
+
+:::
