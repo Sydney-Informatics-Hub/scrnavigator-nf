@@ -43,9 +43,13 @@ names(samples) <- sapply(names(samples), function(s) {
 sample_map <- setNames(names(samples), samples)
 
 # Get count distribution graphs
-cdist_graph_files <- sapply(sample_map, function(i) {
+cdist_log_graph_files <- sapply(sample_map, function(i) {
   s <- samples[[i]]
   paste("qc_filter", i, paste(s, "count_distributions.log.png", sep = "."), sep = "/")
+})
+cdist_graph_files <- sapply(sample_map, function(i) {
+  s <- samples[[i]]
+  paste("qc_filter", i, paste(s, "count_distributions.png", sep = "."), sep = "/")
 })
 
 # Get pre- and post-filtering plots
@@ -63,20 +67,29 @@ post_filter_plots <- sapply(sample_map, function(i) {
 
 ```{r}
 #| results: asis
-# Display pre- and post-filter plots
+# Display count distribution plots
 purrr::walk(
-  sort(names(pre_filter_plots)),
+  sort(samples),
   function(n) {
+    p <- cdist_graph_files[[n]]
+    p_log <- cdist_log_graph_files[[n]]
     f_pre <- pre_filter_plots[[n]]
     f_post <- post_filter_plots[[n]]
     cat(paste("###", n, "\n\n"))
+    cat(paste("####", "Count distributions", "\n\n"))
+    cat(paste0('<img src="', p, '" alt="count distribution plot: ', n, '" width="100%">\n\n'))
+    cat(paste0('<img src="', p_log, '" alt="log-count distribution plot: ', n, '" width="100%">\n\n'))
+    cat(paste("####", "Features vs counts - pre-filter", "\n\n"))
     cat(paste0('<img src="', f_pre, '" alt="pre-filter plot: ', n, '" width="100%">\n\n'))
+    cat(paste("####", "Features vs counts - post-filter", "\n\n"))
     cat(paste0('<img src="', f_post, '" alt="post-filter plot: ', n, '" width="100%">\n\n'))
   }
 )
 ```
 
 :::
+
+#### Filtering summary
 
 ```{r}
 #| echo: false
