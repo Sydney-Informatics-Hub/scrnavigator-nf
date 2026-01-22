@@ -42,7 +42,7 @@ feature_count_plot_files <- lapply(sample_map, function(i) {
   s <- samples[[i]]
   dir(
     paste("qc_cluster", i, sep = "/"),
-    pattern = paste(s, "feature_count_plot", "cluster", ".*","png", sep = "\\."),
+    pattern = paste(s, "feature_count_plot", "cluster", ".*","png$", sep = "\\."),
     full.names = TRUE
   )
 })

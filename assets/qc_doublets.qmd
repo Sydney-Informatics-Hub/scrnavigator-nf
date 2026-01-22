@@ -1,0 +1,142 @@
+---
+title: "Quality Control: Doublet Detection"
+format: html
+---
+
+```{r}
+#| echo: false
+#| results: hide
+#| warning: false
+#| error: false
+#| message: false
+library(tidyverse)
+library(DT)
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+# QC doublets
+# Get doublet summary files
+doublet_summary_files <- dir(
+  "qc_doublets",
+  pattern = ".*\\.doublet_summary\\.csv$",
+  recursive = TRUE,
+  full.names = TRUE
+)
+doublet_summaries <- lapply(doublet_summary_files, function(f) {
+  read_csv(f)
+})
+doublet_summary <- bind_rows(doublet_summaries) %>%
+  mutate(prop_doublets = (n_doublets / (n_singlets + n_doublets)) * 100) %>%
+  mutate(across(where(is.numeric), ~ round(.x, 4)))
+
+# Get sample names and map them to directory names
+samples <- sapply(doublet_summary_files, function(s) {
+  gsub("^qc_doublets\\/.*\\/(.*)\\.doublet_summary\\.csv$", "\\1", s)
+})
+names(samples) <- sapply(names(samples), function(s) {
+  gsub("^qc_doublets\\/(.*)\\/.*$", "\\1", s)
+})
+sample_map <- setNames(names(samples), samples)
+
+# Get doublet per cluster plots
+doublet_per_cluster_plots <- sapply(sample_map, function(i) {
+  s <- samples[[i]]
+  dir(
+    paste("qc_doublets", i, sep = "/"),
+    pattern = paste(s, "doublets_per_cluster", ".*", "png$", sep = "\\."),
+    full.names = TRUE
+  )
+})
+# Get primary resolution per sample
+primary_cluster_res <- sapply(doublet_per_cluster_plots,function(f) {
+  as.numeric(gsub("^.*\\.doublets_per_cluster\\.(.*)\\.png$", "\\1", f))
+})
+
+# Get doublet proportion per cluster plots
+doublet_prop_per_cluster_plots <- sapply(sample_map, function(i) {
+  s <- samples[[i]]
+  res <- primary_cluster_res[[s]]
+  paste("qc_doublets", i, paste(s, "doublet_proportions_per_cluster", res, "png", sep = "."), sep = "/")
+})
+
+# Get doublet UMAPs
+doublet_umap_plots <- sapply(sample_map, function(i) {
+  s <- samples[[i]]
+  res <- primary_cluster_res[[s]]
+  paste("qc_doublets", i, paste(s, "doublet_umap", res, "png", sep = "."), sep = "/")
+})
+
+# Get clustree plot
+clustree_plot_files <- sapply(sample_map, function(i) {
+  s <- samples[[i]]
+  paste("qc_doublets", i, paste(s, "clustree", "png", sep = "."), sep = "/")
+})
+
+# Get feature-count plots for each clustering resolution
+feature_count_plot_files <- lapply(sample_map, function(i) {
+  s <- samples[[i]]
+  dir(
+    paste("qc_doublets", i, sep = "/"),
+    pattern = paste(s, "feature_count_plot", "cluster", ".*","png", sep = "\\."),
+    full.names = TRUE
+  )
+})
+
+# Get cluster resolutions for each sample (should be the same)
+cluster_res <- lapply(feature_count_plot_files, function(f) {
+  as.numeric(gsub("^.*\\.feature_count_plot\\.cluster\\.(.*)\\.png$", "\\1", f))
+})
+for (n in names(feature_count_plot_files)) {
+  names(feature_count_plot_files[[n]]) <- cluster_res[[n]]
+}
+```
+
+:::panel-tabset
+
+```{r}
+#| results: asis
+# Display clustree plots and per-resolution feature-count plots
+purrr::walk(
+  sort(samples),
+  function(n) {
+    prim_res <- primary_cluster_res[[n]]
+    prim_res_str <- paste0("(resolution: ", prim_res, ")")
+    p_doublets <- doublet_per_cluster_plots[[n]]
+    p_doublet_props <- doublet_prop_per_cluster_plots[[n]]
+    p_umap <- doublet_umap_plots[[n]]
+    p_clustree <- clustree_plot_files[[n]]
+    p_fc_plot_list <- feature_count_plot_files[[n]]
+    cat(paste("###", n, "\n\n"))
+    cat(paste("####", "Doublets per cluster", prim_res_str, "\n\n"))
+    cat(paste0('<img src="', p_doublets, '" alt="doublet per cluster plot: ', n, '; res: ', prim_res, '" width="100%">\n\n'))
+    cat(paste("####", "Doublet proportions per cluster", prim_res_str, "\n\n"))
+    cat(paste0('<img src="', p_doublet_props, '" alt="doublet proportions per cluster plot: ', n, '; res: ', prim_res, '" width="100%">\n\n'))
+    cat(paste("####", "Doublet UMAP", prim_res_str, "\n\n"))
+    cat(paste0('<img src="', p_umap, '" alt="doublet UMAP: ', n, '; res: ', prim_res, '" width="100%">\n\n'))
+    cat(paste("####", "Clustree plot", "\n\n"))
+    cat(paste0('<img src="', p_clustree, '" alt="clustree plot: ', n, '" width="100%">\n\n'))
+    cat(paste("####", "Per-cluster feature-count plots", "\n\n"))
+    for (res in sort(names(p_fc_plot_list))) {
+      p_fc_plot <- p_fc_plot_list[[res]]
+      cat(paste("#####", "Cluster resolution:", res, "\n\n"))
+      cat(paste0('<img src="', p_fc_plot, '" alt="Per-cluster feature-count plot: ', n, '; res: ', res, '" width="100%">\n\n'))
+    }
+  }
+)
+```
+
+:::
+
+#### Doublet filtering summary
+
+```{r}
+#| echo: false
+datatable(
+  doublet_summary,
+  colnames = c("Sample", "# Singlets", "# Doublets", "Doublet rate (%)")
+)
+```

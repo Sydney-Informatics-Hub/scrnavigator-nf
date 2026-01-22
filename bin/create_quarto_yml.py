@@ -6,6 +6,7 @@ VALID_QMD_FILES_NESTED = {
     'Quality Control': [
         ('Filtering', 'qc_filter.qmd'),
         ('Clustering', 'qc_cluster.qmd'),
+        ('Doublet Detection', 'qc_doublets.qmd'),
     ]
 }
 
