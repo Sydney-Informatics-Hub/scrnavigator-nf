@@ -115,16 +115,9 @@ workflow ANNOTATE {
     ANNOTATE_CLUSTERS(cluster_annotation_in)
 
     // Return cluster-annotated RDS if any annotation was performed,
-    // otherwise return original integrated RDS
-    annotated_rds = ANNOTATE_CLUSTERS.out.annotated_rds
-        .join(integrated_rds, by: 0, remainder: true)
-        .map { cohort, clu_rds, int_rds -> {
-            def rds = clu_rds != null ? clu_rds : int_rds
-            return [ cohort, rds ]
-        } }
-
+    // otherwise return no RDS
     emit:
-    rds = annotated_rds
+    rds = ANNOTATE_CLUSTERS.out.annotated_rds
     cell_cycle_annotation_qc_results = ANNOTATE_CELL_CYCLE.out.qc_results
     db_annotation_qc_results = ANNOTATE_DATABASE.out.qc_results
     custom_annotation_qc_results = ANNOTATE_CUSTOM.out.qc_results

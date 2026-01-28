@@ -122,8 +122,8 @@
                 },
                 "pseudo_groups": {
                     "type": "string",
-                    "description": "A comma-separated list of metadata variables to be used for grouping cells for pseudobulking and differential experession analysis.",
-                    "default": null
+                    "description": "A comma-separated list of metadata variables to be used for grouping cells for pseudobulking and differential experession analysis. Defaults to the 'cluster_annotation' field created by the cluster annotation module.",
+                    "default": "cluster_annotation"
                 },
                 "comparisons": {
                     "type": "string",
