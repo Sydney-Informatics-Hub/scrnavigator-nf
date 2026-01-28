@@ -2,7 +2,7 @@
 import yaml
 import os
 
-VALID_QMD_FILES_NESTED = {
+VALID_QMD_FILES = {
     'Quality Control': [
         ('Filtering', 'qc_filter.qmd'),
         ('Clustering', 'qc_cluster.qmd'),
@@ -13,10 +13,7 @@ VALID_QMD_FILES_NESTED = {
         ('Integration Clustering', 'integration_cluster.qmd'),
     ],
     'Annotation': [
-        ('Cell Cycle Annotation', 'annotation_cc.qmd'),
-        ('Database Annotation', 'annotation_db.qmd'),
-        ('Custom Cell Type Annotation', 'annotation_custom.qmd'),
-        ('Cluster Annotation', 'annotation_cluster.qmd'),
+        ('Annotation', 'annotation.qmd'),
     ],
     'Analysis': [
         ('Pseudobulking', 'analysis_pseudo.qmd'),
@@ -69,23 +66,37 @@ def construct_navbar(qmd_files: list = []):
     # Iterate through valid nested QMD files and add them if they exist
     i = 1
     for menu in ['Quality Control', 'Integration', 'Annotation', 'Analysis']:
-        valid_qmd_files = VALID_QMD_FILES_NESTED.get(menu)
+        valid_qmd_files = VALID_QMD_FILES.get(menu)
         if valid_qmd_files is None:
             continue
-        navbar_nested_dict = {
-            'text': f'{i}. {menu}',
-            'menu': []
-        }
-        j = 1
-        for title, f in valid_qmd_files:
-            if f not in qmd_basenames:
-                continue
-            navbar_nested_dict['menu'].append({
-                'text': f'{j}. {title}',
+        valid_qmd_files_to_add = [
+            (title, f)
+            for title, f in valid_qmd_files
+            if f in qmd_basenames
+        ]
+        if len(valid_qmd_files_to_add) == 1:
+            # Only one page to add - add directly to navbar
+            title, f = valid_qmd_files_to_add[0]
+            navbar_list.append({
+                'text': f'{i}. {title}',
                 'href': f,
             })
-            j += 1
-        navbar_list.append(navbar_nested_dict)
+        elif len(valid_qmd_files_to_add) > 1:
+            # Multiple pages to add - add a nested menu to navbar
+            navbar_nested_dict = {
+                'text': f'{i}. {menu}',
+                'menu': []
+            }
+            j = 1
+            for title, f in valid_qmd_files_to_add:
+                navbar_nested_dict['menu'].append({
+                    'text': f'{j}. {title}',
+                    'href': f,
+                })
+                j += 1
+            navbar_list.append(navbar_nested_dict)
+        else:
+            continue
         i += 1
 
     return navbar_list

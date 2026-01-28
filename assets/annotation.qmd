@@ -1,0 +1,264 @@
+---
+title: "Annotation"
+format: html
+---
+
+```{r}
+#| echo: false
+#| results: hide
+#| warning: false
+#| error: false
+#| message: false
+library(tidyverse)
+library(DT)
+cohort_id <- NULL
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+# Get all available annotations for downstream analyses
+available_annotation_files <- dir(
+  "available_annotations",
+  pattern = "\\.txt$",
+  recursive = TRUE,
+  full.names = TRUE
+)
+available_annotations <- unlist(sapply(available_annotation_files, scan, character()))
+```
+
+```{r}
+#| echo: false
+# Determine which annotations were performed
+cell_cycle_annotated <- dir.exists("annotation_cc")
+db_annotated <- dir.exists("annotation_db")
+custom_annotated <- dir.exists("annotation_custom")
+clusters_annotated <- dir.exists("annotation_clusters")
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+#| eval: !expr cell_cycle_annotated
+# Cell cycle annotation
+cc_umap_file <- dir(
+  "annotation_cc",
+  pattern = "^.*\\.umap\\.cell_cycle\\.png$",
+  recursive = TRUE,
+  full.names = TRUE
+)[1]
+
+# Get cohort ID
+cohort_id <- gsub("^annotation_cc\\/(.*)\\.umap\\.cell_cycle\\.png$", "\\1", cc_umap_file)
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+#| eval: !expr db_annotated
+# Database annotation
+db_umap_file <- dir(
+  "annotation_db",
+  pattern = "^.*\\.umap\\..*\\.png$",
+  recursive = TRUE,
+  full.names = TRUE
+)[1]
+
+# Get cohort ID
+if (is.null(cohort_id)) {
+  cohort_id <- gsub("^annotation_db\\/(.*)\\.umap\\..*\\.png$", "\\1", db_umap_file)
+}
+
+cell_type_props <- paste0("annotation_db/", cohort_id, ".cell_type_proportions.singleR_annotation.png")
+
+cell_type_prop_table_hpca_main <- paste0("annotation_db/", cohort_id, ".cell_type_proportions.singleR_annotation.hpca_main.csv")
+cell_type_prop_table_hpca_fine <- paste0("annotation_db/", cohort_id, ".cell_type_proportions.singleR_annotation.hpca_fine.csv")
+cell_type_prop_table_singler <- paste0("annotation_db/", cohort_id, ".cell_type_proportions.singleR_annotation.csv")
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+#| eval: !expr custom_annotated
+# Custom annotation
+custom_umap <- dir(
+  "annotation_custom",
+  pattern = "^.*\\.umap\\.custom_annotation\\.png$",
+  recursive = TRUE,
+  full.names = TRUE
+)[1]
+
+# Get cohort ID
+if (is.null(cohort_id)) {
+  cohort_id <- gsub("^annotation_custom\\/(.*)\\.umap\\.custom_annotation\\.png$", "\\1", custom_umap)
+}
+
+custom_heatmap <- paste0("annotation_custom/", cohort_id, ".heatmap.custom_annotations_per_cluster.png")
+
+custom_cell_type_props <- paste0("annotation_custom/", cohort_id, ".cell_type_proportions.custom_annotation.png")
+custom_cell_type_props_table_file <- paste0("annotation_custom/", cohort_id, ".cell_type_proportions.custom_annotation.csv")
+custom_cell_type_props_table <- read_csv(custom_cell_type_props_table_file)
+
+custom_cell_type_feature_plots <- dir(
+  "annotation_custom",
+  pattern = "^.*\\.custom_annotation_scores\\..*\\.png$",
+  recursive = TRUE,
+  full.names = TRUE
+)
+names(custom_cell_type_feature_plots) <- sapply(custom_cell_type_feature_plots, function(f) {
+  gsub("^annotation_custom\\/.*\\.custom_annotation_scores\\.(.*)\\.png$", "\\1", f)
+})
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+#| eval: !expr clusters_annotated
+# Cluster annotation
+cluster_umap_file <- dir(
+  "annotation_clusters",
+  pattern = "^.*\\.umap\\.cluster_cell_type_assignments\\.png$",
+  recursive = TRUE,
+  full.names = TRUE
+)[1]
+
+# Get cohort ID
+if (is.null(cohort_id)) {
+  cohort_id <- gsub("^annotation_cluster\\/(.*)\\.umap\\.cluster_cell_type_assignments\\.png$", "\\1", cluster_umap_file)
+}
+```
+
+#### Dataset name: `{r} cohort_id`
+
+### All annotation fields available for downstream analyses
+
+```{r}
+#| echo: false
+#| results: asis
+for (ann in available_annotations) {
+  cat("- ")
+  cat(ann)
+  cat("\n")
+}
+```
+
+:::panel-tabset
+
+```{r}
+#| results: asis
+#| echo: false
+#| eval: !expr cell_cycle_annotated
+cat("### Cell cycle annotation\n\n")
+cat(paste0('<img src="', cc_umap_file, '" alt="cell cycle umap: ', cohort_id, '" width="100%">\n\n'))
+```
+
+```{r}
+#| results: asis
+#| echo: false
+#| eval: !expr db_annotated
+cat("### Automatic cell type annotation\n\n")
+cat("#### Cell type UMAP\n\n")
+cat(paste0('<img src="', db_umap_file, '" alt="cell type umap: ', cohort_id, '" width="100%">\n\n'))
+cat("#### Cell type proportions\n\n")
+cat(paste0('<img src="', cell_type_props, '" alt="cell type proportions: ', cohort_id, '" width="100%">\n\n'))
+```
+
+```{r}
+#| results: asis
+#| echo: false
+#| eval: !expr db_annotated && file.exists(cell_type_prop_table_hpca_main)
+cat("#### HPCA Main annotations")
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+#| eval: !expr db_annotated && file.exists(cell_type_prop_table_hpca_main)
+datatable(read_csv(cell_type_prop_table_hpca_main))
+```
+
+```{r}
+#| results: asis
+#| echo: false
+#| eval: !expr db_annotated && file.exists(cell_type_prop_table_hpca_fine)
+cat("#### HPCA Fine annotations")
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+#| eval: !expr db_annotated && file.exists(cell_type_prop_table_hpca_fine)
+datatable(read_csv(cell_type_prop_table_hpca_fine))
+```
+
+```{r}
+#| results: asis
+#| echo: false
+#| eval: !expr db_annotated && file.exists(cell_type_prop_table_singler)
+cat("#### SingleR annotations")
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+#| eval: !expr db_annotated && file.exists(cell_type_prop_table_singler)
+datatable(read_csv(cell_type_prop_table_singler))
+```
+
+```{r}
+#| results: asis
+#| echo: false
+#| eval: !expr custom_annotated
+cat("### Custom cell type annotations\n\n")
+cat("#### Cell type UMAP\n\n")
+cat(paste0('<img src="', custom_umap, '" alt="cell type umap: ', cohort_id, '" width="100%">\n\n'))
+cat("#### Cell type proportions\n\n")
+cat(paste0('<img src="', custom_cell_type_props, '" alt="cell type proportions: ', cohort_id, '" width="100%">\n\n'))
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+#| eval: !expr custom_annotated
+datatable(custom_cell_type_props_table)
+```
+
+```{r}
+#| results: asis
+#| echo: false
+#| eval: !expr custom_annotated
+cat("#### Custom cell type feature plots\n\n")
+for (cell_type in names(custom_cell_type_feature_plots)) {
+  p <- custom_cell_type_feature_plots[[cell_type]]
+  cat(paste0("##### ", cell_type, "\n\n"))
+  cat(paste0('<img src="', p, '" alt="feature plot: ', cell_type, ' - ', cohort_id, '" width="100%">\n\n'))
+}
+```
+
+```{r}
+#| results: asis
+#| echo: false
+#| eval: !expr clusters_annotated
+cat("### Cluster cell type annotation\n\n")
+cat(paste0('<img src="', cluster_umap_file, '" alt="cluster cell type assignment umap: ', cohort_id, '" width="100%">\n\n'))
+```
+
+:::
