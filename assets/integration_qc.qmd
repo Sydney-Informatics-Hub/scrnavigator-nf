@@ -1,0 +1,56 @@
+---
+title: "Integration: Quality Control"
+format: html
+---
+
+```{r}
+#| echo: false
+#| results: hide
+#| warning: false
+#| error: false
+#| message: false
+library(tidyverse)
+library(DT)
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+# Integration QC
+# Get UMAP files
+merged_umap_file <- dir(
+  "integration_qc",
+  pattern = "^.*\\.umap\\.merged\\.png$",
+  recursive = TRUE,
+  full.names = TRUE
+)[1]
+integrated_umap_file <- dir(
+  "integration_qc",
+  pattern = "^.*\\.umap\\.integrated\\.png$",
+  recursive = TRUE,
+  full.names = TRUE
+)[1]
+
+# Get cohort ID
+cohort_id <- gsub("^integration_qc\\/(.*)\\.umap\\.merged\\.png$", "\\1", merged_umap_file)
+```
+
+#### Dataset name: `{r} cohort_id`
+
+### Merged (unintegrated) dataset UMAP
+
+```{r}
+#| results: asis
+#| echo: false
+cat(paste0('<img src="', merged_umap_file, '" alt="merged dataset umap: ', cohort_id, '" width="100%">\n\n'))
+```
+
+### Integrated dataset UMAP
+
+```{r}
+#| results: asis
+#| echo: false
+cat(paste0('<img src="', integrated_umap_file, '" alt="integrated dataset umap: ', cohort_id, '" width="100%">\n\n'))
+```

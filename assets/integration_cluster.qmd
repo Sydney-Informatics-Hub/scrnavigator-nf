@@ -1,0 +1,69 @@
+---
+title: "Integration: Clustering"
+format: html
+---
+
+```{r}
+#| echo: false
+#| results: hide
+#| warning: false
+#| error: false
+#| message: false
+library(tidyverse)
+library(DT)
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+# Integration cluster
+# Get UMAP
+umap_file <- dir(
+  "integration_cluster",
+  pattern = "^.*\\.umap\\.integrated\\.clusters\\.png$",
+  recursive = TRUE,
+  full.names = TRUE
+)[1]
+
+# Get cohort ID
+cohort_id <- gsub("^integration_cluster\\/(.*)\\.umap\\.integrated\\.clusters\\.png$", "\\1", umap_file)
+
+# Get feature-count plot
+fc_plot_file <- paste0("integration_cluster/", cohort_id, ".feature_count_plot.integrated.cluster.png")
+
+# Get clustree plot
+clustree_file <- paste0("integration_cluster/", cohort_id, ".clustree.png")
+
+# Get integration resolution
+integration_res_file <- "integration_resolution.txt"
+integration_res <- as.numeric(scan(integration_res_file, character())[1])
+```
+
+#### Dataset name: `{r} cohort_id`
+#### Integration resolution: `{r} integration_res`
+
+### Integrated clusters UMAP
+
+```{r}
+#| results: asis
+#| echo: false
+cat(paste0('<img src="', umap_file, '" alt="integrated clusters umap: ', cohort_id, '" width="100%">\n\n'))
+```
+
+### Feature-count plot of integrated dataset
+
+```{r}
+#| results: asis
+#| echo: false
+cat(paste0('<img src="', fc_plot_file, '" alt="feature-count plot of integrated dataset: ', cohort_id, '" width="100%">\n\n'))
+```
+
+### Clustree plot for integrated dataset
+
+```{r}
+#| results: asis
+#| echo: false
+cat(paste0('<img src="', clustree_file, '" alt="clustree plot for integrated dataset: ', cohort_id, '" width="100%">\n\n'))
+```

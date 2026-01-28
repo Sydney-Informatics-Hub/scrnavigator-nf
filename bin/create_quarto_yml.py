@@ -7,7 +7,23 @@ VALID_QMD_FILES_NESTED = {
         ('Filtering', 'qc_filter.qmd'),
         ('Clustering', 'qc_cluster.qmd'),
         ('Doublet Detection', 'qc_doublets.qmd'),
-    ]
+    ],
+    'Integration': [
+        ('Integration QC', 'integration_qc.qmd'),
+        ('Integration Clustering', 'integration_cluster.qmd'),
+    ],
+    'Annotation': [
+        ('Cell Cycle Annotation', 'annotation_cc.qmd'),
+        ('Database Annotation', 'annotation_db.qmd'),
+        ('Custom Cell Type Annotation', 'annotation_custom.qmd'),
+        ('Cluster Annotation', 'annotation_cluster.qmd'),
+    ],
+    'Analysis': [
+        ('Pseudobulking', 'analysis_pseudo.qmd'),
+        ('Differential Expression', 'analysis_de.qmd'),
+        ('Gene Set Enrichment Analysis', 'analysis_gsea.qmd'),
+        ('Over-Representation Analysis', 'analysis_ora.qmd'),
+    ],
 }
 
 def configure_quarto(navbar_entries: list):
@@ -70,6 +86,7 @@ def construct_navbar(qmd_files: list = []):
             })
             j += 1
         navbar_list.append(navbar_nested_dict)
+        i += 1
 
     return navbar_list
 
