@@ -1,0 +1,61 @@
+---
+title: "Analysis: Pseudobulking"
+format: html
+---
+
+```{r}
+#| echo: false
+#| results: hide
+#| warning: false
+#| error: false
+#| message: false
+library(tidyverse)
+library(DT)
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+# Pseudobulking results
+# Get table of groups available for comparison
+comparison_groups_file <- dir(
+  "analysis_pseudo",
+  pattern = "^.*\\.comparison_groups.txt$",
+  recursive = TRUE,
+  full.names = TRUE
+)[1]
+
+# Get cohort ID
+cohort_id <- gsub("^analysis_pseudo\\/(.*)\\.comparison_groups.txt$", "\\1", comparison_groups_file)
+
+comparison_groups_table <- read_csv(comparison_groups_file)
+
+# Get pseudobulking groups
+pseudo_groups_file <- "pseudo_groups.txt"
+pseudo_groups <- scan(pseudo_groups_file, character())
+```
+
+#### Dataset name: `{r} cohort_id`
+#### Fields used for pseudobulking:
+
+```{r}
+#| echo: false
+#| results: asis
+for (g in pseudo_groups) {
+  cat("- ")
+  cat(g)
+  cat("\n")
+}
+```
+
+### Pseudobulked groups availablle for comparison
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+datatable(comparison_groups_table, colnames = c("Group", "# Samples"))
+```

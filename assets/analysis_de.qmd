@@ -1,0 +1,146 @@
+---
+title: "Analysis: Differential Expression"
+format: html
+---
+
+```{r}
+#| echo: false
+#| results: hide
+#| warning: false
+#| error: false
+#| message: false
+library(tidyverse)
+library(DT)
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+# Differential expression
+# Get full DE table
+de_table_file <- dir(
+  "analysis_de",
+  pattern = "^.*\\.de\\.full\\.csv$",
+  recursive = TRUE,
+  full.names = TRUE
+)[1]
+
+de_table <- read_csv(de_table_file) %>%
+  mutate(
+    pct.1 = pct.1 * 100,
+    pct.2 = pct.2 * 100
+  ) %>%
+  mutate(across(where(is.numeric), ~ round(.x, 4)))
+
+sig_de_table <- de_table %>% filter(sig == "sig")
+
+# Get cohort ID
+cohort_id <- gsub("^analysis_de\\/(.*)\\.de\\.full\\.csv$", "\\1", de_table_file)
+
+# Get all comparisons
+all_comparisons <- unique(de_table$comparison)
+
+# Order and reduce to necessary columns
+de_table_col_order <- c(
+  "Gene",
+  "Gene.Symbol",
+  "test_group",
+  "ref_group",
+  "pct.1",
+  "pct.2",
+  "avg_log2FC",
+  "p_val",
+  "p_val_adj_all",
+  "neg_log10_pval_adj_all"
+)
+de_table_col_names_ordered <- c(
+  "Gene ID",
+  "Gene Symbol",
+  "Test Group",
+  "Reference Group",
+  "% Cells Expressing in Test Group",
+  "% Cells Expressing in Reference Group",
+  "Average log2 Fold Change",
+  "Raw p-value",
+  "FDR-Adjusted p-value",
+  "-log10 Adjusted p-value"
+)
+
+de_table <- de_table %>% select(all_of(de_table_col_order))
+sig_de_table <- sig_de_table %>% select(all_of(de_table_col_order))
+
+# Get volcano plots
+volcano_plot_file <- paste0("analysis_de/results/", cohort_id, ".volcano.png")
+
+# Get p- and log-fc- distribution plots
+p_dist_plot_file <- paste0("analysis_de/results/", cohort_id, ".p_val_dist.png")
+log_fc_dist_plot_file <- paste0("analysis_de/results/", cohort_id, ".log_fc_dist.png")
+```
+
+#### Dataset name: `{r} cohort_id`
+
+#### All comparisons made:
+
+```{r}
+#| echo: false
+#| results: asis
+for (cmp in all_comparisons) {
+  cat("- ")
+  cat(cmp)
+  cat("\n")
+}
+```
+
+### Differential expression results
+
+#### p-value distributions
+
+```{r}
+#| results: asis
+#| echo: false
+cat(paste0('<img src="', p_dist_plot_file, '" alt="p-value distributions: ', cohort_id, '" width="100%">\n\n'))
+```
+
+#### Log-fold-change distributions
+
+```{r}
+#| results: asis
+#| echo: false
+cat(paste0('<img src="', log_fc_dist_plot_file, '" alt="log-fold-change distributions: ', cohort_id, '" width="100%">\n\n'))
+```
+
+#### Volcano plots
+
+```{r}
+#| results: asis
+#| echo: false
+cat(paste0('<img src="', volcano_plot_file, '" alt="volcano plots: ', cohort_id, '" width="100%">\n\n'))
+```
+
+#### Differential expression table
+
+:::panel-tabset
+
+##### Significant results only
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+datatable(sig_de_table, colnames = de_table_col_names_ordered)
+```
+
+##### All results
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+datatable(de_table, colnames = de_table_col_names_ordered)
+```
+
+:::

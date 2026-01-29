@@ -1,0 +1,96 @@
+---
+title: "Analysis: Gene Set Enrichment Analysis"
+format: html
+---
+
+```{r}
+#| echo: false
+#| results: hide
+#| warning: false
+#| error: false
+#| message: false
+library(tidyverse)
+library(DT)
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+# GSEA
+# Get full GSEA table
+gsea_table_file <- dir(
+  "analysis_gsea",
+  pattern = "^.*\\.gsea\\.full\\.csv$",
+  recursive = TRUE,
+  full.names = TRUE
+)[1]
+gsea_table <- read_csv(gsea_table_file)
+
+# Get cohort ID
+cohort_id <- gsub("^analysis_gsea\\/(.*)\\.gsea\\.full\\.csv$", "\\1", gsea_table_file)
+
+# Get reduced GSEA table
+gsea_reduced_table_file <- paste0("analysis_gsea/", cohort_id, ".gsea.full.reduced.csv")
+gsea_reduced_table <- read_csv(gsea_reduced_table_file)
+
+# Remove unnecessary columns
+retain_cols <- c(
+  "geneSet",
+  "description",
+  "test_group",
+  "ref_group",
+  "enrichmentScore",
+  "normalizedEnrichmentScore",
+  "size",
+  "pValue",
+  "FDR"
+)
+retain_cols_names <- c(
+  "Gene Set ID",
+  "Gene Set Description",
+  "Test Group",
+  "Reference Group",
+  "Raw Enrichment Score",
+  "Normalised Enrichment Score",
+  "Gene Set Size",
+  "p-value",
+  "FDR-Adjusted p-value"
+)
+
+gsea_table <- gsea_table %>%
+  select(all_of(retain_cols)) %>%
+  mutate(across(where(is.numeric), ~ round(.x, 4)))
+gsea_reduced_table <- gsea_reduced_table %>%
+  select(all_of(retain_cols)) %>%
+  mutate(across(where(is.numeric), ~ round(.x, 4)))
+
+# Get all comparisons
+all_comparisons <- gsea_table %>%
+  unite(comparison, test_group, ref_group, sep = " vs. ") %>%
+  select(comparison) %>%
+  unique() %>%
+  .$comparison
+
+# Get GSEA plots
+# TODO
+```
+
+#### Dataset name: `{r} cohort_id`
+
+#### All comparisons made:
+
+```{r}
+#| echo: false
+#| results: asis
+for (cmp in all_comparisons) {
+  cat("- ")
+  cat(cmp)
+  cat("\n")
+}
+```
+
+### GSEA expression results
+
+# TODO: USE TABSETS
