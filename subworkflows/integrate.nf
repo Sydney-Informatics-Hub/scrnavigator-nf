@@ -23,6 +23,7 @@ workflow INTEGRATE {
 
     emit:
     integrated_rds = CLUSTER_INTEGRATED.out.integrated_rds
-    qc_results = CLUSTER_INTEGRATED.out.qc_results
+    qc_results = INTEGRATION.out.qc_results
+    cluster_qc_results = CLUSTER_INTEGRATED.out.qc_results
     gene_symbols = INTEGRATION.out.gene_symbols
 }

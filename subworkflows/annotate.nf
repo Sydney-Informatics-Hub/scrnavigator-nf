@@ -114,6 +114,10 @@ workflow ANNOTATE {
 
     ANNOTATE_CLUSTERS(cluster_annotation_in)
 
+    all_available_annotations = ANNOTATE_CELL_CYCLE.out.available_annotations
+        .mix(ANNOTATE_DATABASE.out.available_annotations)
+        .mix(ANNOTATE_CUSTOM.out.available_annotations)
+
     // Return cluster-annotated RDS if any annotation was performed,
     // otherwise return no RDS
     emit:
@@ -122,4 +126,5 @@ workflow ANNOTATE {
     db_annotation_qc_results = ANNOTATE_DATABASE.out.qc_results
     custom_annotation_qc_results = ANNOTATE_CUSTOM.out.qc_results
     cluster_annotation_qc_results = ANNOTATE_CLUSTERS.out.qc_results
+    available_annotations = all_available_annotations
 }

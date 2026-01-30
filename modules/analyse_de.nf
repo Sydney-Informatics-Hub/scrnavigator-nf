@@ -10,7 +10,7 @@ process ANALYSE_DE {
     output:
     tuple val(cohort_name), path("${cohort_name}.de.full.Rds"), emit: de_rds
     tuple val(cohort_name), path("${cohort_name}.de.full.csv"), emit: de_csv
-    tuple val(cohort_name), path("results")
+    tuple val(cohort_name), path("results"), emit: de_results
 
     script:
     def fc_thresh_param = fc_thresh == null ? '' : fc_thresh

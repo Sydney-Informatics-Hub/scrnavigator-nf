@@ -10,6 +10,7 @@ include { ORA } from './modules/ora'
 include { GSEA } from './modules/gsea'
 include { ANALYSE_ORA } from './modules/analyse_ora'
 include { ANALYSE_GSEA } from './modules/analyse_gsea'
+include { REPORT } from './modules/report'
 
 // Required pipeline parameters
 params.help = false
@@ -222,6 +223,94 @@ workflow {
     }
 
     // Summary report
-    // MULTIQC()
+    // Collect all results
+    // QC - one or more 'qc_results' directories per stage
+    // Collect each set of directories into a single tuple
+    // If the stage wasn't run, create an empty nested tuple (for merging purposes)
+    qc_filter_results = QUALITY_CONTROL.out.filter_qc_results
+        .collect()
+        .map { dirs -> [ dirs ] }
+        .ifEmpty([[]])
+    qc_cluster_results = QUALITY_CONTROL.out.cluster_qc_results
+        .collect()
+        .map { dirs -> [ dirs ] }
+        .ifEmpty([[]])
+    qc_doublet_results = DETECT_DOUBLETS.out.qc_results
+        .collect()
+        .map { dirs -> [ dirs ] }
+        .ifEmpty([[]])
+    // Integration
+    // From now on, only one output directory per stage
+    integration_qc_results = INTEGRATE.out.qc_results
+        .ifEmpty([[]])
+    integration_cluster_results = INTEGRATE.out.cluster_qc_results
+        .ifEmpty([[]])
+    // Annotation
+    annotation_cc_results = ANNOTATE.out.cell_cycle_annotation_qc_results
+        .ifEmpty([[]])
+    annotation_db_results = ANNOTATE.out.db_annotation_qc_results
+        .ifEmpty([[]])
+    annotation_custom_results = ANNOTATE.out.custom_annotation_qc_results
+        .ifEmpty([[]])
+    annotation_clusters_results = ANNOTATE.out.cluster_annotation_qc_results
+        .ifEmpty([[]])
+    // Analysis
+    analysis_pseudo_comparison_groups = PSEUDOBULK.out.comparison_groups
+        .ifEmpty([[]])
+    analysis_de_results = ANALYSE_DE.out.de_csv
+        .mix(ANALYSE_DE.out.de_results)
+        .collect()
+        .map { res -> [ res ] }
+        .ifEmpty([[]])
+    analysis_gsea_results = ANALYSE_GSEA.out.gsea_csv
+        .mix(ANALYSE_GSEA.out.gsea_reduced_csv)
+        .mix(ANALYSE_GSEA.out.gsea_plots)
+        .collect()
+        .map { res -> [ res ] }
+        .ifEmpty([[]])
+    analysis_ora_results = ANALYSE_ORA.out.ora_csv
+        .mix(ANALYSE_GSEA.out.ora_reduced_csv)
+        .mix(ANALYSE_GSEA.out.ora_plots)
+        .collect()
+        .map { res -> [ res ] }
+        .ifEmpty([[]])
+    // Available annotation files
+    available_annotation_files = ANNOTATE.out.available_annotations
+        .collect()
+        .map { anns -> [ anns ] }
+        .ifEmpty([[]])
 
+    // Gather additional metadata
+    report_metadata = samplesheet
+        .map { row -> row.meta.keySet() }
+        .flatten()
+        .unique()
+        .collect()
+        .map { meta_fields -> [ meta_fields ] }
+        .merge(integrated_resolution)
+        .merge(pseudo_groups)
+        .map { meta, int_res, pseudo -> [ meta_fields: meta, integration_resolution: int_res, pseudo_groups: pseudo ] }
+
+    // Gather all report templates
+    report_templates = channel.of([[]])  // TODO
+
+    // Run the report module
+    report_input = cohort_id
+        .merge(report_metadata)
+        .merge(report_templates)
+        .merge(qc_filter_results)
+        .merge(qc_cluster_results)
+        .merge(qc_doublet_results)
+        .merge(integration_qc_results)
+        .merge(integration_cluster_results)
+        .merge(annotation_cc_results)
+        .merge(annotation_db_results)
+        .merge(annotation_custom_results)
+        .merge(annotation_clusters_results)
+        .merge(analysis_pseudo_comparison_groups)
+        .merge(analysis_de_results)
+        .merge(analysis_gsea_results)
+        .merge(analysis_ora_results)
+        .merge(available_annotation_files)
+    REPORT(report_input)
 }
