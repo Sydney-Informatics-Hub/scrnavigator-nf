@@ -1,5 +1,5 @@
 ---
-title: "Analysis: Gene Set Enrichment Analysis"
+title: "Analysis: Over-Representation Analysis"
 format: html
 ---
 
@@ -18,22 +18,22 @@ library(DT)
 #| warning: false
 #| error: false
 #| message: false
-# GSEA
-# Get full GSEA table
-gsea_table_file <- dir(
-  "analysis_gsea",
-  pattern = "^.*\\.gsea\\.full\\.csv$",
+# ORA
+# Get full ORA table
+ora_table_file <- dir(
+  "analysis_ora",
+  pattern = "^.*\\.ora\\.full\\.csv$",
   recursive = TRUE,
   full.names = TRUE
 )[1]
-gsea_table <- read_csv(gsea_table_file)
+ora_table <- read_csv(ora_table_file)
 
 # Get cohort ID
-cohort_id <- gsub("^analysis_gsea\\/(.*)\\.gsea\\.full\\.csv$", "\\1", gsea_table_file)
+cohort_id <- gsub("^analysis_ora\\/(.*)\\.ora\\.full\\.csv$", "\\1", ora_table_file)
 
 # Get reduced GSEA table
-gsea_reduced_table_file <- paste0("analysis_gsea/", cohort_id, ".gsea.full.reduced.csv")
-gsea_reduced_table <- read_csv(gsea_reduced_table_file)
+ora_reduced_table_file <- paste0("analysis_ora/", cohort_id, ".ora.full.reduced.csv")
+ora_reduced_table <- read_csv(ora_reduced_table_file)
 
 # Remove unnecessary columns
 retain_cols <- c(
@@ -41,9 +41,9 @@ retain_cols <- c(
   "description",
   "test_group",
   "ref_group",
-  "enrichmentScore",
-  "normalizedEnrichmentScore",
+  "enrichmentRatio",
   "size",
+  "overlap",
   "pValue",
   "FDR"
 )
@@ -52,22 +52,22 @@ retain_cols_names <- c(
   "Gene Set Description",
   "Test Group",
   "Reference Group",
-  "Raw Enrichment Score",
-  "Normalised Enrichment Score",
+  "Enrichment Ratio",
   "Gene Set Size",
+  "# Input Genes in Set",
   "p-value",
   "FDR-Adjusted p-value"
 )
 
-gsea_table <- gsea_table %>%
+ora_table <- ora_table %>%
   select(all_of(retain_cols)) %>%
   mutate(across(where(is.numeric), ~ round(.x, 4)))
-gsea_reduced_table <- gsea_reduced_table %>%
+ora_reduced_table <- ora_reduced_table %>%
   select(all_of(retain_cols)) %>%
   mutate(across(where(is.numeric), ~ round(.x, 4)))
 
 # Get all comparisons
-unique_comparisons <- gsea_table %>%
+unique_comparisons <- ora_table %>%
   select(test_group, ref_group) %>%
   unique()
 all_comparisons <- unique_comparisons %>%
@@ -78,9 +78,9 @@ all_comparisons_str <- unique_comparisons %>%
   .$comparison
 names(all_comparisons_str) <- all_comparisons
 
-# Get GSEA plots
-gsea_plots <- sapply(all_comparisons_str, function(cmp) {
-  paste0("analysis_gsea/plots/", cohort_id, ".gsea.", cmp, ".png")
+# Get ORA plots
+ora_plots <- sapply(all_comparisons_str, function(cmp) {
+  paste0("analysis_ora/plots/", cohort_id, ".ora.", cmp, ".png")
 })
 ```
 
@@ -98,7 +98,7 @@ for (cmp in all_comparisons) {
 }
 ```
 
-### GSEA expression results
+### ORA expression results
 
 :::panel-tabset
 
@@ -107,10 +107,10 @@ for (cmp in all_comparisons) {
 purrr::walk(
   sort(all_comparisons),
   function(n) {
-    p <- gsea_plots[[n]]
+    p <- ora_plots[[n]]
     cat(paste("####", n, "\n\n"))
-    cat(paste("#####", "Gene Set Enrichment Analysis Results:", n))
-    cat(paste0('<img src="', p, '" alt="gsea results: ', n, '" width="100%">\n\n'))
+    cat(paste("#####", "Over-Representation Analysis Results:", n))
+    cat(paste0('<img src="', p, '" alt="ora results: ', n, '" width="100%">\n\n'))
   }
 )
 ```

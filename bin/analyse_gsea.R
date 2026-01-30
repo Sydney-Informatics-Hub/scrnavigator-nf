@@ -33,7 +33,7 @@ gsea_plots <- lapply(reduced_gsea_results_split, function(x) {
     ggplot(aes(x = reorder(description, normalizedEnrichmentScore), y = normalizedEnrichmentScore, fill = direction)) +
     geom_bar(stat = "identity") +
     xlab(element_blank()) +
-    ylab("log2 Enrichment Ratio") +
+    ylab("Normalised Enrichment Score") +
     theme(
       axis.title.x = element_text(size = 16),
       axis.text.y = element_text(size = 12),
