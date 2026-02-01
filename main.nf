@@ -269,8 +269,8 @@ workflow {
         .map { res -> [ res ] }
         .ifEmpty([[]])
     analysis_ora_results = ANALYSE_ORA.out.ora_csv
-        .mix(ANALYSE_GSEA.out.ora_reduced_csv)
-        .mix(ANALYSE_GSEA.out.ora_plots)
+        .mix(ANALYSE_ORA.out.ora_reduced_csv)
+        .mix(ANALYSE_ORA.out.ora_plots)
         .collect()
         .map { res -> [ res ] }
         .ifEmpty([[]])
