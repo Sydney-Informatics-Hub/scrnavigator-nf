@@ -292,7 +292,66 @@ workflow {
         .map { meta, int_res, pseudo -> [ meta_fields: meta, integration_resolution: int_res, pseudo_groups: pseudo ] }
 
     // Gather all report templates
-    report_templates = channel.of([[]])  // TODO
+    qc_filter_template = channel.fromPath("${projectDir}/assets/qc_filter.qmd")
+        .merge(qc_filter_results)
+        .filter { _t, r -> !!r }
+        .map { t, _r -> t }
+    qc_cluster_template = channel.fromPath("${projectDir}/assets/qc_cluster.qmd")
+        .merge(qc_cluster_results)
+        .filter { _t, r -> !!r }
+        .map { t, _r -> t }
+    qc_doublet_template = channel.fromPath("${projectDir}/assets/qc_doublet_filter.qmd")
+        .merge(qc_doublet_results)
+        .filter { _t, r -> !!r }
+        .map { t, _r -> t }
+    integration_qc_template = channel.fromPath("${projectDir}/assets/integration_qc.qmd")
+        .merge(integration_qc_results)
+        .filter { _t, r -> !!r }
+        .map { t, _r -> t }
+    integration_cluster_template = channel.fromPath("${projectDir}/assets/integration_cluster.qmd")
+        .merge(integration_cluster_results)
+        .filter { _t, r -> !!r }
+        .map { t, _r -> t }
+    annotation_results = annotation_cc_results
+        .mix(annotation_db_results)
+        .mix(annotation_custom_results)
+        .mix(annotation_clusters_results)
+        .flatten()
+        .collect()
+        .map { res -> [ res ] }
+    annotation_template = channel.fromPath("${projectDir}/assets/annotation.qmd")
+        .merge(annotation_results)
+        .filter { _t, r -> !!r }
+        .map { t, _r -> t }
+    analysis_pseudo_template = channel.fromPath("${projectDir}/assets/analysis_pseudo.qmd")
+        .merge(analysis_pseudo_comparison_groups)
+        .filter { _t, r -> !!r }
+        .map { t, _r -> t }
+    analysis_de_template = channel.fromPath("${projectDir}/assets/analysis_de.qmd")
+        .merge(analysis_de_results)
+        .filter { _t, r -> !!r }
+        .map { t, _r -> t }
+    analysis_gsea_template = channel.fromPath("${projectDir}/assets/analysis_gsea.qmd")
+        .merge(analysis_gsea_results)
+        .filter { _t, r -> !!r }
+        .map { t, _r -> t }
+    analysis_ora_template = channel.fromPath("${projectDir}/assets/analysis_ora.qmd")
+        .merge(analysis_ora_results)
+        .filter { _t, r -> !!r }
+        .map { t, _r -> t }
+        .map { t, _r -> t }
+    report_templates = qc_filter_template
+        .mix(qc_cluster_template)
+        .mix(qc_doublet_template)
+        .mix(integration_qc_template)
+        .mix(integration_cluster_template)
+        .mix(annotation_template)
+        .mix(analysis_pseudo_template)
+        .mix(analysis_de_template)
+        .mix(analysis_gsea_template)
+        .mix(analysis_ora_template)
+        .collect()
+        .map { tmp -> [ tmp ] }
 
     // Run the report module
     report_input = cohort_id
