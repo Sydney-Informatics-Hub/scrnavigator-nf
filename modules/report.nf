@@ -10,7 +10,7 @@ process REPORT {
         path(report_templates),
         path(qc_filter_results, stageAs: "qc_filter/??"),
         path(qc_cluster_results, stageAs: "qc_cluster/??"),
-        path(qc_doublet_results, stageAs: "qc_doublet/??"),
+        path(qc_doublet_results, stageAs: "qc_doublets/??"),
         path(integration_qc_results, stageAs: "integration_qc"),
         path(integration_cluster_results, stageAs: "integration_cluster"),
         path(annotation_cc_results, stageAs: "annotation_cc"),
