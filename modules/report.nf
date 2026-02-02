@@ -40,7 +40,7 @@ process REPORT {
     fi
 
     # Generate quarto config
-    create_quart_yml.py
+    create_quarto_yml.py
 
     # Render the quarto website
     quarto render .
