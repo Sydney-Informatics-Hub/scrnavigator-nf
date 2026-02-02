@@ -306,6 +306,7 @@ workflow {
         .map { meta, int_res, pseudo -> [ meta_fields: meta, integration_resolution: int_res, pseudo_groups: pseudo ] }
 
     // Gather all report templates
+    index_template = channel.fromPath("${projectDir}/assets/index.qmd", checkIfExists: true)
     qc_filter_template = channel.fromPath("${projectDir}/assets/qc_filter.qmd", checkIfExists: true)
         .merge(qc_filter_results)
         .filter { _t, r -> !!r }
