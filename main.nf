@@ -355,7 +355,8 @@ workflow {
         .filter { _t, r -> !!r }
         .map { t, _r -> t }
         .map { t, _r -> t }
-    report_templates = qc_filter_template
+    report_templates = index_template
+        .mix(qc_filter_template)
         .mix(qc_cluster_template)
         .mix(qc_doublet_template)
         .mix(integration_qc_template)
