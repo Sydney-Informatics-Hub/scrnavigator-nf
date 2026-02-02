@@ -366,6 +366,7 @@ workflow {
         .mix(analysis_ora_template)
         .collect()
         .map { tmp -> [ tmp ] }
+    report_style = channel.fromPath("${projectDir}/assets/styles.scss")
 
     // Run the report module
     report_input = cohort_id
@@ -385,5 +386,6 @@ workflow {
         .merge(analysis_gsea_results)
         .merge(analysis_ora_results)
         .merge(available_annotation_files)
+        .merge(report_style)
     REPORT(report_input)
 }
