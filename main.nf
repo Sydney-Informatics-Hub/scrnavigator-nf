@@ -228,54 +228,68 @@ workflow {
     // Collect each set of directories into a single tuple
     // If the stage wasn't run, create an empty nested tuple (for merging purposes)
     qc_filter_results = QUALITY_CONTROL.out.filter_qc_results
+        .map { _smp, qc_dir -> qc_dir }
         .collect()
         .map { dirs -> [ dirs ] }
         .ifEmpty([[]])
     qc_cluster_results = QUALITY_CONTROL.out.cluster_qc_results
+        .map { _smp, qc_dir -> qc_dir }
         .collect()
         .map { dirs -> [ dirs ] }
         .ifEmpty([[]])
     qc_doublet_results = DETECT_DOUBLETS.out.qc_results
+        .map { _smp, qc_dir -> qc_dir }
         .collect()
         .map { dirs -> [ dirs ] }
         .ifEmpty([[]])
     // Integration
     // From now on, only one output directory per stage
     integration_qc_results = INTEGRATE.out.qc_results
+        .map { _cohort, qc_dir -> qc_dir }
         .ifEmpty([[]])
     integration_cluster_results = INTEGRATE.out.cluster_qc_results
+        .map { _cohort, qc_dir -> qc_dir }
         .ifEmpty([[]])
     // Annotation
     annotation_cc_results = ANNOTATE.out.cell_cycle_annotation_qc_results
+        .map { _cohort, qc_dir -> qc_dir }
         .ifEmpty([[]])
     annotation_db_results = ANNOTATE.out.db_annotation_qc_results
+        .map { _cohort, qc_dir -> qc_dir }
         .ifEmpty([[]])
     annotation_custom_results = ANNOTATE.out.custom_annotation_qc_results
+        .map { _cohort, qc_dir -> qc_dir }
         .ifEmpty([[]])
     annotation_clusters_results = ANNOTATE.out.cluster_annotation_qc_results
+        .map { _cohort, qc_dir -> qc_dir }
         .ifEmpty([[]])
     // Analysis
     analysis_pseudo_comparison_groups = PSEUDOBULK.out.comparison_groups
+        .map { _cohort, cmp_file -> cmp_file }
         .ifEmpty([[]])
     analysis_de_results = ANALYSE_DE.out.de_csv
         .mix(ANALYSE_DE.out.de_results)
+        .map { _cohort, out_file -> out_file }
         .collect()
         .map { res -> [ res ] }
         .ifEmpty([[]])
     analysis_gsea_results = ANALYSE_GSEA.out.gsea_csv
         .mix(ANALYSE_GSEA.out.gsea_reduced_csv)
         .mix(ANALYSE_GSEA.out.gsea_plots)
+        .map { _cohort, out_file -> out_file }
         .collect()
         .map { res -> [ res ] }
         .ifEmpty([[]])
     analysis_ora_results = ANALYSE_ORA.out.ora_csv
         .mix(ANALYSE_ORA.out.ora_reduced_csv)
         .mix(ANALYSE_ORA.out.ora_plots)
+        .map { _cohort, out_file -> out_file }
         .collect()
         .map { res -> [ res ] }
         .ifEmpty([[]])
     // Available annotation files
     available_annotation_files = ANNOTATE.out.available_annotations
+        .map { _cohort, ann_file -> ann_file }
         .collect()
         .map { anns -> [ anns ] }
         .ifEmpty([[]])
