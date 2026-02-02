@@ -306,23 +306,23 @@ workflow {
         .map { meta, int_res, pseudo -> [ meta_fields: meta, integration_resolution: int_res, pseudo_groups: pseudo ] }
 
     // Gather all report templates
-    qc_filter_template = channel.fromPath("${projectDir}/assets/qc_filter.qmd")
+    qc_filter_template = channel.fromPath("${projectDir}/assets/qc_filter.qmd", checkIfExists: true)
         .merge(qc_filter_results)
         .filter { _t, r -> !!r }
         .map { t, _r -> t }
-    qc_cluster_template = channel.fromPath("${projectDir}/assets/qc_cluster.qmd")
+    qc_cluster_template = channel.fromPath("${projectDir}/assets/qc_cluster.qmd", checkIfExists: true)
         .merge(qc_cluster_results)
         .filter { _t, r -> !!r }
         .map { t, _r -> t }
-    qc_doublet_template = channel.fromPath("${projectDir}/assets/qc_doublet_filter.qmd")
+    qc_doublet_template = channel.fromPath("${projectDir}/assets/qc_doublets.qmd", checkIfExists: true)
         .merge(qc_doublet_results)
         .filter { _t, r -> !!r }
         .map { t, _r -> t }
-    integration_qc_template = channel.fromPath("${projectDir}/assets/integration_qc.qmd")
+    integration_qc_template = channel.fromPath("${projectDir}/assets/integration_qc.qmd", checkIfExists: true)
         .merge(integration_qc_results)
         .filter { _t, r -> !!r }
         .map { t, _r -> t }
-    integration_cluster_template = channel.fromPath("${projectDir}/assets/integration_cluster.qmd")
+    integration_cluster_template = channel.fromPath("${projectDir}/assets/integration_cluster.qmd", checkIfExists: true)
         .merge(integration_cluster_results)
         .filter { _t, r -> !!r }
         .map { t, _r -> t }
@@ -333,23 +333,23 @@ workflow {
         .flatten()
         .collect()
         .map { res -> [ res ] }
-    annotation_template = channel.fromPath("${projectDir}/assets/annotation.qmd")
+    annotation_template = channel.fromPath("${projectDir}/assets/annotation.qmd", checkIfExists: true)
         .merge(annotation_results)
         .filter { _t, r -> !!r }
         .map { t, _r -> t }
-    analysis_pseudo_template = channel.fromPath("${projectDir}/assets/analysis_pseudo.qmd")
+    analysis_pseudo_template = channel.fromPath("${projectDir}/assets/analysis_pseudo.qmd", checkIfExists: true)
         .merge(analysis_pseudo_comparison_groups)
         .filter { _t, r -> !!r }
         .map { t, _r -> t }
-    analysis_de_template = channel.fromPath("${projectDir}/assets/analysis_de.qmd")
+    analysis_de_template = channel.fromPath("${projectDir}/assets/analysis_de.qmd", checkIfExists: true)
         .merge(analysis_de_results)
         .filter { _t, r -> !!r }
         .map { t, _r -> t }
-    analysis_gsea_template = channel.fromPath("${projectDir}/assets/analysis_gsea.qmd")
+    analysis_gsea_template = channel.fromPath("${projectDir}/assets/analysis_gsea.qmd", checkIfExists: true)
         .merge(analysis_gsea_results)
         .filter { _t, r -> !!r }
         .map { t, _r -> t }
-    analysis_ora_template = channel.fromPath("${projectDir}/assets/analysis_ora.qmd")
+    analysis_ora_template = channel.fromPath("${projectDir}/assets/analysis_ora.qmd", checkIfExists: true)
         .merge(analysis_ora_results)
         .filter { _t, r -> !!r }
         .map { t, _r -> t }
