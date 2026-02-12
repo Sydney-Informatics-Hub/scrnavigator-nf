@@ -52,8 +52,8 @@
                 },
                 "cluster_method": {
                     "type": "string",
-                    "description": "Method to use for clustering. Either 'louvain' or 'leiden' (default: 'louvain').",
-                    "default": "louvain",
+                    "description": "Method to use for clustering. Either 'louvain' or 'leiden' (default: 'leiden').",
+                    "default": "leiden",
                     "enum": ["louvain", "leiden"]
                 },
                 "species": {
