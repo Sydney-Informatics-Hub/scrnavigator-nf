@@ -7,6 +7,7 @@ RUN apt update && \
     wget -O /install/quarto-1.8.27-linux-amd64.deb https://github.com/quarto-dev/quarto-cli/releases/download/v1.8.27/quarto-1.8.27-linux-amd64.deb && \
     dpkg -i /install/quarto-1.8.27-linux-amd64.deb && \
     apt install -y procps \
+        python3-yaml \
         libcurl4-openssl-dev \
         libssl-dev \
         libfontconfig1-dev \
