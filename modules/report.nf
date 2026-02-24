@@ -33,6 +33,7 @@ process REPORT {
     def meta_fields = (metadata.meta_fields == null) ? '' : metadata.meta_fields.join('\n')
     """
     # Save important metadata to file for reporting
+    mkdir -p available_annotations
     echo "${int_res}" > integration_resolution.txt
     echo -e "${pseudo_groups}" > pseudo_groups.txt
     echo -e "${meta_fields}" > available_annotations/metadata.txt
@@ -42,6 +43,10 @@ process REPORT {
 
     # Generate quarto config
     create_quarto_yml.py
+
+    # Create a cache dir for quarto
+    mkdir -p .cache
+    export XDG_CACHE_HOME="\${PWD}/.cache"
 
     # Render the quarto website
     quarto render .

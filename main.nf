@@ -156,6 +156,14 @@ workflow {
             cluster_method,
             integrated_resolution
         )
+
+        detect_doublets_qc = DETECT_DOUBLETS.out.qc_results
+        integrate_qc = INTEGRATE.out.qc_results
+        integrate_cluster_qc = INTEGRATE.out.cluster_qc_results
+    } else {
+        detect_doublets_qc = channel.empty()
+        integrate_qc = channel.empty()
+        integrate_cluster_qc = channel.empty()
     }
 
     if (!params.qc_only && !params.no_analysis) {
@@ -220,6 +228,36 @@ workflow {
         all_gsea_results = GSEA.out.gsea_rds
             .groupTuple()
         ANALYSE_GSEA(all_gsea_results)
+
+        annotate_cc_qc = ANNOTATE.out.cell_cycle_annotation_qc_results
+        annotate_db_qc = ANNOTATE.out.db_annotation_qc_results
+        annotate_custom_qc = ANNOTATE.out.custom_annotation_qc_results
+        annotate_cluster_qc = ANNOTATE.out.cluster_annotation_qc_results
+        pseudo_comp = PSEUDOBULK.out.comparison_groups
+        de_csv = ANALYSE_DE.out.de_csv
+        de_results = ANALYSE_DE.out.de_results
+        gsea_csv = ANALYSE_GSEA.out.gsea_csv
+        gsea_reduced_csv = ANALYSE_GSEA.out.gsea_reduced_csv
+        gsea_plots = ANALYSE_GSEA.out.gsea_plots
+        ora_csv = ANALYSE_ORA.out.ora_csv
+        ora_reduced_csv = ANALYSE_ORA.out.ora_reduced_csv
+        ora_plots = ANALYSE_ORA.out.ora_plots
+        available_annotations = ANNOTATE.out.available_annotations
+    } else {
+        annotate_cc_qc = channel.empty()
+        annotate_db_qc = channel.empty()
+        annotate_custom_qc = channel.empty()
+        annotate_cluster_qc = channel.empty()
+        pseudo_comp = channel.empty()
+        de_csv = channel.empty()
+        de_results = channel.empty()
+        gsea_csv = channel.empty()
+        gsea_reduced_csv = channel.empty()
+        gsea_plots = channel.empty()
+        ora_csv = channel.empty()
+        ora_reduced_csv = channel.empty()
+        ora_plots = channel.empty()
+        available_annotations = channel.empty()
     }
 
     // Summary report
@@ -237,58 +275,58 @@ workflow {
         .collect()
         .map { dirs -> [ dirs ] }
         .ifEmpty([[]])
-    qc_doublet_results = DETECT_DOUBLETS.out.qc_results
+    qc_doublet_results = detect_doublets_qc
         .map { _smp, qc_dir -> qc_dir }
         .collect()
         .map { dirs -> [ dirs ] }
         .ifEmpty([[]])
     // Integration
     // From now on, only one output directory per stage
-    integration_qc_results = INTEGRATE.out.qc_results
+    integration_qc_results = integrate_qc
         .map { _cohort, qc_dir -> qc_dir }
         .ifEmpty([[]])
-    integration_cluster_results = INTEGRATE.out.cluster_qc_results
+    integration_cluster_results = integrate_cluster_qc
         .map { _cohort, qc_dir -> qc_dir }
         .ifEmpty([[]])
     // Annotation
-    annotation_cc_results = ANNOTATE.out.cell_cycle_annotation_qc_results
+    annotation_cc_results = annotate_cc_qc
         .map { _cohort, qc_dir -> qc_dir }
         .ifEmpty([[]])
-    annotation_db_results = ANNOTATE.out.db_annotation_qc_results
+    annotation_db_results = annotate_db_qc
         .map { _cohort, qc_dir -> qc_dir }
         .ifEmpty([[]])
-    annotation_custom_results = ANNOTATE.out.custom_annotation_qc_results
+    annotation_custom_results = annotate_custom_qc
         .map { _cohort, qc_dir -> qc_dir }
         .ifEmpty([[]])
-    annotation_clusters_results = ANNOTATE.out.cluster_annotation_qc_results
+    annotation_clusters_results = annotate_cluster_qc
         .map { _cohort, qc_dir -> qc_dir }
         .ifEmpty([[]])
     // Analysis
-    analysis_pseudo_comparison_groups = PSEUDOBULK.out.comparison_groups
+    analysis_pseudo_comparison_groups = pseudo_comp
         .map { _cohort, cmp_file -> cmp_file }
         .ifEmpty([[]])
-    analysis_de_results = ANALYSE_DE.out.de_csv
-        .mix(ANALYSE_DE.out.de_results)
+    analysis_de_results = de_csv
+        .mix(de_results)
         .map { _cohort, out_file -> out_file }
         .collect()
         .map { res -> [ res ] }
         .ifEmpty([[]])
-    analysis_gsea_results = ANALYSE_GSEA.out.gsea_csv
-        .mix(ANALYSE_GSEA.out.gsea_reduced_csv)
-        .mix(ANALYSE_GSEA.out.gsea_plots)
+    analysis_gsea_results = gsea_csv
+        .mix(gsea_reduced_csv)
+        .mix(gsea_plots)
         .map { _cohort, out_file -> out_file }
         .collect()
         .map { res -> [ res ] }
         .ifEmpty([[]])
-    analysis_ora_results = ANALYSE_ORA.out.ora_csv
-        .mix(ANALYSE_ORA.out.ora_reduced_csv)
-        .mix(ANALYSE_ORA.out.ora_plots)
+    analysis_ora_results = ora_csv
+        .mix(ora_reduced_csv)
+        .mix(ora_plots)
         .map { _cohort, out_file -> out_file }
         .collect()
         .map { res -> [ res ] }
         .ifEmpty([[]])
     // Available annotation files
-    available_annotation_files = ANNOTATE.out.available_annotations
+    available_annotation_files = available_annotations
         .map { _cohort, ann_file -> ann_file }
         .collect()
         .map { anns -> [ anns ] }
