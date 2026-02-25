@@ -21,6 +21,10 @@ process ANNOTATE_DATABASE {
     # Create annotation samplesheet
     echo -e "${annotation_csv}" > annotation.csv
 
+    # Create a cache dir
+    mkdir -p .cache
+    export XDG_CACHE_HOME="\${PWD}/.cache"
+
     annotate_db.R "${cohort_name}" "${rds_path}" annotation.csv
     """
 }
