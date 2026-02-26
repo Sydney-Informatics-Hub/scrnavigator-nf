@@ -18,10 +18,17 @@ opt_db_file <- args[6]
 de <- readRDS(rds_path)
 
 # Filter the current comparison and for significatn DEGs
-sig_de <- de %>%
+comparison_de <- de %>%
   dplyr::filter(
     test_group == test_group_val,
-    ref_group == ref_group_val,
+    ref_group == ref_group_val
+  )
+
+background_genes <- comparison_de %>%
+  pull(Gene)
+
+sig_de <- comparison_de %>%
+  dplyr::filter(
     sig == "sig"
   )
 
@@ -32,9 +39,6 @@ sig_de <- sig_de %>%
 
 # Only run if there are significantly DE genes
 if (dim(sig_de)[1] > 0) {
-  background_genes <- sig_de %>%
-    pull(Gene)
-
   using_ens_ids <- all(startsWith(sig_de$Gene, "ENS"))
   if (using_ens_ids) {
     gene_type <- "ensembl_gene_id"

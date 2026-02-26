@@ -19,8 +19,8 @@ process REPORT {
         path(annotation_clusters_results, stageAs: "annotation_clusters"),
         path(analysis_pseudo_comparison_groups, stageAs: "analysis_pseudo/*"),
         path(analysis_de_results, stageAs: "analysis_de/*"),
-        path(analysis_gsea_results, stageAs: "analysis_gsea"),
-        path(analysis_ora_results, stageAs: "analysis_ora"),
+        path(analysis_gsea_results, stageAs: "analysis_gsea/*"),
+        path(analysis_ora_results, stageAs: "analysis_ora/*"),
         path(available_annotation_files, stageAs: "available_annotations/??.txt"),
         path(report_style)
 
