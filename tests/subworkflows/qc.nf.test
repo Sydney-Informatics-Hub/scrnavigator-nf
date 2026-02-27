@@ -1,0 +1,72 @@
+nextflow_workflow {
+
+    name "Test Workflow QUALITY_CONTROL"
+    script "subworkflows/qc.nf"
+    workflow "QUALITY_CONTROL"
+
+    test("Should run without failures") {
+
+        when {
+            params {
+                // define parameters here. Example:
+                // outdir = "tests/results"
+            }
+            workflow {
+                """
+                samplesheet = channel.of(
+                    [
+                        sample: 'sample_1_ctrl',
+                        rds_path: "${projectDir}/tests/data/rds/sample_1.ctrl.Rds",
+                        params: [
+                            res: 1,
+                            min_ncount: 0,
+                            max_ncount: null,
+                            min_nfeature: 0,
+                            max_nfeature: null,
+                            min_mt_pct: 0,
+                            max_mt_pct: 1
+                        ],
+                        meta: [ condition: 'ctrl' ],
+                        cells_to_remove: []
+                    ],
+                    [
+                        sample: 'sample_4_stim',
+                        rds_path: "${projectDir}/tests/data/rds/sample_4.stim.Rds",
+                        params: [
+                            res: 1,
+                            min_ncount: 0,
+                            max_ncount: null,
+                            min_nfeature: 0,
+                            max_nfeature: null,
+                            min_mt_pct: 0,
+                            max_mt_pct: 1
+                        ],
+                        meta: [ condition: 'stim' ],
+                        cells_to_remove: []
+                    ],
+                )
+                all_resolutions = channel.value('0.8,1,1.2')
+                cluster_method = channel.value('louvain')
+                species = channel.value('human')
+                ens_db_rds = channel.value([null])
+                annotate_mt = channel.value(true)
+                mt_gene_list = channel.value([null])
+                input[0] = samplesheet
+                input[1] = all_resolutions
+                input[2] = cluster_method
+                input[3] = species
+                input[4] = ens_db_rds
+                input[5] = annotate_mt
+                input[6] = mt_gene_list
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert snapshot(workflow.out.filter_qc_results, workflow.out.cluster_qc_results).match()
+        }
+
+    }
+
+}
