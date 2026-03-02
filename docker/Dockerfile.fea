@@ -1,4 +1,4 @@
-FROM rocker/r-base:4.4.2
+FROM rocker/r-base:4.5.2
 
 RUN apt update && \
     apt install -y procps \
