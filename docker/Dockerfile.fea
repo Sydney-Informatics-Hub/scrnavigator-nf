@@ -1,7 +1,5 @@
 FROM rocker/r-base:4.4.2
 
-COPY install.R /scripts/
-
 RUN apt update && \
     apt install -y procps \
         libcurl4-openssl-dev \
@@ -16,5 +14,12 @@ RUN apt update && \
         libtiff5-dev \
         libjpeg-dev \
         libwebp-dev \
-        libv8-dev && \
-    Rscript --vanilla /scripts/install.R
+        libv8-dev
+
+COPY install.base.R /scripts/
+
+RUN Rscript --vanilla /scripts/install.base.R
+
+COPY install.fea.R /scripts/
+
+RUN Rscript --vanilla /scripts/install.fea.R

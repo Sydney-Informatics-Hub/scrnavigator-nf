@@ -1,0 +1,26 @@
+FROM rocker/r-base:4.4.2
+
+RUN apt update && \
+    apt install -y procps \
+        libcurl4-openssl-dev \
+        libssl-dev \
+        libfontconfig1-dev \
+        libxml2-dev \
+        libhdf5-dev \
+        libharfbuzz-dev \
+        libfribidi-dev \
+        libfreetype6-dev \
+        libpng-dev \
+        libtiff5-dev \
+        libjpeg-dev \
+        libwebp-dev \
+        libv8-dev
+
+COPY install.base.R install.annotate.R install.cluster.R install.de.R install.doublet.R install.fea.R /scripts/
+
+RUN Rscript --vanilla /scripts/install.base.R && \
+    Rscript --vanilla /scripts/install.annotate.R && \
+    Rscript --vanilla /scripts/install.cluster.R && \
+    Rscript --vanilla /scripts/install.de.R && \
+    Rscript --vanilla /scripts/install.doublet.R && \
+    Rscript --vanilla /scripts/install.fea.R
