@@ -3,7 +3,7 @@
 # Install all required packages
 install.packages(
   c(
-    "remotes"
+    "clustree"
   ),
   repos = "https://cran.csiro.au/"
 )

@@ -1,12 +1,6 @@
 #!/usr/bin/env -S Rscript --vanilla
 
 # Install all required packages
-install.packages(
-  c(
-    "BiocManager"
-  ),
-  repos = "https://cran.csiro.au/"
-)
 BiocManager::install(
   c(
     "SingleR",
