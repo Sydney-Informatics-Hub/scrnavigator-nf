@@ -2,7 +2,7 @@ process DETECT_DOUBLETS {
     publishDir "${params.outdir}/qc/${sample}/doublets", mode: 'copy'
     // ext input_size: { new InputFileSizes(rds_path) }
     ext input_size: { rds_path.size() }
-    memory { task.ext.input_size.B * 2 + 1.GB }
+    memory { 16.GB + task.ext.input_size.B * 10 }
 
     input:
     tuple val(sample), path(rds_path, stageAs: "input/*"), val(multiplet_rate), val(default_res), val(all_resolutions), val(cluster_method)

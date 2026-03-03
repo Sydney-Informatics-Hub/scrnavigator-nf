@@ -2,7 +2,7 @@ process INTEGRATION {
     publishDir "${params.outdir}/integration", mode: 'copy'
     // ext input_size: { new InputFileSizes(rds_paths) }
     ext input_size: { rds_paths instanceof Collection ? rds_paths.inject(0) { sum, f -> sum + f.size() } : rds_paths.size() }
-    memory { task.ext.input_size.B * 2 + 1.GB }
+    memory { 16.GB + task.ext.input_size.B * 10 }
 
     input:
     path rds_paths

@@ -2,7 +2,7 @@ process PREPROCESS_RDS {
     publishDir "${params.outdir}/qc/${sample}/preprocess", mode: 'copy'
     // ext input_size: { new InputFileSizes(rds_path) + new InputFileSizes(ens_db_rds) }
     ext input_size: { rds_path.size() + ( ens_db_rds ? ens_db_rds.size() : 0 ) }
-    memory { task.ext.input_size.B * 2 + 1.GB }
+    memory { 4.GB + task.ext.input_size.B * 10 }
 
     input:
     tuple val(sample), path(rds_path), val(meta), val(species), path(ens_db_rds), val(annotate_mt), path(mt_gene_list)

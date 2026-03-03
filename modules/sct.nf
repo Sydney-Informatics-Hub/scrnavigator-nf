@@ -2,7 +2,7 @@ process SCTRANSFORM {
     publishDir "${params.outdir}/qc/${sample}/cluster", mode: 'copy'
     // ext input_size: { new InputFileSizes(rds_path) }
     ext input_size: { rds_path.size() }
-    memory { task.ext.input_size.B * 2 + 1.GB }
+    memory { 8.GB + task.ext.input_size.B * 10 }
 
     input:
     tuple val(sample), path(rds_path), val(default_res), val(all_resolutions), val(cluster_method)

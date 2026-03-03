@@ -2,7 +2,7 @@ process REPORT {
     publishDir "${params.outdir}/report", mode: 'copy'
     // ext input_size: { new InputFileSizes(rds_path) }
     // ext input_size: { rds_path.size() }
-    // memory { task.ext.input_size.B * 2 + 1.GB }
+    memory 4.GB
 
     input:
     tuple val(cohort_name),
