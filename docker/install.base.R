@@ -9,7 +9,7 @@ install.packages(
     "ggrepel",
     "hdf5r",
     "BiocManager",
-    "remotes",
+    "remotes"
   ),
   repos = "https://cran.csiro.au/"
 )
