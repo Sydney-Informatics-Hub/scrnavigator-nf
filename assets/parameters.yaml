@@ -1,0 +1,27 @@
+input: samplesheet.csv
+outdir: results
+qc_only: false
+no_analysis: false
+cohort_id: 'cohort'
+resolutions: '0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4'
+integrated_resolution: 1
+cluster_method: 'louvain'
+species: 'human'
+no_mt: false
+mt_gene_list: null  # Text file containing mitochondrial gene IDs; required for species other than human and mouse
+ens_db_rds: null  # RDS file containing Ensembl IDs and gene symbols for conversion between the two; required for genomes other than GRCh38 and mm10
+s_genes: null  # Text file containing S gene symbols; required for cell cycle annotation of non-human species
+g2m_genes: null  # Text file containing G2M gene symbols; required for cell cycle annotation of non-human species
+annotation_db: null  # RDS file containing annotation database for SingleR; required for automatic cell type annotation of non-human species
+min_cells_for_annotation: 10
+custom_marker_genes: null  # CSV file containing custom marker gene lists for user-defined cell types; required for custom cell type annotation
+custom_annotation_mad_threshold: 1
+cluster_annotation: null  # Overrides the default annotation to apply to each cluster
+cell_type_proportion_threshold: 0.67
+manual_cluster_annotations: null  # Text file containing custom cell types to apply to each cluster
+pseudo_groups: metadata_field_1,metadata_field_2  # Metadata fields to use for pseudobulk grouping
+comparisons: /path/to/comparisons.csv  # CSV containing pseudobulk group levels to compare
+p_value_threshold: 0.05
+fc_threshold: null  # Set if you want to consider low fold-change values as non-significant
+ora_db: null  # RDS file containing custom ORA database
+gsea_db: null  # RDS file containing custom GSEA database
