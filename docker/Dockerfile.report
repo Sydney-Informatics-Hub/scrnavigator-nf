@@ -16,6 +16,10 @@ RUN apt update && \
         libwebp-dev \
         libv8-dev
 
+COPY install.base.R /scripts/
+
+RUN Rscript --vanilla /scripts/install.base.R
+
 COPY install.report.R /scripts/
 
 RUN apt update && \
