@@ -31,31 +31,6 @@ NOTE: The pipeline is currently under active development and usage may change ra
 
 While this pipeline can be run end-to-end, the steps are recommended to be run sequentially, inspecting the data and outputs of a subworkflow to inform the parameters to use the subsequent steps. 
 
-**Example minimal commands**
-
-Run pre-processing and first quality control step:
-
-```bash
-nextflow run main.nf \
-    --input path/to/samplesheet.csv \
-    --outdir results \
-    --species human \
-    --qc_only \
-    --cluster_method louvain \
-    -profile gadi \
-    --gadi_account er01 \
-    --gadi_storage scratch/er01+gdata/er01+gdata/if89 \
-    -c /scratch/er01/PIPE-6945-scrna/test.scrnavigator.opt.config
-```
-
-Example minimal samplesheet:
-
-```console
-sample,rds,sex
-Donor1,/path/to/rds,M
-Donor2,/path/to/rds,F
-```
-
 ### Parameters
 
 Pipeline parameter schema for the scrnavigator-nf Nextflow workflow. Generated using `nf-core pipelines schema docs`.
@@ -104,7 +79,74 @@ Parameters that control the pipeline execution and flow.
 
 ### Quality control and filtering
 
+Run pre-processing and quality control with no cell filtering. Good first pass to understand your data for further filtering.
 
+```bash
+nextflow run main.nf \
+    --input path/to/samplesheet.csv \
+    --outdir qc_results \
+    --species human \
+    --qc_only \
+    --cluster_method louvain \
+    -profile gadi \
+    --gadi_account er01 \
+    --gadi_storage scratch/er01+gdata/er01+gdata/if89 \
+    -c /scratch/er01/PIPE-6945-scrna/test.scrnavigator.opt.config
+```
+
+Example minimal samplesheet:
+
+```console
+sample,rds,sex
+Donor_1,/path/to/rds,M
+Donor_2,/path/to/rds,F
+```
+
+Output:
+
+```
+results                
+├── qc # These contain the intermediate QC results for each sample that are used to generate the report   
+│   ├── Donor_1        
+│   │   ├── cluster # Clustering plots, barcode cell assignment across resolutions  
+│   │   ├── filter  # Low-quality cell filtering metrics
+│   │   └── preprocess 
+│   ├── Donor_2        
+│   │   └── ...
+├── report     
+│   └── report # Interactive HTML reports to explore QC and clustering results
+└── run_info
+```
+
+From inspecting the report from the previous output, identify filtering thresholds for low-quality cells based on the:
+
+* Number of RNA counts (3k - 12k)
+* Features (> 2000)
+* Percentage of mitochondrial genes mapped (< 10%)
+
+Update the samplesheet to include these thresholds. Thresholds with no upper or lower bound are left intentionally blank:
+
+```console
+sample,rds,sex,min_ncount,max_ncount,min_nfeature,max_nfeature,min_mt_pct,max_mt
+Donor_1,/path/to/rds,M,3000,12000,2000,,,10
+Donor_2,/path/to/rds,F,3000,12000,2000,,,10
+```
+
+Re-run QC with the amended samplesheet using the same command and `-resume`:
+
+```bash
+nextflow run main.nf \
+    --input path/to/samplesheet.csv \
+    --outdir qc_results \
+    --species human \
+    --qc_only \
+    --cluster_method louvain \
+    -profile gadi \
+    --gadi_account er01 \
+    --gadi_storage scratch/er01+gdata/er01+gdata/if89 \
+    -c /scratch/er01/PIPE-6945-scrna/test.scrnavigator.opt.config \
+    -resume
+```
 
 ### Doublet detection
 
