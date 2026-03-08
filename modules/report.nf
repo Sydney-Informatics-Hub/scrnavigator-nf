@@ -26,6 +26,7 @@ process REPORT {
 
     output:
     tuple val(cohort_name), path("report"), emit: report
+    tuple val(cohort_name), path("report.tar"), emit: report_tar
 
     script:
     def int_res = (metadata.integration_resolution == null) ? '' : metadata.integration_resolution
@@ -50,5 +51,8 @@ process REPORT {
 
     # Render the quarto website
     quarto render .
+
+    # Tar the report directory
+    tar -cf report.tar report/
     """
 }
