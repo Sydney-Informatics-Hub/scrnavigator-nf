@@ -3,6 +3,7 @@ process GSEA {
     // ext input_size: { new InputFileSizes(de_rds_path) + new InputFileSizes(gsea_db_file) }
     ext input_size: { de_rds_path.size() + ( gsea_db_file ? gsea_db_file.size() : 0 ) }
     memory { 8.GB + task.ext.input_size.B * 10 }
+    container "sydneyinformaticshub/scrnavigator-nf-fea"
 
     input:
     tuple val(cohort_name), path(de_rds_path), val(ref_group), val(test_group), val(species)

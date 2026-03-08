@@ -3,6 +3,7 @@ process REPORT {
     // ext input_size: { new InputFileSizes(rds_path) }
     // ext input_size: { rds_path.size() }
     memory 4.GB
+    container "sydneyinformaticshub/scrnavigator-nf-report"
 
     input:
     tuple val(cohort_name),

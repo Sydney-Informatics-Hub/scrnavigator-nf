@@ -3,6 +3,7 @@ process PSEUDOBULK {
     // ext input_size: { new InputFileSizes(rds_path) }
     ext input_size: { rds_path.size() }
     memory { 8.GB + task.ext.input_size.B * 10 }
+    container "sydneyinformaticshub/scrnavigator-nf-base"
 
     input:
     tuple val(cohort_name), path(rds_path), val(grouping_fields)

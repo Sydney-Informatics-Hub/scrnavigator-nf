@@ -3,6 +3,7 @@ process ANALYSE_DE {
     // ext input_size: { new InputFileSizes(de_rds_paths) }
     ext input_size: { de_rds_paths instanceof Collection ? de_rds_paths.inject(0) { sum, f -> sum + f.size() } : de_rds_paths.size() }
     memory { 4.GB + task.ext.input_size.B * 10 }
+    container "sydneyinformaticshub/scrnavigator-nf-base"
 
     input:
     tuple val(cohort_name), path(de_rds_paths), path(gene_symbols), val(p_thresh), val(fc_thresh)

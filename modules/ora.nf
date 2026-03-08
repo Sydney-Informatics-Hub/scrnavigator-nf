@@ -3,6 +3,7 @@ process ORA {
     // ext input_size: { new InputFileSizes(de_rds_path) + new InputFileSizes(ora_db_file) }
     ext input_size: { de_rds_path.size() + ( ora_db_file ? ora_db_file.size() : 0 ) }
     memory { 8.GB + task.ext.input_size.B * 10 }
+    container "sydneyinformaticshub/scrnavigator-nf-fea"
 
     input:
     tuple val(cohort_name), path(de_rds_path), val(ref_group), val(test_group), val(species)

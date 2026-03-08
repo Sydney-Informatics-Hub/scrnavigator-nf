@@ -3,6 +3,7 @@ process ANNOTATE_CELL_CYCLE {
     // ext input_size: { new InputFileSizes(rds_path) + new InputFileSizes(ens_db_rds) }
     ext input_size: { rds_path.size() + ( ens_db_rds ? ens_db_rds.size() : 0 ) }
     memory { 8.GB + task.ext.input_size.B * 10 }
+    container "sydneyinformaticshub/scrnavigator-nf-annotate"
 
     input:
     tuple val(cohort_name), path(rds_path), val(species), path(s2_genes), path(g2m_genes), path(ens_db_rds)

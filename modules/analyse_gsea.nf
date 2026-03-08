@@ -3,6 +3,7 @@ process ANALYSE_GSEA {
     // ext input_size: { new InputFileSizes(rds_paths) }
     ext input_size: { rds_paths instanceof Collection ? rds_paths.inject(0) { sum, f -> sum + f.size() } : rds_paths.size() }
     memory { 4.GB + task.ext.input_size.B * 10 }
+    container "sydneyinformaticshub/scrnavigator-nf-base"
 
     input:
     tuple val(cohort_name), path(rds_paths)

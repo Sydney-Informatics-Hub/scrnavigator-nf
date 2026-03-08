@@ -3,6 +3,7 @@ process FILTER {
     // ext input_size: { new InputFileSizes(rds_path) }
     ext input_size: { rds_path.size() }
     memory { 4.GB + task.ext.input_size.B * 10 }
+    container "sydneyinformaticshub/scrnavigator-nf-base"
 
     input:
     tuple val(sample), path(rds_path), val(sample_params), path(cells_to_remove)
