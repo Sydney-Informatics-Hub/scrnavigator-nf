@@ -92,33 +92,8 @@ if (is.na(multiplet_rate)) {
 }
 
 # Detect doublets
-if (is.na(params$value[params$param == "res"])) {
-  # If no resolution is applied, select the one that matches
-  ident_nclusters <- n_distinct(so@active.ident)
-  matching_nclusts <- so@meta.data %>%
-    summarise(across(starts_with("SCT"), n_distinct)) %>%
-    pivot_longer(everything(), names_to = "res", values_to = "n") %>%
-    filter(n == ident_nclusters) %>%
-    # If multiple resolutions have the same number of clusters, select
-    # the lowest resolution
-    slice(1)
-  
-  cluster_res_name <- pull(matching_nclusts, res)
-  cluster_res <- as.numeric(gsub("SCT_snn_res.", "", cluster_res_name))
-
-  message(
-    paste0(
-      "No resolution supplied in samplesheet, using the resolution that matches the same number of clusters in `so@active.ident`: ",
-      cluster_res_name  
-    )
-  )
-} else {
-  # Use manually supplied res from samplesheet
-  cluster_res <- as.numeric(params$value[match("res", params$param)])
-  cluster_res_name <- paste0("SCT_snn_res.", cluster_res)
-  message(paste0("Resolution found in samplesheet, using: ", cluster_res_name))
-}
-
+cluster_res <- as.numeric(params$value[match("res", params$param)])
+cluster_res_name <- paste0("SCT_snn_res.", cluster_res)
 so_doublets_detected <- run_doubletfinder_custom(so, cluster_res_name, multiplet_rate)
 
 # Remove doublets
