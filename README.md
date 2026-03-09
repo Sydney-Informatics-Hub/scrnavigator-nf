@@ -98,8 +98,9 @@ Example minimal samplesheet:
 
 ```console
 sample,rds,sex
-Donor_1,/path/to/rds,M
-Donor_2,/path/to/rds,F
+Donor_1,/g/data/er01/test-data/single-cell/human/rds/Donor1_filtered_matrix.seurat.rds
+Donor_2,/g/data/er01/test-data/single-cell/human/rds/Donor2_filtered_matrix.seurat.rds
+Donor_3,/g/data/er01/test-data/single-cell/human/rds/Donor3_filtered_matrix.seurat.rds
 ```
 
 Output:
@@ -127,9 +128,10 @@ From inspecting the report from the previous output, identify filtering threshol
 Update the samplesheet to include these thresholds. Thresholds with no upper or lower bound are left intentionally blank:
 
 ```console
-sample,rds,sex,min_ncount,max_ncount,min_nfeature,max_nfeature,min_mt_pct,max_mt
-Donor_1,/path/to/rds,M,3000,12000,2000,,,10
-Donor_2,/path/to/rds,F,3000,12000,2000,,,10
+sample,rds,sex,min_ncount,max_ncount,min_nfeature,max_nfeature,min_mt_pct,max_mt_pct
+Donor_1,/g/data/er01/test-data/single-cell/human/rds/Donor1_filtered_matrix.seurat.rds,M,3000,12000,2000,20000,,10,1.2
+Donor_2,/g/data/er01/test-data/single-cell/human/rds/Donor2_filtered_matrix.seurat.rds,M,3000,12000,2000,20000,,10,1
+Donor_3,/g/data/er01/test-data/single-cell/human/rds/Donor3_filtered_matrix.seurat.rds,F,3000,12000,2000,20000,,10,1.2
 ```
 
 Re-run QC with the amended samplesheet using the same command and `-resume`:
@@ -137,7 +139,7 @@ Re-run QC with the amended samplesheet using the same command and `-resume`:
 ```bash
 nextflow run main.nf \
     --input path/to/samplesheet.csv \
-    --outdir qc_results \
+    --outdir results \
     --species human \
     --qc_only \
     --cluster_method louvain \
@@ -149,6 +151,16 @@ nextflow run main.nf \
 ```
 
 ### Doublet detection
+
+To conduct the next step after doublet detection, resolutions need to be selected and defined in the samplesheet for each sample. For example, add a new column called `res`:
+
+```console
+sample,rds,sex,min_ncount,max_ncount,min_nfeature,max_nfeature,min_mt_pct,max_mt_pct,res
+Donor_1,/g/data/er01/test-data/single-cell/human/rds/Donor1_filtered_matrix.seurat.rds,M,3000,12000,2000,20000,,10,1.2
+Donor_2,/g/data/er01/test-data/single-cell/human/rds/Donor2_filtered_matrix.seurat.rds,M,3000,12000,2000,20000,,10,1
+Donor_3,/g/data/er01/test-data/single-cell/human/rds/Donor3_filtered_matrix.seurat.rds,F,3000,12000,2000,20000,,10,1.2
+Donor_4,/g/data/er01/test-data/single-cell/human/rds/Donor4_filtered_matrix.seurat.rds,F,3000,12000,2000,20000,,10,0.6
+```
 
 To proceed with doublet detection after conducting QC, replace the `--qc_only` flag with `--no_analysis`:
 

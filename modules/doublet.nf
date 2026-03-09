@@ -14,10 +14,10 @@ process DETECT_DOUBLETS {
 
     script:
     def mr = multiplet_rate == null ? '' : multiplet_rate
-    def res = default_res == null ? '' : default_res
+    assert default_res : 'Error: No default resolution supplied. Ensure each sample in in the samplesheet has a resolution under column name `res`.'
     def params_csv = 'param,value\n' +
         "multiplet_rate,${mr}\n" +
-        "res,${res}\n" +
+        "res,${default_res}\n" +
         "resolutions,${all_resolutions}\n" +
         "cluster_method,${cluster_method}\n"
     """
