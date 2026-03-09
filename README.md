@@ -150,7 +150,34 @@ nextflow run main.nf \
 
 ### Doublet detection
 
+To proceed with doublet detection after conducting QC, replace the `--qc_only` flag with `--no_analysis`:
 
+```bash
+nextflow run main.nf \
+    --input tests/data/human_10x_n4.csv \
+    --outdir qc_results \
+    --species human \
+    --no_analysis \
+    --cluster_method louvain \
+    -profile gadi \
+    --gadi_account er01 \
+    --gadi_storage scratch/er01+gdata/er01+gdata/if89 \
+    -c /scratch/er01/PIPE-6945-scrna/test.scrnavigator.opt.config \
+    -resume
+```
+
+This will use the cached results from the `QUALITY_CONTROL` steps and resume with doublet detection:
+
+```
+executor >  pbspro (4)
+[39/1b16c5] QUALITY_CONTROL:PREPROCESS_RDS (3) [100%] 4 of 4, cached: 4 _
+[81/850960] QUALITY_CONTROL:FILTER (4)         [100%] 4 of 4, cached: 4 _
+[1b/333776] QUALITY_CONTROL:SCTRANSFORM (4)    [100%] 4 of 4, cached: 4 _
+[fa/fd3d60] DETECT_DOUBLETS (4)                [  0%] 0 of 4
+[-        ] INTEGRATE:INTEGRATION              -
+[-        ] INTEGRATE:CLUSTER_INTEGRATED       -
+[-        ] REPORT                             -
+```
 
 ### Dataset integration
 
