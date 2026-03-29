@@ -151,8 +151,7 @@
                 },
                 "fc_threshold": {
                     "type": "number",
-                    "description": "Fold-change threshold for differential expression analysis. No threshold is applied by default.",
-                    "default": null
+                    "description": "Fold-change threshold for differential expression analysis. No threshold is applied by default."
                 },
                 "ora_db": {
                     "type": "string",
