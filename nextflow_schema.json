@@ -13,12 +13,18 @@
             "properties": {
                 "input": {
                     "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/csv",
+                    "pattern": "^\\S+\\.csv$",
                     "description": "Path to the input samplesheet CSV file."
                 },
                 "outdir": {
                     "type": "string",
+                    "format": "directory-path",
                     "description": "Directory to place output files in.",
-                    "default": "results"
+                    "default": "results",
+                    "fa_icon": "fas fa-folder-open"
                 }
             }
         },
@@ -97,6 +103,10 @@
                 },
                 "custom_marker_genes": {
                     "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/csv",
+                    "pattern": "^\\S+\\.csv$",
                     "description": "Path to a CSV file containing custom marker gene sets for annotation of cell types. Must contain two columns: 'cell_type' and 'gene_ids', where 'gene_ids' is a semicolon-delimited list of gene IDs.",
                     "default": null
                 },
@@ -127,6 +137,10 @@
                 },
                 "comparisons": {
                     "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/csv",
+                    "pattern": "^\\S+\\.csv$",
                     "description": "A path to a CSV file containing comparisons to be used for differential expression analysis.",
                     "default": null
                 },
