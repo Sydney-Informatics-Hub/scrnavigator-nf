@@ -14,7 +14,7 @@ process ANALYSE_DE {
     tuple val(cohort_name), path("results"), emit: de_results
 
     script:
-    def fc_thresh_param = fc_thresh == null ? '' : fc_thresh
+    def fc_thresh_param = fc_thresh == null || fc_thresh == 0 ? '' : fc_thresh
     def de_params_csv = 'param,value\n' +
         "p_val_cutoff,${p_thresh}\n" +
         "fc_cutoff,${fc_thresh_param}\n"
