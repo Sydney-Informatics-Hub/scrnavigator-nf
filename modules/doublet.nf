@@ -3,6 +3,7 @@ process DETECT_DOUBLETS {
     // ext input_size: { new InputFileSizes(rds_path) }
     ext input_size: { rds_path.size() }
     memory { 16.GB + task.ext.input_size.B * 10 }
+    container "sydneyinformaticshub/scrnavigator-nf-doublet"
 
     input:
     tuple val(sample), path(rds_path, stageAs: "input/*"), val(multiplet_rate), val(default_res), val(all_resolutions), val(cluster_method)

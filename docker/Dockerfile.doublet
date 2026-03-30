@@ -1,0 +1,26 @@
+FROM rocker/r-base:4.5.2
+
+RUN apt update && \
+    apt install -y procps \
+        libcurl4-openssl-dev \
+        libssl-dev \
+        libfontconfig1-dev \
+        libxml2-dev \
+        libhdf5-dev \
+        libharfbuzz-dev \
+        libfribidi-dev \
+        libfreetype6-dev \
+        libpng-dev \
+        libtiff5-dev \
+        libjpeg-dev \
+        libwebp-dev \
+        libv8-dev \
+        python3-leidenalg
+
+COPY install.base.R /scripts/
+
+RUN Rscript --vanilla /scripts/install.base.R
+
+COPY install.doublet.R /scripts/
+
+RUN Rscript --vanilla /scripts/install.doublet.R

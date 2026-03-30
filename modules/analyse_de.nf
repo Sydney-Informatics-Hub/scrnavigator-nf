@@ -3,6 +3,7 @@ process ANALYSE_DE {
     // ext input_size: { new InputFileSizes(de_rds_paths) }
     ext input_size: { de_rds_paths instanceof Collection ? de_rds_paths.inject(0) { sum, f -> sum + f.size() } : de_rds_paths.size() }
     memory { 4.GB + task.ext.input_size.B * 10 }
+    container "sydneyinformaticshub/scrnavigator-nf-base"
 
     input:
     tuple val(cohort_name), path(de_rds_paths), path(gene_symbols), val(p_thresh), val(fc_thresh)
@@ -13,7 +14,7 @@ process ANALYSE_DE {
     tuple val(cohort_name), path("results"), emit: de_results
 
     script:
-    def fc_thresh_param = fc_thresh == null ? '' : fc_thresh
+    def fc_thresh_param = fc_thresh == null || fc_thresh == 0 ? '' : fc_thresh
     def de_params_csv = 'param,value\n' +
         "p_val_cutoff,${p_thresh}\n" +
         "fc_cutoff,${fc_thresh_param}\n"

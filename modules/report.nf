@@ -3,6 +3,7 @@ process REPORT {
     // ext input_size: { new InputFileSizes(rds_path) }
     // ext input_size: { rds_path.size() }
     memory 4.GB
+    container "sydneyinformaticshub/scrnavigator-nf-report"
 
     input:
     tuple val(cohort_name),
@@ -26,6 +27,7 @@ process REPORT {
 
     output:
     tuple val(cohort_name), path("report"), emit: report
+    tuple val(cohort_name), path("report.tar"), emit: report_tar
 
     script:
     def int_res = (metadata.integration_resolution == null) ? '' : metadata.integration_resolution
@@ -50,5 +52,8 @@ process REPORT {
 
     # Render the quarto website
     quarto render .
+
+    # Tar the report directory
+    tar -cf report.tar report/
     """
 }
