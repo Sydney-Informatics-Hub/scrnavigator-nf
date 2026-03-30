@@ -2,3 +2,22 @@
 title: "scRNAvigator Report"
 format: html
 ---
+
+Thank you for using scRNAvigator!
+
+This website contains a report of your analysis. Depending on what sections of the pipeline were ran, it will include one or more of the following:
+
+- Quality control metrics and plots
+- Doublet detection and filtering results
+- Dataset integration results
+- Cell annotation results
+- Pseudobulking and differential expression results
+- Functional enrichment analysis results
+
+## Cite us
+
+If you use these results in published work, please cite us with:
+
+```
+# TODO: add citation information
+```

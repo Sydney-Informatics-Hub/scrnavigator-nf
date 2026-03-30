@@ -77,7 +77,7 @@ workflow {
     gsea_db                    = !!params.gsea_db                    ? channel.fromPath(params.gsea_db, checkIfExists: true).first()                    : channel.value([])
 
     // Read in samplesheet
-    samplesheet = channel.fromPath(params.input)
+    samplesheet = channel.fromPath(params.input, checkIfExists: true)
         .splitCsv( header: true )
         .map { row -> {
             def sample = row.sample
@@ -408,6 +408,11 @@ workflow {
         .map { tmp -> [ tmp ] }
     report_style = channel.fromPath("${projectDir}/assets/styles.scss")
 
+    // Gather CSV inputs
+    samplesheet_csv = channel.fromPath(params.input, checkIfExists: true)
+    custom_marker_genes_csv = !!params.custom_marker_genes ? channel.fromPath(params.custom_marker_genes, checkIfExists: true) : channel.value([])
+    comparisons_csv = !!params.comparisons ? channel.fromPath(params.comparisons, checkIfExists: true) : channel.value([])
+
     // Run the report module
     report_input = cohort_id
         .merge(report_metadata)
@@ -427,5 +432,5 @@ workflow {
         .merge(analysis_ora_results)
         .merge(available_annotation_files)
         .merge(report_style)
-    REPORT(report_input)
+    REPORT(report_input, samplesheet_csv, custom_marker_genes_csv, comparisons_csv)
 }

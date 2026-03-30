@@ -24,6 +24,9 @@ process REPORT {
         path(analysis_ora_results, stageAs: "analysis_ora/*"),
         path(available_annotation_files, stageAs: "available_annotations/??.txt"),
         path(report_style)
+    path samplesheet
+    path custom_marker_genes
+    path comparisons
 
     output:
     tuple val(cohort_name), path("report"), emit: report
