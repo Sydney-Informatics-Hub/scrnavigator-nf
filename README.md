@@ -100,9 +100,10 @@ Example minimal samplesheet:
 
 ```console
 sample,rds,sex
-Donor_1,/g/data/er01/test-data/single-cell/human/rds/Donor1_filtered_matrix.seurat.rds
-Donor_2,/g/data/er01/test-data/single-cell/human/rds/Donor2_filtered_matrix.seurat.rds
-Donor_3,/g/data/er01/test-data/single-cell/human/rds/Donor3_filtered_matrix.seurat.rds
+Donor_1,/g/data/er01/test-data/single-cell/human/rds/Donor1_filtered_matrix.seurat.rds,M
+Donor_2,/g/data/er01/test-data/single-cell/human/rds/Donor2_filtered_matrix.seurat.rds,M
+Donor_3,/g/data/er01/test-data/single-cell/human/rds/Donor3_filtered_matrix.seurat.rds,F
+Donor_4,/g/data/er01/test-data/single-cell/human/rds/Donor4_filtered_matrix.seurat.rds,F
 ```
 
 Output:
@@ -263,6 +264,11 @@ results/
 
 ### Cell annotation
 
+By default, annotation will use SingleR and the Human Primary Cell Atlas (HPCA) database for cell typing.
+Cells will be automatically assigned to clusters based on the `cell_type_proportion_threshold`. By default, if a cluster contains over 67% of the same cell, it will be classified as that majority identify. Otherwise, clusters will be considered "Ambiguous".
+
+See [How-to customise annotation]() for adding custom markers and databases.
+
 ```bash
 nextflow run main.nf \
     --input path/to/samplesheet.csv \
@@ -275,9 +281,47 @@ nextflow run main.nf \
     -c /scratch/er01/PIPE-6945-scrna/test.scrnavigator.opt.config \
     -resume
 ```
+
+Key outputs:
+
+```
+results/
+├── analysis # NEW
+├── annotation # NEW
+│   ├── cell_cycle
+│   │   ├── available_annotations.txt               # Lists annotation fields added (e.g. 'Phase')
+│   │   ├── cohort.annotated.cell_cycle.rds         # Seurat object with Phase (G1/S/G2M) added to metadata
+│   │   └── qc_results                              # UMAP coloured by cell cycle phase
+│   ├── clusters
+│   │   ├── cohort.annotated.clusters.rds           # Seurat object with cluster_annotation column added to metadata
+│   │   ├── cohort.cluster_cell_type_assignments.csv# Mapping of cluster IDs to consensus cell type labels
+│   │   └── qc_results                              # Cell type proportion dot plots and tables per cluster
+│   └── db
+│       ├── available_annotations.txt               # Lists SingleR annotation fields added (e.g. 'SingleR.hpca_main', 'SingleR.hpca_fine')
+│       ├── cohort.annotated.database.rds           # Seurat object with SingleR cell type annotations added to metadata
+│       └── qc_results                              # UMAP and cell type proportion plots for SingleR annotations
+└── report
+    ├── report # UPDATED: Interactive HTML report
+    └── report.tar
+```
+
 ### Pseudobulking
 
+Pseudobulking is conducted as part of the same step as cell annotation. By default, the pseudobulking will be conducted for each sample and cell identity from the annotation step.
 
+Key outputs:
+
+```
+results/
+├── analysis # NEW
+│   └── pseudobulk # NEW
+│       ├── cohort.comparison_groups.txt            # Table of comparison groups and number of samples per group
+│       └── cohort.pseudobulk.rds                   # Seurat object with summed counts aggregated per sample per group
+├── annotation # NEW
+└── report
+    ├── report # UPDATED: Interactive HTML report
+    └── report.tar
+```
 
 ### Differential expression analysis
 
