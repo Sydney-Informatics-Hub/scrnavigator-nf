@@ -6,6 +6,13 @@ This Nextflow pipeline provides a standardised method for processing and analysi
 
 ## User guide
 
+### Pipeline setup
+
+```bash
+git clone git@github.com:Sydney-Informatics-Hub/scrnavigator-nf.git
+cd scrnavigator-nf
+```
+
 ### Input data
 
 The initial input data that this pipeline requires is one or more RDS files, each containing a Seurat object with the count matrix data for a single sample. [Seurat is an R package](https://satijalab.org/seurat/) that provides a framework for handling and processing single cell RNAseq data.
@@ -16,32 +23,19 @@ The Seurat data object should at the very minimum contain the count matrix data 
 
 This pipeline was designed to work with the filtered output from the [nf-core `scrnaseq` Nextflow pipeline](https://nf-co.re/scrnaseq/). The `scrnaseq` pipeline can handle various scRNAseq datasets, including those from the 10X platform, and will generate RDS files containing the Seurat data required for this pipeline. We highly recommend using the `scrnaseq` pipeline for the initial alignment, counting and pre-processing of your data prior to using this workflow.
 
-#### Example samplesheet
+### Example samplesheet
 
-### Pipeline setup
-
-```bash
-git clone git@github.com:Sydney-Informatics-Hub/scrnavigator-nf.git
-cd scrnavigator-nf
-```
-
-### Usage
-
-NOTE: The pipeline is currently under active development and usage may change rapidly.
-
-While this pipeline can be run end-to-end, the steps are recommended to be run sequentially, inspecting the data and outputs of a subworkflow to inform the parameters to use in the subsequent steps. 
-
-### Parameters
+## Parameters
 
 Pipeline parameter schema for the scrnavigator-nf Nextflow workflow. Generated using `nf-core pipelines schema docs`.
 
-#### Input/output options 
+### Input/output options 
 Parameters that control the pipeline inputs and outputs.                                                                                        
 | Parameter | Description | Type | Default | Required | Hidden |                                                                                
 |-----------|-----------|-----------|-----------|-----------|-----------|                                                                       
 | `input` | Path to the input samplesheet CSV file. | `string` |  | True |  |                                                                   
 | `outdir` | Directory to place output files in. | `string` | results |  |  |                                                                   
-#### Run options                                                                                                                                  
+### Run options                                                                                                                                  
 Parameters that control the pipeline execution and flow.                                                                                        
 | Parameter | Description | Type | Default | Required | Hidden |                                                                                
 |-----------|-----------|-----------|-----------|-----------|-----------|                                                                       
@@ -72,10 +66,18 @@ Parameters that control the pipeline execution and flow.
 | `ora_db` | Path to a .gmt file containing an enrichment database for use with over representation analysis with WebGestaltR. Must contain three tab-delimited columns: category ID, external link, and gene ID. | `string` | None |  |  |
 | `gsea_db` | Path to a .gmt file containing an enrichment database for use with gene set enrichment analysis with WebGestaltR. Must contain three tab-delimited columns: category ID, external link, and gene ID. | `string` | None |  |  |
 
-## Miscellaneous parameters                                                                                                                     
+### Miscellaneous parameters                                                                                                                     
 | Parameter | Description | Type | Default | Required | Hidden |
 |-----------|-----------|-----------|-----------|-----------|-----------|                                                                       
 | `help` | Prints the pipeline help message. | `boolean` |  |  | True |
+
+## Usage
+
+NOTE: The pipeline is currently under active development and usage may change rapidly.
+
+While this pipeline can be run end-to-end, the steps are recommended to be run sequentially, inspecting the data and outputs of a subworkflow to inform the parameters to use in the subsequent steps. 
+
+We recommend reviewing the `index.html` report after each step has run, which compiles the results of each step in an interactive report for convenient EDA.
 
 ### Quality control and filtering
 
@@ -178,14 +180,13 @@ nextflow run main.nf \
     -resume
 ```
 
-This will use the cached results from the `QUALITY_CONTROL` steps and resume with doublet detection:
+This will use the cached results from the `QUALITY_CONTROL` steps and resume with the doublet detection step:
 
 ```
 executor >  pbspro (4)
-[39/1b16c5] QUALITY_CONTROL:PREPROCESS_RDS (3) [100%] 4 of 4, cached: 4 _
-[81/850960] QUALITY_CONTROL:FILTER (4)         [100%] 4 of 4, cached: 4 _gb4d1
-
-[1b/333776] QUALITY_CONTROL:SCTRANSFORM (4)    [100%] 4 of 4, cached: 4 _
+[39/1b16c5] QUALITY_CONTROL:PREPROCESS_RDS (3) [100%] 4 of 4, cached: 4
+[81/850960] QUALITY_CONTROL:FILTER (4)         [100%] 4 of 4, cached: 4
+[1b/333776] QUALITY_CONTROL:SCTRANSFORM (4)    [100%] 4 of 4, cached: 4
 [fa/fd3d60] DETECT_DOUBLETS (4)                [  0%] 0 of 4
 [-        ] INTEGRATE:INTEGRATION              -
 [-        ] INTEGRATE:CLUSTER_INTEGRATED       -
@@ -210,7 +211,7 @@ results
 │   ├── Donor_2
 │   │   └── ...
 ├── report     
-│   └── report # Interactive HTML reports to explore QC and clustering results
+│   └── report # UPDATED: Interactive HTML reports to explore QC and clustering results
 └── run_info
 ```
 
@@ -218,7 +219,7 @@ results
 doublets
 ├── Donor_1.doublets_detected.rds # File which identifies putative doublets, without any filtering
 ├── Donor_1.doublets_removed.sct_clustered.rds # File with doublets removed, re-normalised and clustered.
-└── qc_results # Table and graph summaries of doublet detectin, used in the interactive report.
+└── qc_results # Table and graph summaries of doublet detection, used in the interactive report.
     ├── cluster_cells
     ├── Donor_1.clustree.png
     ├── Donor_1.doublet_proportions_per_cluster.1.png
@@ -239,26 +240,41 @@ doublets
 
 ### Dataset integration
 
-Integration is conducted as part of the doublet detection step with the `--no_analysis` option.
+Integration is conducted as part of the previous step with the `--no_analysis` option.
+
+Key outputs:
 
 ```
-├── clustering
-│   ├── cohort.integrated.clustered.rds # Cont                     
-│   └── qc_results # 
-│       ├── cohort.clustree.png                             
-│       ├── cohort.feature_count_plot.integrated.cluster.png
-│       └── cohort.umap.integrated.clusters.png             
-├── cohort.integrated.rds # File
-├── gene_symbols.Rds                                        
-└── qc_results
-    ├── cohort.umap.integrated.png                          
-    └── cohort.umap.merged.png                              
+results/
+├── integration
+│   ├── clustering
+│   │   ├── cohort.integrated.clustered.rds # Integrated Seurat object with cluster assignments at multiple resolutions
+│   │   └── qc_results                      # Clustree, UMAP, and per-cluster feature/count plots
+│   ├── cohort.integrated.rds               # Integrated Seurat object (integrated, UMAP computed, pre-clustering)
+│   ├── gene_symbols.Rds                    # Dataframe mapping gene symbols to Ensembl IDs for the cohort
+│   └── qc_results
+│       ├── cohort.umap.integrated.png      # UMAP coloured by sample after integration (batch correction applied)
+│       └── cohort.umap.merged.png          # UMAP coloured by sample before integration (merged only)
+└── report
+    └── report
+        ├── index.html                      # UPDATED: Interactive report
+        └── ...
 ```
 
 ### Cell annotation
 
-
-
+```bash
+nextflow run main.nf \
+    --input path/to/samplesheet.csv \
+    --outdir results \
+    --species human \
+    --cluster_method louvain \
+    -profile gadi \
+    --gadi_account er01 \
+    --gadi_storage scratch/er01+gdata/er01+gdata/if89 \
+    -c /scratch/er01/PIPE-6945-scrna/test.scrnavigator.opt.config \
+    -resume
+```
 ### Pseudobulking
 
 
