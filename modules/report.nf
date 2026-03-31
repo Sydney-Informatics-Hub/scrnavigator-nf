@@ -24,9 +24,9 @@ process REPORT {
         path(analysis_ora_results, stageAs: "analysis_ora/*"),
         path(available_annotation_files, stageAs: "available_annotations/??.txt"),
         path(report_style)
-    path samplesheet
-    path custom_marker_genes
-    path comparisons
+    path samplesheet_csv, stageAs: "samplesheets/samplesheet.csv"
+    path custom_marker_genes_csv, stageAs: "samplesheets/custom_marker_genes.csv"
+    path comparisons_csv, stageAs: "samplesheets/comparisons.csv"
 
     output:
     tuple val(cohort_name), path("report"), emit: report
@@ -38,6 +38,7 @@ process REPORT {
     def meta_fields = (metadata.meta_fields == null) ? '' : metadata.meta_fields.join('\n')
     """
     # Save important metadata to file for reporting
+    echo "${cohort_name}" > cohort_name.txt
     mkdir -p available_annotations
     echo "${int_res}" > integration_resolution.txt
     echo -e "${pseudo_groups}" > pseudo_groups.txt

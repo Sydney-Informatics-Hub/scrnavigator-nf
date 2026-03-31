@@ -14,6 +14,146 @@ This website contains a report of your analysis. Depending on what sections of t
 - Pseudobulking and differential expression results
 - Functional enrichment analysis results
 
+```{r}
+#| echo: false
+#| results: hide
+#| warning: false
+#| error: false
+#| message: false
+library(tidyverse)
+library(DT)
+
+# Get cohort name
+cohort_name <- scan("cohort_name.txt", character())[1]
+
+# Read sample sheet
+samplesheet <- read_csv("samplesheets/samplesheet.csv")
+
+# Get samplesheet column names
+samplesheet_cols <- list(
+  sample = "Sample name",
+  rds = "File path",
+  min_ncount = "Min. UMI count",
+  max_ncount = "Max. UMI count",
+  min_nfeature = "Min. gene count",
+  max_nfeature = "Max. gene count",
+  min_mt_pct = "Min. MT gene proportion (%)",
+  max_mt_pct = "Max. MT gene proportion (%)",
+  cells_to_remove = "Cells to remove file path",
+  res = "Sample clustering resolution",
+  multiplet_rate = "Expected multiplet rate"
+)
+
+samplesheet_cols_show <- list(
+  sample = FALSE,
+  rds = FALSE,
+  min_ncount = FALSE,
+  max_ncount = FALSE,
+  min_nfeature = FALSE,
+  max_nfeature = FALSE,
+  min_mt_pct = FALSE,
+  max_mt_pct = FALSE,
+  cells_to_remove = FALSE,
+  res = FALSE,
+  multiplet_rate = FALSE
+)
+
+for (col in colnames(samplesheet)) {
+  samplesheet_cols_show[[col]] <- TRUE
+
+  if (!(col %in% names(samplesheet_cols))) {
+    samplesheet_cols[[col]] <- col
+  }
+}
+
+samplesheet_cols_show$rds <- FALSE
+samplesheet_cols_show$cells_to_remove <- FALSE
+samplesheet_cols_final <- samplesheet_cols[unlist(samplesheet_cols_show)]
+
+samplesheet_show <- samplesheet %>%
+  select(all_of(names(samplesheet_cols_final)))
+
+# Read custom marker genes if present
+custom_marker_genes <- NA
+custom_marker_genes_file <- "samplesheets/custom_marker_genes.csv"
+if (file.exists(custom_marker_genes_file)) {
+  custom_marker_genes <- read_csv(custom_marker_genes_file)
+}
+
+# Read comparisons if present
+comparisons <- NA
+comparisons_file <- "samplesheets/comparisons.csv"
+if (file.exists(comparisons_file)) {
+  comparisons <- read_csv(comparisons_file)
+}
+
+# Get list of pipeline sections that were run
+modules_run <- list(
+  qc_filter = TRUE,
+  doublets = dir.exists("qc_doublets"),
+  integration = dir.exists("integration_qc"),
+  annotation_cc = dir.exists("annotation_cc"),
+  annotation_db = dir.exists("annotation_db"),
+  annotation_custom = dir.exists("annotation_custom"),
+  annotation_cluster = dir.exists("annotation_clusters"),
+  pseudobulk = dir.exists("analysis_pseudo"),
+  de = dir.exists("analysis_de"),
+  gsea = dir.exists("analysis_gsea"),
+  ora = dir.exists("analysis_ora")
+)
+
+module_names <- list(
+  qc_filter = "Quality control and filtering",
+  doublets = "Doublet detection and filtering",
+  integration = "Dataset integration",
+  annotation_cc = "Cell cycle annotation",
+  annotation_db = "Automatic cell type annotation",
+  annotation_custom = "Custom cell type annotation",
+  annotation_cluster = "Cluster annotation",
+  pseudobulk = "Pseudobulking",
+  de = "Differential expression",
+  gsea = "Gene set enrichment analysis",
+  ora = "Over-representation analysis"
+)
+
+modules_run_names <- unlist(module_names[unlist(modules_run)])
+modules_run_names_str <- paste("- ", modules_run_names, collapse = "\n")
+modules_run_names_str <- paste0(modules_run_names_str, "\n")
+```
+
+## Dataset summary
+
+### Cohort name: `{r} cohort_name`
+
+### Sample sheet
+
+The following sample sheet table summarises the metadata and potential filtering thresholds for each sample in the dataset:
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+
+datatable(
+  samplesheet_show,
+  colnames = unname(unlist(samplesheet_cols_final))
+)
+```
+
+The following modules were run for this analysis:
+
+```{r}
+#| echo: false
+#| results: asis
+#| warning: false
+#| error: false
+#| message: false
+
+cat(modules_run_names_str)
+```
+
+
 ## Cite us
 
 If you use these results in published work, please cite us with:
