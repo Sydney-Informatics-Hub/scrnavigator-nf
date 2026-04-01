@@ -152,12 +152,3 @@ The following modules were run for this analysis:
 
 cat(modules_run_names_str)
 ```
-
-
-## Cite us
-
-If you use these results in published work, please cite us with:
-
-```
-# TODO: add citation information
-```
