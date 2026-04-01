@@ -73,15 +73,25 @@ Parameters that control the pipeline execution and flow.
 
 ## Usage
 
-NOTE: The pipeline is currently under active development and usage may change rapidly.
+> **Note:** The pipeline is currently under active development and usage may change rapidly.
 
-While this pipeline can be run end-to-end, the steps are recommended to be run sequentially, inspecting the data and outputs of a subworkflow to inform the parameters to use in the subsequent steps. 
-
-We recommend reviewing the `index.html` report after each step has run, which compiles the results of each step in an interactive report for convenient EDA.
+Run each step sequentially, inspecting the interactive report (`results/report/index.html`) before proceeding to the next. Outputs from each step are cached, so re-running with `-resume` skips completed work.
 
 ### Quality control and filtering
 
-Run pre-processing and quality control with no cell filtering. Good first pass to understand your data for further filtering. The `--qc_only` option conducts only quality control steps to inspect and remove low-quality cells for each sample defined in the samplesheet.
+Start with an unfiltered QC pass to understand the quality characteristics of each sample before applying any cell filters. The `--qc_only` flag runs only the QC subworkflow, producing per-sample metrics to guide threshold selection.
+
+**1. Create a samplesheet** with at minimum a sample name, path to a preprocessed Seurat RDS file, and donor sex:
+
+```console
+sample,rds,sex
+Donor_1,/g/data/er01/test-data/single-cell/human/rds/Donor1_filtered_matrix.seurat.rds,male
+Donor_2,/g/data/er01/test-data/single-cell/human/rds/Donor2_filtered_matrix.seurat.rds,male
+Donor_3,/g/data/er01/test-data/single-cell/human/rds/Donor3_filtered_matrix.seurat.rds,female
+Donor_4,/g/data/er01/test-data/single-cell/human/rds/Donor4_filtered_matrix.seurat.rds,female
+```
+
+**2. Run the initial QC pass:**
 
 ```bash
 nextflow run main.nf \
@@ -96,48 +106,38 @@ nextflow run main.nf \
     -c /scratch/er01/PIPE-6945-scrna/test.scrnavigator.opt.config
 ```
 
-Example minimal samplesheet:
-
-```console
-sample,rds,sex
-Donor_1,/g/data/er01/test-data/single-cell/human/rds/Donor1_filtered_matrix.seurat.rds,M
-Donor_2,/g/data/er01/test-data/single-cell/human/rds/Donor2_filtered_matrix.seurat.rds,M
-Donor_3,/g/data/er01/test-data/single-cell/human/rds/Donor3_filtered_matrix.seurat.rds,F
-Donor_4,/g/data/er01/test-data/single-cell/human/rds/Donor4_filtered_matrix.seurat.rds,F
-```
-
-Output:
+Outputs:
 
 ```
-results                
-├── qc # These contain the intermediate QC results for each sample that are used to generate the report (below)
+results/
+├── qc
 │   ├── Donor_1
-│   │   ├── cluster # Clustering plots, barcode cell assignment across resolutions  
-│   │   ├── filter  # Low-quality cell filtering metrics
+│   │   ├── cluster    # Clustering plots and barcode cell assignments across resolutions
+│   │   ├── filter     # Low-quality cell filtering metrics
 │   │   └── preprocess
 │   ├── Donor_2
 │   │   └── ...
 ├── report
-│   └── report # Interactive HTML reports to explore QC and clustering results
+│   └── report         # Interactive HTML report to explore QC and clustering results
 └── run_info
 ```
 
-From inspecting the report from the previous output, identify filtering thresholds for low-quality cells based on the:
+**3. Inspect the report.** Open `results/report/index.html` and identify per-sample filtering thresholds by examining the distributions of:
 
-* Number of RNA counts (3k - 12k)
-* Features (> 2000)
-* Percentage of mitochondrial genes mapped (< 10%)
+- **nCount_RNA** - total RNA counts per cell. Select 3,000-12,000 in example
+- **nFeature_RNA** - unique genes per cell. Select a minimum of 2,000 in example.
+- **percent.mt** - mitochondrial gene fraction. Select a maximum of 10% in example.
 
-Update the samplesheet to include these thresholds. Thresholds with no upper or lower bound are left intentionally blank:
+**4. Update your samplesheet** with per-sample filtering thresholds. Leave any bound blank if no threshold applies for that sample:
 
 ```console
 sample,rds,sex,min_ncount,max_ncount,min_nfeature,max_nfeature,min_mt_pct,max_mt_pct
-Donor_1,/g/data/er01/test-data/single-cell/human/rds/Donor1_filtered_matrix.seurat.rds,M,3000,12000,2000,20000,,10,1.2
-Donor_2,/g/data/er01/test-data/single-cell/human/rds/Donor2_filtered_matrix.seurat.rds,M,3000,12000,2000,20000,,10,1
-Donor_3,/g/data/er01/test-data/single-cell/human/rds/Donor3_filtered_matrix.seurat.rds,F,3000,12000,2000,20000,,10,1.2
+Donor_1,/g/data/er01/test-data/single-cell/human/rds/Donor1_filtered_matrix.seurat.rds,male,3000,12000,2000,20000,,10
+Donor_2,/g/data/er01/test-data/single-cell/human/rds/Donor2_filtered_matrix.seurat.rds,male,3000,12000,2000,20000,,10
+Donor_3,/g/data/er01/test-data/single-cell/human/rds/Donor3_filtered_matrix.seurat.rds,female,3000,12000,2000,20000,,10
 ```
 
-Re-run QC with the amended samplesheet using the same command and `-resume`:
+**5. Re-run with thresholds applied,** using `-resume` to skip the already-completed unfiltered pass:
 
 ```bash
 nextflow run main.nf \
@@ -153,19 +153,23 @@ nextflow run main.nf \
     -resume
 ```
 
-### Doublet detection
+Once satisfied with the per-sample filtering, proceed to doublet detection.
 
-To conduct the next step after doublet detection, resolutions need to be selected and defined in the samplesheet for each sample. For example, add a new column called `res`:
+### Doublet detection and dataset integration
+
+Doublets are droplets that captured two cells and are flagged using DoubletFinder. Once removed, samples are merged, batch-corrected using CCA integration, and clustered - all in a single run using `--no_analysis`.
+
+Before running, **add a clustering resolution column (`res`) to the samplesheet** for each sample. The resolution controls the granularity of per-sample clusters used to inform doublet detection. Review the clustree plots from the QC step to choose an appropriate value per sample:
 
 ```console
 sample,rds,sex,min_ncount,max_ncount,min_nfeature,max_nfeature,min_mt_pct,max_mt_pct,res
-Donor_1,/g/data/er01/test-data/single-cell/human/rds/Donor1_filtered_matrix.seurat.rds,M,3000,12000,2000,20000,,10,1.2
-Donor_2,/g/data/er01/test-data/single-cell/human/rds/Donor2_filtered_matrix.seurat.rds,M,3000,12000,2000,20000,,10,1
-Donor_3,/g/data/er01/test-data/single-cell/human/rds/Donor3_filtered_matrix.seurat.rds,F,3000,12000,2000,20000,,10,1.2
-Donor_4,/g/data/er01/test-data/single-cell/human/rds/Donor4_filtered_matrix.seurat.rds,F,3000,12000,2000,20000,,10,0.6
+Donor_1,/g/data/er01/test-data/single-cell/human/rds/Donor1_filtered_matrix.seurat.rds,male,3000,12000,2000,20000,,10,1.2
+Donor_2,/g/data/er01/test-data/single-cell/human/rds/Donor2_filtered_matrix.seurat.rds,male,3000,12000,2000,20000,,10,1
+Donor_3,/g/data/er01/test-data/single-cell/human/rds/Donor3_filtered_matrix.seurat.rds,female,3000,12000,2000,20000,,10,1.2
+Donor_4,/g/data/er01/test-data/single-cell/human/rds/Donor4_filtered_matrix.seurat.rds,female,3000,12000,2000,20000,,10,0.6
 ```
 
-To proceed with doublet detection after conducting QC, replace the `--qc_only` flag with `--no_analysis`:
+Replace `--qc_only` with `--no_analysis` and re-run. QC steps will be retrieved from cache:
 
 ```bash
 nextflow run main.nf \
@@ -181,7 +185,7 @@ nextflow run main.nf \
     -resume
 ```
 
-This will use the cached results from the `QUALITY_CONTROL` steps and resume with the doublet detection step:
+You should see QC steps served from cache, followed by doublet detection and integration running for the first time:
 
 ```
 executor >  pbspro (4)
@@ -194,80 +198,50 @@ executor >  pbspro (4)
 [-        ] REPORT                             -
 ```
 
-Output:
-
-```
-results                
-├── integration # NEW: results of integrating all samples into a cohort RDS
-│   ├── clustering
-│   ├── cohort.integrated.rds
-│   ├── gene_symbols.Rds
-│   └── qc_results
-├── qc  
-│   ├── Donor_1        
-│   │   ├── cluster
-│   │   ├── doublets # NEW: Results and plots of doublet detection
-│   │   ├── filter
-│   │   └── preprocess 
-│   ├── Donor_2
-│   │   └── ...
-├── report     
-│   └── report # UPDATED: Interactive HTML reports to explore QC and clustering results
-└── run_info
-```
-
-```
-doublets
-├── Donor_1.doublets_detected.rds # File which identifies putative doublets, without any filtering
-├── Donor_1.doublets_removed.sct_clustered.rds # File with doublets removed, re-normalised and clustered.
-└── qc_results # Table and graph summaries of doublet detection, used in the interactive report.
-    ├── cluster_cells
-    ├── Donor_1.clustree.png
-    ├── Donor_1.doublet_proportions_per_cluster.1.png
-    ├── Donor_1.doublets_per_cluster.1.png
-    ├── Donor_1.doublet_summary.csv
-    ├── Donor_1.doublet_umap.1.png
-    ├── Donor_1.feature_count_plot.cluster.0.6.png   
-    ├── Donor_1.feature_count_plot.cluster.0.8.png   
-    ├── Donor_1.feature_count_plot.cluster.1.2.png   
-    ├── Donor_1.feature_count_plot.cluster.1.4.png   
-    ├── Donor_1.feature_count_plot.cluster.1.6.png   
-    ├── Donor_1.feature_count_plot.cluster.1.8.png   
-    ├── Donor_1.feature_count_plot.cluster.1.png     
-    ├── Donor_1.feature_count_plot.cluster.2.2.png   
-    ├── Donor_1.feature_count_plot.cluster.2.4.png   
-    └── Donor_1.feature_count_plot.cluster.2.png     
-```
-
-### Dataset integration
-
-Integration is conducted as part of the previous step with the `--no_analysis` option.
-
-Key outputs:
+Outputs:
 
 ```
 results/
-├── integration
+├── integration                               # NEW: cohort-level integration outputs
 │   ├── clustering
-│   │   ├── cohort.integrated.clustered.rds # Integrated Seurat object with cluster assignments at multiple resolutions
-│   │   └── qc_results                      # Clustree, UMAP, and per-cluster feature/count plots
-│   ├── cohort.integrated.rds               # Integrated Seurat object (integrated, UMAP computed, pre-clustering)
-│   ├── gene_symbols.Rds                    # Dataframe mapping gene symbols to Ensembl IDs for the cohort
+│   │   ├── cohort.integrated.clustered.rds  # Integrated Seurat object with cluster assignments at multiple resolutions
+│   │   └── qc_results                       # Clustree, UMAP, and per-cluster feature/count plots
+│   ├── cohort.integrated.rds                # Integrated Seurat object (CCA-integrated, UMAP computed, pre-clustering)
+│   ├── gene_symbols.Rds                     # Dataframe mapping gene symbols to Ensembl IDs for the cohort
 │   └── qc_results
-│       ├── cohort.umap.integrated.png      # UMAP coloured by sample after integration (batch correction applied)
-│       └── cohort.umap.merged.png          # UMAP coloured by sample before integration (merged only)
-└── report
-    └── report
-        ├── index.html                      # UPDATED: Interactive report
-        └── ...
+│       ├── cohort.umap.integrated.png       # UMAP coloured by sample after CCA integration (batch correction applied)
+│       └── cohort.umap.merged.png           # UMAP coloured by sample before integration (merged only)
+├── qc
+│   ├── Donor_1
+│   │   ├── cluster
+│   │   ├── doublets                         # NEW: doublet detection results and plots per sample
+│   │   │   ├── Donor_1.doublets_detected.rds              # Putative doublets flagged, prior to removal
+│   │   │   ├── Donor_1.doublets_removed.sct_clustered.rds # Seurat object with doublets removed, re-normalised and clustered
+│   │   │   └── qc_results                                 # Doublet summary table and diagnostic plots for the report
+│   │   │       ├── Donor_1.doublet_summary.csv            # Per-cluster doublet counts and proportions
+│   │   │       ├── Donor_1.doublet_umap.1.png             # UMAP coloured by doublet status
+│   │   │       ├── Donor_1.doublets_per_cluster.1.png     # Doublet counts per cluster
+│   │   │       ├── Donor_1.doublet_proportions_per_cluster.1.png
+│   │   │       ├── Donor_1.clustree.png                   # Resolution tree across clustering parameters
+│   │   │       └── Donor_1.feature_count_plot.cluster.*.png # nCount vs nFeature per cluster, one plot per resolution
+│   │   ├── filter
+│   │   └── preprocess
+│   ├── Donor_2
+│   │   └── ...
+├── report
+│   └── report                               # UPDATED: Interactive HTML report
+└── run_info
 ```
+
+Inspect the integration UMAPs in the report to confirm that samples mix well after batch correction. If samples remain separated post-integration, consider revisiting QC thresholds or integration parameters.
 
 ### Cell annotation
 
-By default, annotation will use SingleR and the Human Primary Cell Atlas (HPCA) database for cell typing.
-Cells will be automatically assigned to clusters based on the `cell_type_proportion_threshold`. By default, if a cluster contains over 67% of the same cell, it will be classified as that majority identify. Otherwise, clusters will be considered "Ambiguous".
+Cell annotation assigns biological identity to each cluster using three complementary approaches run in parallel: database-driven annotation (SingleR), cell cycle phase scoring, and cluster-level consensus assignment. By default, human samples are annotated against the Human Primary Cell Atlas (HPCA). A cluster is labelled with a cell type if that type represents more than 67% of cells in the cluster; otherwise it is marked "Ambiguous".
 
-See [How-to customise annotation]() for adding custom markers and databases.
+See [How-to customise annotation]() for using custom marker gene lists or alternative reference databases.
+
+Drop `--no_analysis` to run annotation (and pseudobulking, described below) for the first time:
 
 ```bash
 nextflow run main.nf \
@@ -282,54 +256,152 @@ nextflow run main.nf \
     -resume
 ```
 
-Key outputs:
+Outputs:
 
 ```
 results/
-├── analysis # NEW
-├── annotation # NEW
+├── annotation                               # NEW
 │   ├── cell_cycle
-│   │   ├── available_annotations.txt               # Lists annotation fields added (e.g. 'Phase')
-│   │   ├── cohort.annotated.cell_cycle.rds         # Seurat object with Phase (G1/S/G2M) added to metadata
-│   │   └── qc_results                              # UMAP coloured by cell cycle phase
+│   │   ├── available_annotations.txt        # Lists annotation fields added (e.g. 'Phase')
+│   │   ├── cohort.annotated.cell_cycle.rds  # Seurat object with Phase (G1/S/G2M) added to metadata
+│   │   └── qc_results                       # UMAP coloured by cell cycle phase
 │   ├── clusters
 │   │   ├── cohort.annotated.clusters.rds           # Seurat object with cluster_annotation column added to metadata
-│   │   ├── cohort.cluster_cell_type_assignments.csv# Mapping of cluster IDs to consensus cell type labels
+│   │   ├── cohort.cluster_cell_type_assignments.csv # Mapping of cluster IDs to consensus cell type labels
 │   │   └── qc_results                              # Cell type proportion dot plots and tables per cluster
 │   └── db
 │       ├── available_annotations.txt               # Lists SingleR annotation fields added (e.g. 'SingleR.hpca_main', 'SingleR.hpca_fine')
-│       ├── cohort.annotated.database.rds           # Seurat object with SingleR cell type annotations added to metadata
+│       ├── cohort.annotated.database.rds            # Seurat object with SingleR cell type annotations added to metadata
 │       └── qc_results                              # UMAP and cell type proportion plots for SingleR annotations
 └── report
-    ├── report # UPDATED: Interactive HTML report
+    ├── report                               # UPDATED: Interactive HTML report
     └── report.tar
 ```
+
+Inspect the annotation UMAPs and cell type proportion plots in the report. Verify that cluster assignments look biologically plausible before defining comparison groups for downstream analysis.
 
 ### Pseudobulking
 
-Pseudobulking is conducted as part of the same step as cell annotation. By default, the pseudobulking will be conducted for each sample and cell identity from the annotation step.
+Pseudobulking aggregates single-cell counts per sample per group, creating sample-level expression profiles suitable for bulk-style DE testing. Groups are defined by combinations of metadata fields (e.g., sex and cell type), and each unique combination becomes one pseudobulk sample. A minimum of 3 samples per group is recommended for reliable DE results.
 
-Key outputs:
+**1. Inspect the annotation report.** Identify which annotation field best captures cell identity (e.g., `cluster_annotation` from the clusters step).
+
+**2. Create a `comparisons.csv`** defining the pairwise contrasts to test:
+
+```console
+ref,test
+female_B-cell,male_B-cell
+female_T-cells,male_T-cells
+female_NK-cell,male_NK-cell
+female_Monocyte,male_Monocyte
+```
+
+**3. Re-run** with `--pseudo_groups` and `--comparisons` added:
+
+```bash
+nextflow run main.nf \
+    --input path/to/samplesheet.csv \
+    --outdir results \
+    --species human \
+    --cluster_method louvain \
+    --pseudo_groups sex,cluster_annotation \
+    --comparisons path/to/comparisons.csv \
+    -profile gadi \
+    --gadi_account er01 \
+    --gadi_storage scratch/er01+gdata/er01+gdata/if89 \
+    -c /scratch/er01/PIPE-6945-scrna/test.scrnavigator.opt.config \
+    -resume
+```
+
+Outputs:
 
 ```
 results/
-├── analysis # NEW
-│   └── pseudobulk # NEW
-│       ├── cohort.comparison_groups.txt            # Table of comparison groups and number of samples per group
-│       └── cohort.pseudobulk.rds                   # Seurat object with summed counts aggregated per sample per group
-├── annotation # NEW
+├── analysis
+│   └── pseudobulk
+│       ├── cohort.comparison_groups.txt     # Comparison groups and sample counts per group
+│       └── cohort.pseudobulk.rds            # Seurat object with summed counts aggregated per sample per group
+├── annotation
 └── report
-    ├── report # UPDATED: Interactive HTML report
+    ├── report                               # UPDATED: Interactive HTML report
     └── report.tar
 ```
 
+Check `cohort.comparison_groups.txt` to confirm each group contains enough samples (≥ 3 recommended) before proceeding to DE analysis.
+
 ### Differential expression analysis
 
+Pairwise DE testing is performed between conditions defined in `comparisons.csv` using DESeq2, operating on the pseudobulked samples. Results are combined across all comparisons and a Bonferroni correction is applied across all tests to control for multiple comparisons.
 
+Outputs:
 
-### Funciontal enrichment analysis
+```
+results/
+├── analysis
+│   ├── differential_expression              # NEW
+│   │   ├── cohort.de.full.csv               # All comparisons combined; includes Bonferroni-adjusted p-value and significance flags
+│   │   ├── cohort.de.full.Rds               # Same as above (R format)
+│   │   ├── cohort.de.male_B-cell.female_B-cell.csv  # Per-comparison DE results (log2FC, p-value, pct.1/pct.2 per gene)
+│   │   ├── cohort.de.male_B-cell.female_B-cell.Rds  # Same as above (R format)
+│   │   ├── cohort.de.male_Monocyte.female_Monocyte.csv
+│   │   ├── cohort.de.male_Monocyte.female_Monocyte.Rds
+│   │   ├── cohort.de.male_NK-cell.female_NK-cell.csv
+│   │   ├── cohort.de.male_NK-cell.female_NK-cell.Rds
+│   │   ├── cohort.de.male_T-cells.female_T-cells.csv
+│   │   ├── cohort.de.male_T-cells.female_T-cells.Rds
+│   │   └── results
+│   │       ├── cohort.p_val_dist.png        # P-value distribution histogram, faceted by comparison
+│   │       ├── cohort.log_fc_dist.png       # Log2FC distribution coloured by significance, faceted by comparison
+│   │       ├── cohort.volcano.png           # Volcano plot with top 10 significant genes labelled per comparison
+│   │       └── cohort.significant_de_genes.all_tests.csv # Significant DE genes only across all comparisons
+│   ├── fea
+│   └── pseudobulk
+├── annotation
+├── integration
+├── qc
+├── report                                   # UPDATED: Interactive HTML report
+└── run_info
+```
 
+Inspect `cohort.p_val_dist.png` first — a roughly uniform p-value distribution (with a spike near 0) indicates a well-powered test. Strong inflation or deflation suggests a problem with sample size or grouping.
 
+### Functional enrichment analysis
+
+Two complementary approaches identify enriched biological pathways from the DE results. **ORA** (Over-Representation Analysis) tests whether significantly DE genes overlap with known gene sets more than expected by chance. **GSEA** ranks all tested genes by expression and evaluates whether pathway members cluster at the top or bottom of the ranking, capturing directional pathway activity even when individual genes fall below significance thresholds. Redundant pathways are collapsed using affinity propagation (AP) clustering, and a BH-corrected FDR is applied across all comparisons.
+
+Outputs:
+
+```
+results/
+├── analysis
+│   ├── differential_expression
+│   ├── fea                                  # NEW
+│   │   ├── gsea
+│   │   │   ├── cohort.gsea.full.csv         # All comparisons combined with BH-FDR recalculated across all tests
+│   │   │   ├── cohort.gsea.full.reduced.csv  # One representative gene set per AP cluster (for summary plots)
+│   │   │   ├── plots
+│   │   │   │   └── cohort.gsea.{comparison}.png  # NES bar chart per comparison (orange = upregulated, blue = downregulated)
+│   │   │   └── male_B-cell_vs_female_B-cell      # Per-comparison WebGestaltR GSEA outputs (one folder per comparison)
+│   │   │       ├── cohort.gsea.{comparison}.csv  # GSEA results: NES, p-value, core enrichment genes, AP cluster assignment
+│   │   │       └── Project_gsea                  # Raw WebGestaltR outputs (enrichment table, AP clusters, HTML report)
+│   │   └── ora
+│   │       ├── cohort.ora.full.csv          # All comparisons combined with BH-FDR recalculated across all tests
+│   │       ├── cohort.ora.full.reduced.csv   # One representative pathway per AP cluster (for summary plots)
+│   │       ├── plots
+│   │       │   └── cohort.ora.{comparison}.png   # log2(enrichmentRatio) bar chart per comparison
+│   │       ├── male_B-cell_vs_female_B-cell      # Per-comparison WebGestaltR ORA outputs (one folder per comparison)
+│   │       ├── male_Monocyte_vs_female_Monocyte
+│   │       ├── male_NK-cell_vs_female_NK-cell
+│   │       └── male_T-cells_vs_female_T-cells
+│   │           ├── cohort.ora.{comparison}.csv   # ORA results: enrichment ratio, overlap genes, AP cluster assignment
+│   │           └── Project_ora                   # Raw WebGestaltR outputs (enrichment table, AP clusters, HTML report)
+│   └── pseudobulk
+├── annotation
+├── integration
+├── qc
+├── report                                   # UPDATED: Interactive HTML report
+└── run_info
+```
 
 ## Component tools
 
