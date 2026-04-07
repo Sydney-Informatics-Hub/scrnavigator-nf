@@ -1,24 +1,28 @@
 #!/usr/bin/env -S Rscript --vanilla
-library(Seurat)
-library(tidyverse)
-library(SingleR)
-#BiocManager::install(c("ensembldb", "AnnotationHub", "AnnotationFilter"))
+# https://jorainer.github.io/ensembldb/articles/ensembldb.html#getting-or-building-ensdb-databasespackages
+##BiocManager::install(c("ensembldb", "AnnotationHub", "AnnotationFilter"))
 library(ensembldb) # Create sqlitedb of EnsDb class and query it for annotation
 library(AnnotationHub) # pre-built ensdb objects
 library(AnnotationFilter)
 
-# Inputs
-species <- "Homo sapiens"
+# Get commandline arguments
+args <- commandArgs(trailingOnly = TRUE)
 
+species <- args[1] # e.g. "Homo sapiens", "Mus muscularis"
+ref_version <- args[2] # Default: 113 - latest
+db_cache <- args[3] # ".cache/AnnotationHub" by default. Where temporary and final db files are saved
+
+# For ref_version, either
 # Select the annotation version that matches the version of transcriptome
 # See: https://www.10xgenomics.com/support/software/cell-ranger/latest/release-notes/cr-reference-release-notes#2024-a 
-ref_version <- c("Ensembl", "110")
+# or 
+# the latest EnsDb version
 
-# Downloads few ~MB cache on first run
-ah <- AnnotationHub(cache = ".cache/AnnotationHub")
+# Downloads few ~MB cache on first run. This is the list of entries across species
+ah <- AnnotationHub(cache = db_cache)
 
 # Query for human EnsDb objects
-ens_query <- query(ah, c(ref_version, species))
+ens_query <- query(ah, c("Ensembl", ref_version, species))
 ens_query
 
 # AnnotationHub with 1 record
@@ -43,18 +47,49 @@ stopifnot("Multiple db entries found. Cannot automatically select." = length(ens
 
 db_uid <- names(ens_query@.db_uid) # target db release that matches ref transcriptome v.
 
-# Downloads db release into memory. Takes 20-30 mins
+# Downloads db to cache. Takes 20-30 mins on first run.
 ensdb <- ah[[db_uid]]
 ensdb
 
-
+# EnsDb for Ensembl:
+# |Backend: SQLite
+# |Db type: EnsDb
+# |Type of Gene ID: Ensembl Gene ID
+# |Supporting package: ensembldb
+# |Db created by: ensembldb package from Bioconductor
+# |script_version: 0.3.10
+# |Creation time: Mon Aug  7 09:02:07 2023
+# |ensembl_version: 110
+# |ensembl_host: 127.0.0.1
+# |Organism: Homo sapiens
+# |taxonomy_id: 9606
+# |genome_build: GRCh38
+# |DBSCHEMAVERSION: 2.2
+# |common_name: human
+# |species: homo_sapiens
+# | No. of genes: 71440.
+# | No. of transcripts: 278545.
+# |Protein data available.
 # Export to standalone .sqlite
-db_path <- paste0("EnsDb_SPECIES_vENSVERSION.sqlite") #"EnsDb_Hsapiens_v113.sqlite"
-ensdb_local <- copyDb(ensdb, destination = "./db_path")
 
-# Verify saved on disk
-file.info(db_path)$size / 1e6  # Size in MB
+cached_sql_path <- dbconn(ensdb)@dbname
+# Unreadable file name when downloaded:
+#"/home/fred/GitHub/scrnavigator-nf/bin/.cache/AnnotationHub/f43f73d14706_120411"
+# Move/rename to "./EnsDb_homo_sapiens_v110.sqlite"
+species_idx <- which(metadata(ensdb)[["name"]] == "species")
+species_name <- metadata(ensdb)[species_idx, 2]
+
+clean_db_path <- paste0(
+  "./EnsDb_",
+  species_name,
+  "_v",
+  ensemblVersion(ensdb),
+  ".sqlite"
+) 
+
+# Move/rename cached sqlite file
+file.rename(from = cached_sql_path, to = clean_db_path)
+file.info(clean_db_path)$size / 1e6  # Verify, size in MB
 
 # Load saved ensdb
-ensdb2 <- EnsDb(db_path)
-ensdb2
+test_load <- EnsDb(clean_db_path)
