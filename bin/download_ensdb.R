@@ -1,6 +1,5 @@
 #!/usr/bin/env -S Rscript --vanilla
 # https://jorainer.github.io/ensembldb/articles/ensembldb.html#getting-or-building-ensdb-databasespackages
-##BiocManager::install(c("ensembldb", "AnnotationHub", "AnnotationFilter"))
 library(ensembldb) # Create sqlitedb of EnsDb class and query it for annotation
 library(AnnotationHub) # pre-built ensdb objects
 library(AnnotationFilter)
@@ -8,9 +7,9 @@ library(AnnotationFilter)
 # Get commandline arguments
 args <- commandArgs(trailingOnly = TRUE)
 
-species <- args[1] # e.g. "Homo sapiens", "Mus muscularis"
-ref_version <- args[2] # Default: 113 - latest
-db_cache <- args[3] # ".cache/AnnotationHub" by default. Where temporary and final db files are saved
+species <- args[1] # e.g. "Homo sapiens", "Mus musculus"
+ref_version <- args[2] # ensembl version e.g. latest v113
+db_cache <- args[3] # Where temporary and final db files are saved
 
 # For ref_version, either
 # Select the annotation version that matches the version of transcriptome
@@ -44,7 +43,6 @@ ens_query
 # retrieve record with 'object[["AH113665"]]' 
 
 stopifnot("Multiple db entries found. Cannot automatically select." = length(ens_query) == 1)
-
 db_uid <- names(ens_query@.db_uid) # target db release that matches ref transcriptome v.
 
 # Downloads db to cache. Takes 20-30 mins on first run.
@@ -74,8 +72,8 @@ ensdb
 
 cached_sql_path <- dbconn(ensdb)@dbname
 # Unreadable file name when downloaded:
-#"/home/fred/GitHub/scrnavigator-nf/bin/.cache/AnnotationHub/f43f73d14706_120411"
-# Move/rename to "./EnsDb_homo_sapiens_v110.sqlite"
+#".../.cache/AnnotationHub/f43f73d14706_120411"
+# Move and rename to "./EnsDb_homo_sapiens_v110.sqlite"
 species_idx <- which(metadata(ensdb)[["name"]] == "species")
 species_name <- metadata(ensdb)[species_idx, 2]
 
@@ -92,4 +90,4 @@ file.rename(from = cached_sql_path, to = clean_db_path)
 file.info(clean_db_path)$size / 1e6  # Verify, size in MB
 
 # Load saved ensdb
-test_load <- EnsDb(clean_db_path)
+#test_load <- EnsDb(clean_db_path)
