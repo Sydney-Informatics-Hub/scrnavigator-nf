@@ -46,9 +46,8 @@ Parameters that control the pipeline execution and flow.
 | `resolutions` | Comma-separated list of clustering resolutions (floats or integers) to use for QC. Defaults to values from 0.6 to 2.4 in steps of 0.2. | `string` |  |  |  |             
 | `integrated_resolution` | Final clustering resolution (float or integer) for the integrated dataset. | `number` |  |  |  |                    
 | `cluster_method` | Method to use for clustering. Either 'louvain' or 'leiden' (default: 'leiden'). (accepted: `louvain`\|`leiden`) | `string` 
-| leiden |  |  |
-| `species` | The species that the samples belong to. | `string` |  |  |  |
-| `no_mt` | Specifies that annotation of mitochondrial gene percentages should be skipped. | `boolean` | False |  |  |
+| `species` | The species that the samples belong to. | `string` |  | True |  |
+| `no_mt` | Specifies that annotation of mitochondrial gene percentages should be skipped.<details><summary>Help</summary><small>Specify `no_mt` when running nuclei samples.</small></details>| `boolean` | False |  |  |
 | `mt_gene_list` | Path to a text file containing known mitochondrial genes in the species. Not required when --species is either 'human' or 'mouse'. | `string` | None |  |  |
 | `ens_db_rds` | Path to an RDS file containing an AnnotationDb object for the Ensembl database (e.g. EnsDb.Hsapiens.v86). Required for species other than 'human' or 'mouse'. | `string` | None |  |  |
 | `s_genes` | Path to a text file containing S gene IDs for cell cycle annotation. Not required when --species is 'human'. | `string` | None |

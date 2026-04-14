@@ -1,190 +1,183 @@
 {
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "title": "scrnavigator-nf pipeline parameters",
-    "description": "Pipeline parameter schema for the scrnavigator-nf Nextflow workflow.",
-    "type": "object",
-    "$defs": {
-        "input_output_options": {
-            "title": "Input/output options",
-            "type": "object",
-            "fa_icon": "fas fa-terminal",
-            "description": "Parameters that control the pipeline inputs and outputs.",
-            "required": ["input"],
-            "properties": {
-                "input": {
-                    "type": "string",
-                    "format": "file-path",
-                    "exists": true,
-                    "mimetype": "text/csv",
-                    "pattern": "^\\S+\\.csv$",
-                    "description": "Path to the input samplesheet CSV file."
-                },
-                "outdir": {
-                    "type": "string",
-                    "format": "directory-path",
-                    "description": "Directory to place output files in.",
-                    "default": "results",
-                    "fa_icon": "fas fa-folder-open"
-                }
-            }
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "scrnavigator-nf pipeline parameters",
+  "description": "Pipeline parameter schema for the scrnavigator-nf Nextflow workflow.",
+  "type": "object",
+  "$defs": {
+    "input_output_options": {
+      "title": "Input/output options",
+      "type": "object",
+      "fa_icon": "fas fa-terminal",
+      "description": "Parameters that control the pipeline inputs and outputs.",
+      "required": ["input"],
+      "properties": {
+        "input": {
+          "type": "string",
+          "format": "file-path",
+          "exists": true,
+          "mimetype": "text/csv",
+          "pattern": "^\\S+\\.csv$",
+          "description": "Path to the input samplesheet CSV file."
         },
-        "run_options": {
-            "title": "Run options",
-            "type": "object",
-            "description": "Parameters that control the pipeline execution and flow.",
-            "properties": {
-                "qc_only": {
-                    "type": "boolean",
-                    "description": "Only run QC analysis.",
-                    "default": false
-                },
-                "no_analysis": {
-                    "type": "boolean",
-                    "description": "Only run up to integration, don't perform pseudobulking, DE, or FEA.",
-                    "default": false
-                },
-                "cohort_id": {
-                    "type": "string",
-                    "description": "Name for the integrated cohort. Default: 'cohort'.",
-                    "default": "cohort"
-                },
-                "resolutions": {
-                    "type": "string",
-                    "description": "Comma-separated list of clustering resolutions (floats or integers) to use for QC. Defaults to values from 0.6 to 2.4 in steps of 0.2."
-                },
-                "integrated_resolution": {
-                    "type": "number",
-                    "description": "Final clustering resolution (float or integer) for the integrated dataset."
-                },
-                "cluster_method": {
-                    "type": "string",
-                    "description": "Method to use for clustering. Either 'louvain' or 'leiden' (default: 'leiden').",
-                    "default": "leiden",
-                    "enum": ["louvain", "leiden"]
-                },
-                "species": {
-                    "type": "string",
-                    "description": "The species that the samples belong to."
-                },
-                "no_mt": {
-                    "type": "boolean",
-                    "description": "Specifies that annotation of mitochondrial gene percentages should be skipped.",
-                    "default": false
-                },
-                "mt_gene_list": {
-                    "type": "string",
-                    "description": "Path to a text file containing known mitochondrial genes in the species. Not required when --species is either 'human' or 'mouse'.",
-                    "default": null
-                },
-                "ens_db_rds": {
-                    "type": "string",
-                    "description": "Path to an RDS file containing an AnnotationDb object for the Ensembl database (e.g. EnsDb.Hsapiens.v86). Required for species other than 'human' or 'mouse'.",
-                    "default": null
-                },
-                "s_genes": {
-                    "type": "string",
-                    "description": "Path to a text file containing S gene IDs for cell cycle annotation. Not required when --species is 'human'.",
-                    "default": null
-                },
-                "g2m_genes": {
-                    "type": "string",
-                    "description": "Path to a text file containing G2M gene IDs for cell cycle annotation. Not required when --species is 'human'.",
-                    "default": null
-                },
-                "annotation_db": {
-                    "type": "string",
-                    "description": "Path to an RDS file containing a suitable reference dataset for cell type annotation with SingleR. Must contain a field called 'label' with the cell type labels. When --species is 'human', the Human Primary Cell Atlas (HPCA) data from the celldex package will be used by default. As per the SingleR documentaiton, this must be 'a numeric matrix of single-cell expression values where rows are genes and columns are cells. Alternatively, a SummarizedExperiment object containing such a matrix'",
-                    "default": null
-                },
-                "min_cells_for_annotation": {
-                    "type": "integer",
-                    "description": "The minimum number of cells required to keep a cell type annotation.",
-                    "default": 10
-                },
-                "custom_marker_genes": {
-                    "type": "string",
-                    "format": "file-path",
-                    "exists": true,
-                    "mimetype": "text/csv",
-                    "pattern": "^\\S+\\.csv$",
-                    "description": "Path to a CSV file containing custom marker gene sets for annotation of cell types. Must contain two columns: 'cell_type' and 'gene_ids', where 'gene_ids' is a semicolon-delimited list of gene IDs.",
-                    "default": null
-                },
-                "custom_annotation_mad_threshold": {
-                    "type": "number",
-                    "description": "Median absolute difference (MAD) threshold to use when determining cell type based on custom gene programs.",
-                    "default": 1
-                },
-                "cluster_annotation": {
-                    "type": "string",
-                    "description": "The annotation label to use for annotating clusters. If not supplied, defaults to the first of the following that exists: 'custom_cell_type', 'custom_cell_type.max_score', 'SingleR.annotation', 'SingleR.hpca_main', 'SingleR.hpca_fine', 'Phase'.",
-                    "default": null
-                },
-                "cell_type_proportion_threshold": {
-                    "type": "number",
-                    "description": "Proportion of cells in a cluster that must be of the same cell type before calling the cell type for the cluster.",
-                    "default": 0.67
-                },
-                "manual_cluster_annotations": {
-                    "type": "string",
-                    "description": "Path to a CSV file to manually set cluster annotations. Must have two columns: 'cluster' and 'cell_type'.",
-                    "default": null
-                },
-                "pseudo_groups": {
-                    "type": "string",
-                    "description": "A comma-separated list of metadata variables to be used for grouping cells for pseudobulking and differential experession analysis. Defaults to the 'cluster_annotation' field created by the cluster annotation module.",
-                    "default": "cluster_annotation"
-                },
-                "comparisons": {
-                    "type": "string",
-                    "format": "file-path",
-                    "exists": true,
-                    "mimetype": "text/csv",
-                    "pattern": "^\\S+\\.csv$",
-                    "description": "A path to a CSV file containing comparisons to be used for differential expression analysis.",
-                    "default": null
-                },
-                "p_value_threshold": {
-                    "type": "number",
-                    "description": "P-value threshold for differential expression analysis. Default is 0.05",
-                    "default": 0.05
-                },
-                "fc_threshold": {
-                    "type": "number",
-                    "description": "Fold-change threshold for differential expression analysis. Set to '0' to disable fold-change thresholding (default).",
-                    "default": 0
-                },
-                "ora_db": {
-                    "type": "string",
-                    "description": "Path to a .gmt file containing an enrichment database for use with over representation analysis with WebGestaltR. Must contain three tab-delimited columns: category ID, external link, and gene ID.",
-                    "default": null
-                },
-                "gsea_db": {
-                    "type": "string",
-                    "description": "Path to a .gmt file containing an enrichment database for use with gene set enrichment analysis with WebGestaltR. Must contain three tab-delimited columns: category ID, external link, and gene ID.",
-                    "default": null
-                }
-            }
-        },
-        "misc": {
-            "title": "Miscellaneous parameters",
-            "type": "object",
-            "description": "Miscellaneous parameters.",
-            "properties": {
-                "help": {
-                    "type": "boolean",
-                    "description": "Prints the pipeline help message.",
-                    "hidden": true
-                }
-            }
+        "outdir": {
+          "type": "string",
+          "format": "directory-path",
+          "description": "Directory to place output files in.",
+          "default": "results",
+          "fa_icon": "fas fa-folder-open"
         }
+      }
     },
-    "allOf": [
-        {
-            "$ref": "#/$defs/input_output_options"
+    "run_options": {
+      "title": "Run options",
+      "type": "object",
+      "description": "Parameters that control the pipeline execution and flow.",
+      "properties": {
+        "qc_only": {
+          "type": "boolean",
+          "description": "Only run QC analysis."
         },
-        {
-            "$ref": "#/$defs/misc"
+        "no_analysis": {
+          "type": "boolean",
+          "description": "Only run up to integration, don't perform pseudobulking, DE, or FEA."
+        },
+        "cohort_id": {
+          "type": "string",
+          "description": "Name for the integrated cohort. Default: 'cohort'.",
+          "default": "cohort"
+        },
+        "resolutions": {
+          "type": "string",
+          "description": "Comma-separated list of clustering resolutions (floats or integers) to use for QC. Defaults to values from 0.6 to 2.4 in steps of 0.2.",
+          "default": "0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4"
+        },
+        "integrated_resolution": {
+          "type": "number",
+          "description": "Final clustering resolution (float or integer) for the integrated dataset.",
+          "default": 1
+        },
+        "cluster_method": {
+          "type": "string",
+          "description": "Method to use for clustering. Either 'louvain' or 'leiden' (default: 'leiden').",
+          "default": "leiden",
+          "enum": ["louvain", "leiden"]
+        },
+        "species": {
+          "type": "string",
+          "description": "The species that the samples belong to."
+        },
+        "no_mt": {
+          "type": "boolean",
+          "description": "Specifies that annotation of mitochondrial gene percentages should be skipped.",
+          "help_text": "Specify `no_mt` when running nuclei samples."
+        },
+        "mt_gene_list": {
+          "type": "string",
+          "description": "Path to a text file containing known mitochondrial genes in the species. Not required when --species is either 'human' or 'mouse'."
+        },
+        "ens_db_rds": {
+          "type": "string",
+          "description": "Path to an RDS file containing an AnnotationDb object for the Ensembl database (e.g. EnsDb.Hsapiens.v86). Required for species other than 'human' or 'mouse'."
+        },
+        "s_genes": {
+          "type": "string",
+          "description": "Path to a text file containing S gene IDs for cell cycle annotation. Not required when --species is 'human'."
+        },
+        "g2m_genes": {
+          "type": "string",
+          "description": "Path to a text file containing G2M gene IDs for cell cycle annotation. Not required when --species is 'human'."
+        },
+        "annotation_db": {
+          "type": "string",
+          "description": "Path to an RDS file containing a suitable reference dataset for cell type annotation with SingleR. Must contain a field called 'label' with the cell type labels. When --species is 'human', the Human Primary Cell Atlas (HPCA) data from the celldex package will be used by default. As per the SingleR documentaiton, this must be 'a numeric matrix of single-cell expression values where rows are genes and columns are cells. Alternatively, a SummarizedExperiment object containing such a matrix'"
+        },
+        "min_cells_for_annotation": {
+          "type": "integer",
+          "description": "The minimum number of cells required to keep a cell type annotation.",
+          "default": 10
+        },
+        "custom_marker_genes": {
+          "type": "string",
+          "format": "file-path",
+          "exists": true,
+          "mimetype": "text/csv",
+          "pattern": "^\\S+\\.csv$",
+          "description": "Path to a CSV file containing custom marker gene sets for annotation of cell types. Must contain two columns: 'cell_type' and 'gene_ids', where 'gene_ids' is a semicolon-delimited list of gene IDs."
+        },
+        "custom_annotation_mad_threshold": {
+          "type": "number",
+          "description": "Median absolute difference (MAD) threshold to use when determining cell type based on custom gene programs.",
+          "default": 1
+        },
+        "cluster_annotation": {
+          "type": "string",
+          "description": "The annotation label to use for annotating clusters. If not supplied, defaults to the first of the following that exists: 'custom_cell_type', 'custom_cell_type.max_score', 'SingleR.annotation', 'SingleR.hpca_main', 'SingleR.hpca_fine', 'Phase'."
+        },
+        "cell_type_proportion_threshold": {
+          "type": "number",
+          "description": "Proportion of cells in a cluster that must be of the same cell type before calling the cell type for the cluster.",
+          "default": 0.67
+        },
+        "manual_cluster_annotations": {
+          "type": "string",
+          "description": "Path to a CSV file to manually set cluster annotations. Must have two columns: 'cluster' and 'cell_type'."
+        },
+        "pseudo_groups": {
+          "type": "string",
+          "description": "A comma-separated list of metadata variables to be used for grouping cells for pseudobulking and differential experession analysis. Defaults to the 'cluster_annotation' field created by the cluster annotation module.",
+          "default": "cluster_annotation"
+        },
+        "comparisons": {
+          "type": "string",
+          "format": "file-path",
+          "exists": true,
+          "mimetype": "text/csv",
+          "pattern": "^\\S+\\.csv$",
+          "description": "A path to a CSV file containing comparisons to be used for differential expression analysis."
+        },
+        "p_value_threshold": {
+          "type": "number",
+          "description": "P-value threshold for differential expression analysis. Default is 0.05",
+          "default": 0.05
+        },
+        "fc_threshold": {
+          "type": "number",
+          "description": "Fold-change threshold for differential expression analysis. Set to '0' to disable fold-change thresholding (default).",
+          "default": 0
+        },
+        "ora_db": {
+          "type": "string",
+          "description": "Path to a .gmt file containing an enrichment database for use with over representation analysis with WebGestaltR. Must contain three tab-delimited columns: category ID, external link, and gene ID."
+        },
+        "gsea_db": {
+          "type": "string",
+          "description": "Path to a .gmt file containing an enrichment database for use with gene set enrichment analysis with WebGestaltR. Must contain three tab-delimited columns: category ID, external link, and gene ID."
         }
-    ]
+      },
+      "required": ["species"]
+    },
+    "misc": {
+      "title": "Miscellaneous parameters",
+      "type": "object",
+      "description": "Miscellaneous parameters.",
+      "properties": {
+        "help": {
+          "type": "boolean",
+          "description": "Prints the pipeline help message.",
+          "hidden": true
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "#/$defs/input_output_options"
+    },
+    {
+      "$ref": "#/$defs/misc"
+    },
+    {
+      "$ref": "#/$defs/run_options"
+    }
+  ]
 }
