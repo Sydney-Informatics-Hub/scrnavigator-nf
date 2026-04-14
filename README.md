@@ -98,11 +98,7 @@ nextflow run scrnavigator-nf \
     --input path/to/samplesheet.csv \
     --outdir results \
     --species human \
-    --qc_only \
-    -profile gadi \
-    --gadi_account er01 \
-    --gadi_storage scratch/er01+gdata/er01+gdata/if89 \
-    -c /scratch/er01/PIPE-6945-scrna/test.scrnavigator.opt.config
+    --qc_only
 ```
 
 Outputs:
@@ -144,10 +140,6 @@ nextflow run scrnavigator-nf \
     --outdir results \
     --species human \
     --qc_only \
-    -profile gadi \
-    --gadi_account er01 \
-    --gadi_storage scratch/er01+gdata/er01+gdata/if89 \
-    -c /scratch/er01/PIPE-6945-scrna/test.scrnavigator.opt.config \
     -resume
 ```
 
@@ -175,10 +167,6 @@ nextflow run scrnavigator-nf \
     --outdir results \
     --species human \
     --no_analysis \
-    -profile gadi \
-    --gadi_account er01 \
-    --gadi_storage scratch/er01+gdata/er01+gdata/if89 \
-    -c /scratch/er01/PIPE-6945-scrna/test.scrnavigator.opt.config \
     -resume
 ```
 
@@ -245,10 +233,6 @@ nextflow run scrnavigator-nf \
     --input path/to/samplesheet.csv \
     --outdir results \
     --species human \
-    -profile gadi \
-    --gadi_account er01 \
-    --gadi_storage scratch/er01+gdata/er01+gdata/if89 \
-    -c /scratch/er01/PIPE-6945-scrna/test.scrnavigator.opt.config \
     -resume
 ```
 
@@ -301,10 +285,6 @@ nextflow run scrnavigator-nf \
     --species human \
     --pseudo_groups sex,cluster_annotation \
     --comparisons path/to/comparisons.csv \
-    -profile gadi \
-    --gadi_account er01 \
-    --gadi_storage scratch/er01+gdata/er01+gdata/if89 \
-    -c /scratch/er01/PIPE-6945-scrna/test.scrnavigator.opt.config \
     -resume
 ```
 
