@@ -8,9 +8,10 @@ This Nextflow pipeline provides a standardised method for processing and analysi
 
 ### Pipeline setup
 
+Download the repo to your launch directory.
+
 ```bash
 git clone git@github.com:Sydney-Informatics-Hub/scrnavigator-nf.git
-cd scrnavigator-nf
 ```
 
 ### Input data
@@ -94,7 +95,7 @@ Donor_4,/g/data/er01/test-data/single-cell/human/rds/Donor4_filtered_matrix.seur
 **2. Run the initial QC pass:**
 
 ```bash
-nextflow run main.nf \
+nextflow run scrnavigator-nf \
     --input path/to/samplesheet.csv \
     --outdir results \
     --species human \
@@ -140,7 +141,7 @@ Donor_3,/g/data/er01/test-data/single-cell/human/rds/Donor3_filtered_matrix.seur
 **5. Re-run with thresholds applied,** using `-resume` to skip the already-completed unfiltered pass:
 
 ```bash
-nextflow run main.nf \
+nextflow run scrnavigator-nf \
     --input path/to/samplesheet.csv \
     --outdir results \
     --species human \
@@ -172,7 +173,7 @@ Donor_4,/g/data/er01/test-data/single-cell/human/rds/Donor4_filtered_matrix.seur
 Replace `--qc_only` with `--no_analysis` and re-run. QC steps will be retrieved from cache:
 
 ```bash
-nextflow run main.nf \
+nextflow run scrnavigator-nf \
     --input path/to/samplesheet.csv \
     --outdir results \
     --species human \
@@ -244,7 +245,7 @@ See [How-to customise annotation]() for using custom marker gene lists or altern
 Drop `--no_analysis` to run annotation (and pseudobulking, described below) for the first time:
 
 ```bash
-nextflow run main.nf \
+nextflow run scrnavigator-nf \
     --input path/to/samplesheet.csv \
     --outdir results \
     --species human \
@@ -299,7 +300,7 @@ female_Monocyte,male_Monocyte
 **3. Re-run** with `--pseudo_groups` and `--comparisons` added:
 
 ```bash
-nextflow run main.nf \
+nextflow run scrnavigator-nf \
     --input path/to/samplesheet.csv \
     --outdir results \
     --species human \
