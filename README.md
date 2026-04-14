@@ -147,7 +147,9 @@ Once satisfied with the per-sample filtering, proceed to doublet detection.
 
 ### Doublet detection and dataset integration
 
-Doublets are droplets that captured two cells and are flagged using DoubletFinder. Once removed, samples are merged, batch-corrected using CCA integration, and clustered - all in a single run using `--no_analysis`.
+Next, we proceed to doublet detection and integration. 
+
+Doublets are droplets that captured two cells and are flagged using DoubletFinder. Once removed, samples are merged, batch-corrected using CCA integration, and clustered. This is run by dropping the `--qc-only` flag. The `--no_analysis` flag is set to prevent moving on to cell annotation and analysis before inspecting the doublet and integration QC results (command specified below).
 
 Before running, **add a clustering resolution column (`res`) to the samplesheet** for each sample. The resolution controls the granularity of per-sample clusters used to inform doublet detection. Review the clustree plots from the QC step to choose an appropriate value per sample:
 
