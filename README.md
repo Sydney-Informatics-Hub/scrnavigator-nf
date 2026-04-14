@@ -81,7 +81,7 @@ Run each step sequentially, inspecting the interactive report (`results/report/i
 
 Start with an unfiltered QC pass to understand the quality characteristics of each sample before applying any cell filters. The `--qc_only` flag runs only the QC subworkflow, producing per-sample metrics to guide threshold selection.
 
-**1. Create a samplesheet** with at minimum a sample name, path to a preprocessed Seurat RDS file, and donor sex:
+**1. Create a samplesheet** with at minimum a sample name and path to a preprocessed Seurat RDS file. Additional metadata columns can be added, in this example, the donor `sex`:
 
 ```console
 sample,rds,sex
@@ -123,9 +123,9 @@ results/
 
 **3. Inspect the report.** Open `results/report/index.html` and identify per-sample filtering thresholds by examining the distributions of:
 
-- **nCount_RNA** - total RNA counts per cell. Select 3,000-12,000 in example
-- **nFeature_RNA** - unique genes per cell. Select a minimum of 2,000 in example.
-- **percent.mt** - mitochondrial gene fraction. Select a maximum of 10% in example.
+- **nCount_RNA** - total RNA counts per cell
+- **nFeature_RNA** - unique genes per cell
+- **percent.mt** - mitochondrial gene fraction
 
 **4. Update your samplesheet** with per-sample filtering thresholds. Leave any bound blank if no threshold applies for that sample:
 
