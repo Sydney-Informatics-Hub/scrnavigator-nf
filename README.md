@@ -100,7 +100,6 @@ nextflow run scrnavigator-nf \
     --outdir results \
     --species human \
     --qc_only \
-    --cluster_method louvain \
     -profile gadi \
     --gadi_account er01 \
     --gadi_storage scratch/er01+gdata/er01+gdata/if89 \
@@ -146,7 +145,6 @@ nextflow run scrnavigator-nf \
     --outdir results \
     --species human \
     --qc_only \
-    --cluster_method louvain \
     -profile gadi \
     --gadi_account er01 \
     --gadi_storage scratch/er01+gdata/er01+gdata/if89 \
@@ -178,7 +176,6 @@ nextflow run scrnavigator-nf \
     --outdir results \
     --species human \
     --no_analysis \
-    --cluster_method louvain \
     -profile gadi \
     --gadi_account er01 \
     --gadi_storage scratch/er01+gdata/er01+gdata/if89 \
@@ -249,7 +246,6 @@ nextflow run scrnavigator-nf \
     --input path/to/samplesheet.csv \
     --outdir results \
     --species human \
-    --cluster_method louvain \
     -profile gadi \
     --gadi_account er01 \
     --gadi_storage scratch/er01+gdata/er01+gdata/if89 \
@@ -304,7 +300,6 @@ nextflow run scrnavigator-nf \
     --input path/to/samplesheet.csv \
     --outdir results \
     --species human \
-    --cluster_method louvain \
     --pseudo_groups sex,cluster_annotation \
     --comparisons path/to/comparisons.csv \
     -profile gadi \
