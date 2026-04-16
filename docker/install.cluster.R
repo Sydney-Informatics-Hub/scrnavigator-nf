@@ -3,7 +3,8 @@
 # Install all required packages
 install.packages(
   c(
-    "clustree"
+    "clustree",
+    "leidenbase"
   ),
   repos = "https://cran.csiro.au/"
 )
