@@ -56,6 +56,7 @@ workflow {
     integrated_resolution           = channel.value(params.integrated_resolution)
     cohort_id                       = channel.value(params.cohort_id)
     species                         = channel.value(params.species.toLowerCase())
+    ensembl_version                 = channel.value(params.ensembl_version)
     annotate_mt                     = channel.value(!params.no_mt)
     min_cells_for_annotation        = channel.value(params.min_cells_for_annotation as Integer)
     custom_annotation_mad_threshold = channel.value(params.custom_annotation_mad_threshold as Float)
@@ -172,6 +173,7 @@ workflow {
         ANNOTATE(
             annotation_rds_input,
             species,
+            ensembl_version,
             s_genes,
             g2m_genes,
             ens_db_rds,

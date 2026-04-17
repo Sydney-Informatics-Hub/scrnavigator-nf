@@ -1,4 +1,5 @@
 // Load modules
+include { DOWNLOAD_ENSDB } from '../modules/download_db'
 include { ANNOTATE_CELL_CYCLE } from '../modules/annotate_cell_cycle'
 include { ANNOTATE_DATABASE } from '../modules/annotate_db'
 include { ANNOTATE_CUSTOM } from '../modules/annotate_custom'
@@ -8,6 +9,7 @@ workflow ANNOTATE {
     take:
     integrated_rds
     species
+    ref_version
     s_genes
     g2m_genes
     ens_db_rds
@@ -20,6 +22,9 @@ workflow ANNOTATE {
     manual_cluster_annotations
 
     main:
+    DOWNLOAD_ENSDB(species, ref_version)
+    ensdb = DOWNLOAD_ENSDB.out.ensdb.first()
+
     // Perform cell cycle annotation if required annotation data is provided
     valid_cc_annotation_params = species
         .merge(s_genes)
@@ -53,12 +58,13 @@ workflow ANNOTATE {
     valid_db_annotation_params = species
         .merge(min_cells_for_annotation)
         .merge(annotation_db)
-        .filter { spc, _mc, anndb -> {
+        .merge(ensdb)
+        .filter { spc, _mc, anndb, _ensdb -> {
             spc == 'human' || anndb != null
         } }
-        .map { spc, mc, anndb -> {
+        .map { spc, mc, anndb, ensdb_path -> {
             def anndb_opt = anndb == null ? [] : anndb
-            return [ spc, mc, anndb_opt ]
+            return [ spc, mc, anndb_opt, ensdb_path ]
         } }
     db_annotation_in = cc_annotation_out
         .merge(valid_db_annotation_params)

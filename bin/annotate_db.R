@@ -5,6 +5,7 @@ library(SingleR)
 library(ggplot2)
 library(ggrepel)
 library(scuttle)
+library(ensembldb)
 
 # Get commandline arguments
 args <- commandArgs(trailingOnly = TRUE)
@@ -12,6 +13,7 @@ args <- commandArgs(trailingOnly = TRUE)
 cohort_id <- args[1]
 rds_path <- args[2]
 annotation_file <- args[3]
+ensdb_path <- args[4]
 
 # Read in Seurat object from RDS file
 integrated <- readRDS(rds_path)
@@ -30,6 +32,11 @@ min_cells_for_annotation <- as.integer(annotation_params$value[match("min_cells_
 annotation_db_file <- annotation_params$value[match("annotation_db", annotation_params$param)]
 data_is_ensembl <- all(startsWith(rownames(integrated@assays$RNA), "ENS"))
 
+ensdb <- NULL
+if (!is.na(ensdb_path) && file.exists(ensdb_path)) {
+  ensdb <- EnsDb(ensdb_path)
+}
+
 use_hpca <- FALSE
 if (!is.na(annotation_db_file)) {
   annotation_db <- readRDS(annotation_db_file)
@@ -45,6 +52,21 @@ if (!is.na(annotation_db_file)) {
 }
 
 sce <- as.SingleCellExperiment(integrated, assay = "RNA")
+
+if (data_is_ensembl && !is.null(ensdb)) {
+  gene_map <- AnnotationDbi::select(
+    ensdb,
+    keys = rownames(sce),
+    keytype = "GENEID",
+    columns = c("GENEID", "SYMBOL")
+  )
+  gene_map <- gene_map[!duplicated(gene_map$GENEID) & !is.na(gene_map$SYMBOL), ]
+  matched <- match(rownames(sce), gene_map$GENEID)
+  mapped <- !is.na(matched)
+  rownames(sce)[mapped] <- gene_map$SYMBOL[matched[mapped]]
+  data_is_ensembl <- FALSE
+}
+
 sceM <- logNormCounts(sce)
 
 if (use_hpca) {
