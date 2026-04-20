@@ -56,6 +56,34 @@ for (n in names(feature_count_plot_files)) {
 }
 ```
 
+During the clustering stage, cells are grouped together based on the similarities between their expression profiles. This process is dependent upon a parameter called the "resolution". Smaller resolutions lead to larger clusters, while larger resolutions lead to smaller clusters. It is important to find the right clustering resolution for your dataset so that you capture as much of the information about your sample as possible without creating lots of tiny clusters that have no biological meaning.
+
+To aid in this process, we have clustered your data at multiple resolutions (see below for all of the resolutions used). We have then used the R package `clustree` to create a graph representation of your clustering results at each of the resolutions. These graphs show a cluster tree where each circle represents a cluster, and each row of clusters represents a given resolution. The rows of clusters are organised from smallest to largest clustering resolution. The arrows represent how cells move between clusters when going from one resolution to the next. The size and opacity of the arrows represents the proportion of cells moving from one cluster to the next.
+
+A good rule of thumb for selecting a clustering resolution for your data is to look for the resolutions at which the clusters remain relatively stable, i.e. there is little movement of cells between clusters. In the cluster trees this looks like rows of clusters where most of the clusters have a single, solid arrow incoming from the previous resolution. In contrast, unstable resolutions will have clusters with many, faint arrows incoming, representing clusters that are splitting and merging with each other from one resolution to the next.
+
+Below, you will find cluster trees for each of your samples, plus count vs. feature scatter plots for each of the clusters at each resolution.
+
+#### Clustering resolutions
+
+The following clustering resolutions were applied to each of your samples:
+
+```{r}
+#| echo: false
+#| results: asis
+#| warning: false
+#| error: false
+#| message: false
+
+cluster_res_all <- cluster_res[[1]]
+cluster_res_all <- as.numeric((cluster_res_all))
+cluster_res_all <- sort(cluster_res_all)
+cluster_res_str <- paste("- ", cluster_res_all, collapse = "\n")
+cluster_res_str <- paste0(cluster_res_str, "\n")
+
+cat(cluster_res_str)
+```
+
 :::panel-tabset
 
 ```{r}

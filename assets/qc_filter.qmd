@@ -67,6 +67,7 @@ samplesheet <- read_csv("samplesheets/samplesheet.csv")
 
 filtering_params <- samplesheet %>%
   select(any_of(c(
+    "sample",
     "min_ncount",
     "max_ncount",
     "min_nfeature",
@@ -79,7 +80,7 @@ filtering_params <- samplesheet %>%
 is_filtered <- !all(is.na(filtering_params) | filtering_params == "")
 ```
 
-The following plots show the distributions of UMI counts (called `nCount_RNA`) and unique gene counts (called `nFeature_RNA`) per cell, as well as the mitochondiral gene percentages (`percent.mt`) per cell. These three values are plotted in the "Features vs counts" scatter plots towards the bottom of the page. Ideally, you want to see a roughly linear relationship between these values, up to a plateau point where greater sequencing depth no longer captures additional genes. Poor quality or dying cells may appear as additional clusters of cells towards the bottom-right corners of the plots. Additionally, high mitochondrial gene percentages may be indicative of dying cells, although some cell types may show high mitochondrial gene percentages even when healthy.
+The plots on this page show the distributions of UMI counts (called `nCount_RNA`) and unique gene counts (called `nFeature_RNA`) per cell, as well as the mitochondiral gene percentages (`percent.mt`) per cell. These three values are plotted in the "Features vs counts" scatter plots towards the bottom of the page. Ideally, you want to see a roughly linear relationship between these values, up to a plateau point where greater sequencing depth no longer captures additional genes. Poor quality or dying cells may appear as additional clusters of cells towards the bottom-right corners of the plots. Additionally, high mitochondrial gene percentages may be indicative of dying cells, although some cell types may show high mitochondrial gene percentages even when healthy.
 
 The table at the bottom of the page summarises the number of cells in each sample. If per-sample filtering was performed, the pre- and post-filter cell counts, as well as the percentage of cells filtered per sample, are shown in this table as well.
 
@@ -96,6 +97,8 @@ markdown_text <- "#### Filtering thresholds
 The samples in the dataset were filtered according to the following thresholds:
 
 "
+
+cat(markdown_text)
 ```
 
 ```{r}
@@ -106,6 +109,7 @@ The samples in the dataset were filtered according to the following thresholds:
 #| eval: !expr is_filtered
 
 filtering_params_cols <- c(
+  sample = "Sample name",
   min_ncount = "Min. UMI count",
   max_ncount = "Max. UMI count",
   min_nfeature = "Min. gene count",
@@ -121,7 +125,7 @@ filtering_params_non_null <- filtering_params %>%
 
 filtering_params_non_null_cols <- filtering_params_cols[colnames(filtering_params_non_null)]
 
-datatable(filtering_params_non_null, colnames = filtering_params_non_null_cols)
+datatable(filtering_params_non_null, colnames = unname(filtering_params_non_null_cols))
 ```
 
 :::panel-tabset
