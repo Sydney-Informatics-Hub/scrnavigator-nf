@@ -37,6 +37,14 @@ integrated_umap_file <- dir(
 cohort_id <- gsub("^integration_qc\\/(.*)\\.umap\\.merged\\.png$", "\\1", merged_umap_file)
 ```
 
+Following initial quality control of your data, the next phase of the scRNAvigator workflow is to conduct dataset integration. Integration is a vital step where all of your samples are merged into a single dataset and undergo batch effect correction.
+
+Batch effects arise in single cell data due to slight differences in how each sample is handled, processed, or sequenced. These small differences are enough to cause cells to cluster together based on their sample of origin rather than by biologically significant differences, such as cell type or experimental condition. This erroneous clustering can impact downstream analysis and so must be corrected.
+
+We use the anchor-based CCA ("Canonical Correlation Analysis") integration method implemented in the `Seurat` package to perform this batch correction. Briefly, this method looks for shared patterns in the correlation between cells across each of the samples and uses this to estimate and correct for the batch effects in the data.
+
+Below you will find two UMAP plots. The first plot shows the merged but un-corrected (unintegrated) dataset. Cells are colour-coded by their sample of origin. You may notice several clusters in this plot that appear to originate primarily from a single sample. In the second plot, the integrated, corrected dataset is shown. A good batch correction should show more homogeneous clusters, with cells from all samples mixing together. You should see much fewer clusters originating from a single sample in this plot.
+
 #### Dataset name: `{r} cohort_id`
 
 ### Merged (unintegrated) dataset UMAP

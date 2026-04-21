@@ -95,6 +95,14 @@ for (n in names(feature_count_plot_files)) {
 }
 ```
 
+Doublets are cases of two cells being captured together during the sample preparation phase, causing both cells to be barcoded with the same DNA barcode. This results in the individual cells' expression profiles being merged together. These doublets (or multiplets in the case of three or more cells being captured together) don't represent real cells and will confound donwstream analyses. As such, they should be removed.
+
+The doublet detection stage of the workflow uses the R package `DoubletFinder` to compare the expression profile of each barcode against artificial doublets created by averaging the expression profiles of randomly-chosen pairs of barcodes. Barcodes with similar expression profiles to these artificial doublets are considered real doublets and are removed from the dataset.
+
+Below you will find several plots for each sample illustrating the doublets identified. At the top are two bar graphs showing the number and proportion of doublets identified per cluster, respectively. You will also find a UMAP plot of your single cell data with doublets highlighted in red to show which clusters were affected. Below these plots you will find clustering plots similar to those in the previous [clustering report](qc_cluster.qmd), including a cluster tree plot and multiple count vs. feature plots for each cluster of cells at each clustering resolution. This clustering analysis has been performed after doublet removal and demonstrate the effect of doublet removal on the clustering results.
+
+Finally, at the bottom of the page, you will find a summary table with the number and proportion of doublets identified per sample.
+
 :::panel-tabset
 
 ```{r}
