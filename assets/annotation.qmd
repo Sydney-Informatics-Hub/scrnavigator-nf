@@ -27,6 +27,19 @@ available_annotation_files <- dir(
   full.names = TRUE
 )
 available_annotations <- unlist(sapply(available_annotation_files, scan, character()))
+annotation_priority <- c(
+  "custom_cell_type",
+  "custom_cell_type.max_score",
+  "SingleR.annotation",
+  "SingleR.hpca_main",
+  "SingleR.hpca_fine",
+  "Phase"
+)
+annotation_priority <- annotation_priority[annotation_priority %in% available_annotations]
+annotation_used_for_clusters <- scan("cluster_annotation.txt", character())
+if (length(annotation_used_for_clusters) == 0) {
+  annotation_used_for_clusters <- annotation_priority[1]
+}
 ```
 
 ```{r}
@@ -138,9 +151,50 @@ if (is.null(cohort_id)) {
 }
 ```
 
+There are three main annotation options you can choose when running the scRNAvigator pipeline:
+
+- Cell cycle annotation
+- Automatic cell type annotation
+- Custom marker gene-based annotation
+
+Cell cycle annotation is useful if you are studying rapidly-dividing cells such as tumor samples and wish to capture information about which stage of the cell cycle each cell is in. This annotation is automatic for human samples and can be enabled for non-human samples by providing lists of cell cycle marker genes for your species using the `--s_genes` and `--g2m_genes` parameters.
+
+Automatic cell type annotation is performed by comparing your data against curated and pre-annotated public datasets and assigning annotations to your cells based on their similarities to the curated datasets. For human samples, the Human Primary Cell Atlas (HPCA) database is used for this purpose by default, although you can override the database used with the `--annotation_db` parameter. For non-human species, you will need to use this parameter and provide a database file in order to perform automatic cell type annotation.
+
+Custom marker gene-based annotation takes a list of cell types and associated marker genes and runs a scoring algorithm to determine the closest matching cell type for each cell. You provide this list of cell types using the `--custom_marker_genes` parameter. The file provided must be a CSV file and contain an annotation label and a list of genes associated with it. Cells that score highly for more than one cell type will be labelled "Ambiguous".
+
+After annotation with one or more of the above methods, your cell **clusters** will be annotated as well. This takes one of the annotation categories from above and determines whether that cluster predominantly consists of a single cell type or label. If so, that label is applied to the whole cluster. If there is too much heterogeneity within a cluster, it is labelled "Ambiguous". By default, a cell type must make up 2/3 of the cluster for that label to be applied to the cluster as well. You can choose the threshold used with the `--cell_type_proportion_threshold` parameter.
+
+By default, the annotation category used for cluster annotation is the first in the following list that has been performed:
+
+- Custom marker gene-based annotation
+- Automatic cell type annotation
+  - For human HPCA annotations, the 'main' level annotation is prioritised over the 'fine' level annotation
+- Cell cycle annotation
+
+The annotation category used for cluster annotation can be overridden using the `--cluster_annotation`. See below for a list of valid values from your dataset.
+
 #### Dataset name: `{r} cohort_id`
 
+### All annotation fields available for cluster annotation
+
+The following annotation fields are available for cluster annotation:
+
+```{r}
+#| echo: false
+#| results: asis
+for (ann in annotation_priority) {
+  cat("- ")
+  cat(ann)
+  cat("\n")
+}
+```
+
+The field used for cluster annotation was: **`{r} annotation_used_for_clusters`**
+
 ### All annotation fields available for downstream analyses
+
+The following list contains all of the annotations listed above, as well as `cluster_annotation` and additional metadata fields you provided in the samplesheet. These are all of the fields available to you for performing downstream pseudobulking and subsequent differential expression and functional enrichment analyses.
 
 ```{r}
 #| echo: false

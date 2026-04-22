@@ -35,6 +35,7 @@ process REPORT {
     script:
     def int_res = (metadata.integration_resolution == null) ? '' : metadata.integration_resolution
     def pseudo_groups = (metadata.pseudo_groups == null) ? '' : metadata.pseudo_groups.tokenize(',').join('\n')
+    def cluster_annotation = (metadata.cluster_annotation == null) ? '' : metadata.cluster_annotation
     def meta_fields = (metadata.meta_fields == null) ? '' : metadata.meta_fields.join('\n')
     """
     # Save important metadata to file for reporting
@@ -42,6 +43,7 @@ process REPORT {
     mkdir -p available_annotations
     echo "${int_res}" > integration_resolution.txt
     echo -e "${pseudo_groups}" > pseudo_groups.txt
+    echo -e "${cluster_annotation}" > cluster_annotation.txt
     echo -e "${meta_fields}" > available_annotations/metadata.txt
     if [ -d "annotation_clusters" ]; then
         echo "cluster_annotation" > available_annotations/clusters.txt

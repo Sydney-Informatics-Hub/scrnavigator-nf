@@ -342,7 +342,8 @@ workflow {
         .map { meta_fields -> [ meta_fields ] }
         .merge(integrated_resolution)
         .merge(pseudo_groups)
-        .map { meta, int_res, pseudo -> [ meta_fields: meta, integration_resolution: int_res, pseudo_groups: pseudo ] }
+        .merge(cluster_annotation)
+        .map { meta, int_res, pseudo -> [ meta_fields: meta, integration_resolution: int_res, pseudo_groups: pseudo, cluster_annotation: cluster_annotation ] }
 
     // Gather all report templates
     index_template = channel.fromPath("${projectDir}/assets/index.qmd", checkIfExists: true)
