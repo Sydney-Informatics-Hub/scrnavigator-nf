@@ -1,12 +1,12 @@
 process PREPROCESS_RDS {
     publishDir "${params.outdir}/qc/${sample}/preprocess", mode: 'copy'
-    // ext input_size: { new InputFileSizes(rds_path) + new InputFileSizes(ens_db_rds) }
-    ext input_size: { rds_path.size() + ( ens_db_rds ? ens_db_rds.size() : 0 ) }
+    // ext input_size: { new InputFileSizes(rds_path) + new InputFileSizes(ens_db) }
+    ext input_size: { rds_path.size() + ( ens_db ? ens_db.size() : 0 ) }
     memory { 4.GB + task.ext.input_size.B * 10 }
     container "sydneyinformaticshub/scrnavigator-nf-annotate"
 
     input:
-    tuple val(sample), path(rds_path), val(meta), val(species), path(ens_db_rds), val(annotate_mt), path(mt_gene_list)
+    tuple val(sample), path(rds_path), val(meta), val(species), path(ens_db), val(annotate_mt), path(mt_gene_list)
 
     output:
     tuple val(sample), path("${sample}.preprocessed.rds"), emit: preprocessed_rds
@@ -16,7 +16,7 @@ process PREPROCESS_RDS {
         meta.collect { field, value -> [ field, ( value == null ? '' : value ) ].join(',') }.join('\n')
     def annotation_csv = 'param,value\n' +
         "species,${species}\n" +
-        "ens_db_rds,${ens_db_rds}\n" +
+        "ens_db,${ens_db}\n" +
         "annotate_mt,${annotate_mt}\n" +
         "mt_gene_list,${mt_gene_list}\n"
     """

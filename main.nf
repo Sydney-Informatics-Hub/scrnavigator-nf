@@ -1,4 +1,5 @@
 // Load modules
+include { DOWNLOAD_ENSDB } from './modules/downlod_db'
 include { QUALITY_CONTROL } from './subworkflows/qc'
 include { DETECT_DOUBLETS } from './modules/doublet'
 include { INTEGRATE } from './subworkflows/integrate'
@@ -46,8 +47,8 @@ workflow {
             "Error: If --species is neither 'human' nor 'mouse', --mt_gene_list must be provided."
     }
     assert ['human', 'mouse'].contains(params.species.toLowerCase()) ||
-        !!params.ens_db_rds :
-        "Error: If --species is neither 'human' nor 'mouse', --ens_db_rds must be provided."
+        !!params.ens_db :
+        "Error: If --species is neither 'human' nor 'mouse', --ens_db must be provided."
 
     // Create channels from params
     // Required parameters and parameters with defaults
@@ -66,7 +67,7 @@ workflow {
     // Optional parameters
     cluster_annotation         = !!params.cluster_annotation         ? channel.value(params.cluster_annotation)                                         : channel.value([null])
     mt_gene_list               = !!params.mt_gene_list               ? channel.fromPath(params.mt_gene_list, checkIfExists: true).first()               : channel.value([null])
-    ens_db_rds                 = !!params.ens_db_rds                 ? channel.fromPath(params.ens_db_rds, checkIfExists: true).first()                 : channel.value([null])
+    ens_db                 = !!params.ens_db                 ? channel.fromPath(params.ens_db, checkIfExists: true).first()                 : channel.value([null])
     s_genes                    = !!params.s_genes                    ? channel.fromPath(params.s_genes, checkIfExists: true).first()                    : channel.value([null])
     g2m_genes                  = !!params.g2m_genes                  ? channel.fromPath(params.g2m_genes, checkIfExists: true).first()                  : channel.value([null])
     annotation_db              = !!params.annotation_db              ? channel.fromPath(params.annotation_db, checkIfExists: true).first()              : channel.value([null])
@@ -124,13 +125,16 @@ workflow {
             return [ sample, rds_paths ]
         }}
 
+    // Download species ensembledb for converting Ensemble IDs to gene symbols
+    ens_db = DOWNLOAD_ENSDB(params.species, params.ens_db_version).first()
+
     // Run initial quality control
     QUALITY_CONTROL(
         samplesheet,
         all_resolutions,
         cluster_method,
         species,
-        ens_db_rds,
+        ens_db,
         annotate_mt,
         mt_gene_list
     )
@@ -176,7 +180,7 @@ workflow {
             ensembl_version,
             s_genes,
             g2m_genes,
-            ens_db_rds,
+            ens_db,
             min_cells_for_annotation,
             annotation_db,
             custom_marker_genes,

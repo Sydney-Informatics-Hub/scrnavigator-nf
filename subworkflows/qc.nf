@@ -9,7 +9,7 @@ workflow QUALITY_CONTROL {
     all_resolutions
     cluster_method
     species
-    ens_db_rds
+    ens_db
     annotate_mt
     mt_gene_list
 
@@ -18,7 +18,7 @@ workflow QUALITY_CONTROL {
     rds_files = samplesheet
         .map { row -> [ row.sample, row.rds_path, row.meta ] }
         .merge(species)
-        .merge(ens_db_rds)
+        .merge(ens_db)
         .merge(annotate_mt)
         .merge(mt_gene_list)
         .map { smp, rds, meta, spc, ens, mtann, mtlist -> {
