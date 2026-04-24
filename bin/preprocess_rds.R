@@ -1,6 +1,7 @@
 #!/usr/bin/env -S Rscript --vanilla
 library(Seurat)
 library(tidyverse)
+library(ensembldb)
 
 # Get commandline arguments
 args <- commandArgs(trailingOnly = TRUE)
@@ -30,7 +31,7 @@ for (field in metadata$field) {
 
 # Ensure both gene symbols and Ensembl IDs are present in the RNA assay metadata
 species <- annotation_params$value[match("species", annotation_params$param)]
-ensdb_file <- annotation_params$value[match("ens_db_rds", annotation_params$param)]
+ensdb_file <- annotation_params$value[match("ens_db", annotation_params$param)]
 
 if (!is.na(ensdb_file)) {
   endsb <- readRDS(ensdb_file)

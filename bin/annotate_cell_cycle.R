@@ -2,6 +2,7 @@
 library(Seurat)
 library(tidyverse)
 library(ggplot2)
+library(ensembldb)
 
 # Get commandline arguments
 args <- commandArgs(trailingOnly = TRUE)
@@ -35,7 +36,7 @@ if (!is.na(s_genes_file) && !is.na(g2m_genes_file)) {
 }
 
 # Convert cell cycle genes between symbols and Ensembl IDs where necessary
-ensdb_file <- annotation_params$value[match("ens_db_rds", annotation_params$param)]
+ensdb_file <- annotation_params$value[match("ens_db", annotation_params$param)]
 
 if (!is.na(ensdb_file)) {
   endsb <- readRDS(ensdb_file)

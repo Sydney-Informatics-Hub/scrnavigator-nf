@@ -1,5 +1,5 @@
 // Load modules
-include { DOWNLOAD_ENSDB } from './modules/downlod_db'
+include { DOWNLOAD_ENSDB } from './modules/download_ensdb'
 include { QUALITY_CONTROL } from './subworkflows/qc'
 include { DETECT_DOUBLETS } from './modules/doublet'
 include { INTEGRATE } from './subworkflows/integrate'
@@ -67,7 +67,7 @@ workflow {
     // Optional parameters
     cluster_annotation         = !!params.cluster_annotation         ? channel.value(params.cluster_annotation)                                         : channel.value([null])
     mt_gene_list               = !!params.mt_gene_list               ? channel.fromPath(params.mt_gene_list, checkIfExists: true).first()               : channel.value([null])
-    ens_db                 = !!params.ens_db                 ? channel.fromPath(params.ens_db, checkIfExists: true).first()                 : channel.value([null])
+    ens_db                     = !!params.ens_db                     ? channel.fromPath(params.ens_db, checkIfExists: true).first()                     : channel.value([null])
     s_genes                    = !!params.s_genes                    ? channel.fromPath(params.s_genes, checkIfExists: true).first()                    : channel.value([null])
     g2m_genes                  = !!params.g2m_genes                  ? channel.fromPath(params.g2m_genes, checkIfExists: true).first()                  : channel.value([null])
     annotation_db              = !!params.annotation_db              ? channel.fromPath(params.annotation_db, checkIfExists: true).first()              : channel.value([null])
@@ -125,8 +125,8 @@ workflow {
             return [ sample, rds_paths ]
         }}
 
-    // Download species ensembledb for converting Ensemble IDs to gene symbols
-    ens_db = DOWNLOAD_ENSDB(params.species, params.ens_db_version).first()
+    // Download species ensembledb for converting Ensembl IDs to gene symbols
+    ens_db = DOWNLOAD_ENSDB(params.species, params.ens_db_version)
 
     // Run initial quality control
     QUALITY_CONTROL(
@@ -177,7 +177,6 @@ workflow {
         ANNOTATE(
             annotation_rds_input,
             species,
-            ensembl_version,
             s_genes,
             g2m_genes,
             ens_db,

@@ -12,8 +12,8 @@ process DOWNLOAD_ENSDB {
     script:
     """
     mkdir -p .cache
-    XDG_CACHE_HOME="${PWD}/.cache"
+    export XDG_CACHE_HOME="\${PWD}/.cache"
     
-    download_ensdb.R "${species}" "${ref_version}" "${XDG_CACHE_HOME}"
+    download_ensdb.R "${species}" "${ref_version}" "\${XDG_CACHE_HOME}"
     """
 }
