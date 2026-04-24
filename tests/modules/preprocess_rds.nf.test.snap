@@ -1,0 +1,25 @@
+{
+    "Should run without failures": {
+        "content": [
+            {
+                "0": [
+                    [
+                        "sample_1_ctrl",
+                        "sample_1_ctrl.preprocessed.rds:md5,999a42a58f457351caba0cdaebb6eff2"
+                    ]
+                ],
+                "preprocessed_rds": [
+                    [
+                        "sample_1_ctrl",
+                        "sample_1_ctrl.preprocessed.rds:md5,999a42a58f457351caba0cdaebb6eff2"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.2"
+        },
+        "timestamp": "2026-04-24T14:06:20.151990693"
+    }
+}
