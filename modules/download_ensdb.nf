@@ -16,4 +16,11 @@ process DOWNLOAD_ENSDB {
     
     download_ensdb.R "${species}" "${ref_version}" "\${XDG_CACHE_HOME}"
     """
+
+    stub:
+    """
+    # For test and dry runs, we don't actually need to download a file. 
+    # We can just create an empty file with the expected output
+    touch "EnsDb_${species}_${ref_version}.sqlite"
+    """
 }

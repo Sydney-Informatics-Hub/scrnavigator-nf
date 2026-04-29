@@ -46,9 +46,6 @@ workflow {
             !!params.mt_gene_list :
             "Error: If --species is neither 'human' nor 'mouse', --mt_gene_list must be provided."
     }
-    assert ['human', 'mouse'].contains(params.species.toLowerCase()) ||
-        !!params.ens_db :
-        "Error: If --species is neither 'human' nor 'mouse', --ens_db must be provided."
 
     // Create channels from params
     // Required parameters and parameters with defaults
@@ -125,8 +122,13 @@ workflow {
             return [ sample, rds_paths ]
         }}
 
-    // Download species ensembledb for converting Ensembl IDs to gene symbols
-    ens_db = DOWNLOAD_ENSDB(params.species, params.ens_db_version)
+    // Resolve ens_db source:
+    // 1. human/mouse + no --ens_db   → null (R scripts fall back to built-in defaults)
+    // 2. --ens_db provided           → use the supplied sqlite file (any species)
+    // 3. other species + no --ens_db → download via DOWNLOAD_ENSDB
+    if (!params.ens_db && !['human', 'mouse'].contains(params.species.toLowerCase())) {
+        ens_db = DOWNLOAD_ENSDB(params.species, params.ens_db_version)
+    }
 
     // Run initial quality control
     QUALITY_CONTROL(
