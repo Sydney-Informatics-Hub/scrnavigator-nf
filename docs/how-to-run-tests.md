@@ -18,7 +18,7 @@ All paths in the commands below assume this layout:
 └── scrnavigator-nf/      ← projectDir, do not cd into
 ```
 
-## Generate the test EnsDb fixture
+### Generate the test EnsDb fixture
 
 This step is required once before running any process-level tests that use a real EnsDb sqlite. It downloads the full human EnsDb and subsets it to only the genes present in the test data.
 
@@ -69,3 +69,25 @@ R
 ```
 
 This produces `tests/data/EnsDb_hsapiens_test.sqlite`. This file is excluded from version control by the `*.sqlite` rule already in `.gitignore`.
+
+## Running tests
+
+Tests must be run from inside `projectDir` so nf-test can find `nf-test.config`:
+
+```bash
+cd ../scrnavigator-nf
+```
+
+### Process-level tests
+
+Require containers and the EnsDb fixture from the step above. Submit via an interactive `copyq` session or a PBS job with singularity loaded.
+
+```bash
+nf-test test tests/modules/ --profile test,singularity
+```
+
+To run a single module test:
+
+```bash
+nf-test test tests/modules/preprocess_rds.nf.test --profile test,singularity
+```
