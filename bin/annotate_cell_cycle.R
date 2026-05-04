@@ -38,8 +38,8 @@ if (!is.na(s_genes_file) && !is.na(g2m_genes_file)) {
 # Convert cell cycle genes between symbols and Ensembl IDs where necessary
 ensdb_file <- annotation_params$value[match("ens_db", annotation_params$param)]
 
-if (!is.na(ensdb_file)) {
-  endsb <- readRDS(ensdb_file)
+if (file.exists(ensdb_file)) {
+  ensdb <- EnsDb(ensdb_file)
 } else if (species == "human") {
   ensdb <- EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86
 } else if (species == "mouse") {

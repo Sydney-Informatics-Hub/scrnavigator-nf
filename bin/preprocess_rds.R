@@ -33,8 +33,8 @@ for (field in metadata$field) {
 species <- annotation_params$value[match("species", annotation_params$param)]
 ensdb_file <- annotation_params$value[match("ens_db", annotation_params$param)]
 
-if (!is.na(ensdb_file)) {
-  endsb <- readRDS(ensdb_file)
+if (file.exists(ensdb_file)) {
+  ensdb <- EnsDb(ensdb_file)
 } else if (species == "human") {
   ensdb <- EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86
 } else if (species == "mouse") {
@@ -88,6 +88,9 @@ if (!annotate_mt) {
   mt_pattern <- "^mt-"
 } else {
   mt_list_file <- annotation_params$value[match("mt_gene_list", annotation_params$param)]
+  if (!file.exists(mt_list_file)) {
+    stop("Error: For non-human/mouse species with MT annotation enabled, a valid --mt_gene_list file must be provided.")
+  }
   mt_list <- scan(mt_list_file, character())
 }
 
