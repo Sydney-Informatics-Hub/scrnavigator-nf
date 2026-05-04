@@ -53,6 +53,7 @@ if (ens_rownames) {
     keytype = "GENEID"
   )
   stopifnot(all(ens_ids == names(gene_symbols)))
+  unmatched <- ens_ids[is.na(gene_symbols)]
 } else {
   gene_symbols <- rownames(so@assays$RNA)
   ens_ids <- AnnotationDbi::mapIds(
@@ -62,7 +63,25 @@ if (ens_rownames) {
     keytype = "SYMBOL"
   )
   stopifnot(all(gene_symbols == names(ens_ids)))
+  unmatched <- gene_symbols[is.na(ens_ids)]
 }
+
+# Write gene mapping stats to file for validation
+n_total     <- length(gene_symbols)
+n_unmatched <- length(unmatched)
+n_matched   <- n_total - n_unmatched
+write.csv(
+  data.frame(
+    sample      = sample_id,
+    n_total     = n_total,
+    n_matched   = n_matched,
+    n_unmatched = n_unmatched,
+    unmatched_examples = paste(head(unmatched, 5), collapse = ";")
+  ),
+  paste0(sample_id, ".gene_mapping_stats.csv"),
+  row.names = FALSE
+)
+
 have_ens_ids <- "gene_versions" %in% colnames(so@assays$RNA@meta.data) &&
   all(startsWith(as.character(so@assays$RNA@meta.data$gene_versions), "ENS"))
 have_gene_symbols <- "gene_symbols" %in% colnames(so@assays$RNA@meta.data) &&

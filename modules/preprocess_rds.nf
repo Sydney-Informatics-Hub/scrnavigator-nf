@@ -10,6 +10,7 @@ process PREPROCESS_RDS {
 
     output:
     tuple val(sample), path("${sample}.preprocessed.rds"), emit: preprocessed_rds
+    tuple val(sample), path("${sample}.gene_mapping_stats.csv"), emit: gene_mapping_stats
 
     script:
     def meta_csv = 'field,value\n' +
