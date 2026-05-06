@@ -16,7 +16,7 @@ process ANNOTATE_CELL_CYCLE {
     script:
     def annotation_csv = 'param,value\n' +
         "species,${species}\n" +
-        "s2_genes,${s2_genes}\n" +
+        "s_genes,${s_genes}\n" +
         "g2m_genes,${g2m_genes}\n" +
         "ens_db,${ens_db}\n"
     """

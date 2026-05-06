@@ -45,7 +45,7 @@ nextflow_process {
                     file("${projectDir}/tests/data/rds/sample_1.ctrl.Rds", checkIfExists: true),
                     [condition: "ctrl"],
                     "human",
-                    file("${projectDir}/tests/data/EnsDb_hsapiens_test.sqlite", checkIfExists: true),
+                    file("${projectDir}/tests/data/EnsDb_hsapiens_v113.sqlite", checkIfExists: true),
                     true,
                     []
                 ])
