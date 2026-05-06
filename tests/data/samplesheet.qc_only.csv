@@ -1,9 +1,9 @@
 sample,rds,condition,res
-sample_1_ctrl,../../../../data/sample_1.ctrl.Rds,ctrl,1
-sample_2_ctrl,../../../../data/sample_2.ctrl.Rds,ctrl,1
-sample_3_ctrl,../../../../data/sample_3.ctrl.Rds,ctrl,1
-sample_4_ctrl,../../../../data/sample_4.ctrl.Rds,ctrl,1
-sample_1_stim,../../../../data/sample_1.stim.Rds,stim,1
-sample_2_stim,../../../../data/sample_2.stim.Rds,stim,1
-sample_3_stim,../../../../data/sample_3.stim.Rds,stim,1
-sample_4_stim,../../../../data/sample_4.stim.Rds,stim,1
+sample_1_ctrl,../../../../data/rds/sample_1.ctrl.Rds,ctrl,1
+sample_2_ctrl,../../../../data/rds/sample_2.ctrl.Rds,ctrl,1
+sample_3_ctrl,../../../../data/rds/sample_3.ctrl.Rds,ctrl,1
+sample_4_ctrl,../../../../data/rds/sample_4.ctrl.Rds,ctrl,1
+sample_1_stim,../../../../data/rds/sample_1.stim.Rds,stim,1
+sample_2_stim,../../../../data/rds/sample_2.stim.Rds,stim,1
+sample_3_stim,../../../../data/rds/sample_3.stim.Rds,stim,1
+sample_4_stim,../../../../data/rds/sample_4.stim.Rds,stim,1

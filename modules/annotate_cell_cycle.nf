@@ -6,7 +6,7 @@ process ANNOTATE_CELL_CYCLE {
     container "sydneyinformaticshub/scrnavigator-nf-annotate"
 
     input:
-    tuple val(cohort_name), path(rds_path), val(species), path(s2_genes), path(g2m_genes), path(ens_db)
+    tuple val(cohort_name), path(rds_path), val(species), path(s_genes), path(g2m_genes), path(ens_db)
 
     output:
     tuple val(cohort_name), path("${cohort_name}.annotated.cell_cycle.rds"), emit: annotated_rds

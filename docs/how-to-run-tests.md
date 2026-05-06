@@ -9,7 +9,9 @@ cd /scratch/${PROJECT}/${USER}
 git clone https://github.com/Sydney-Informatics-Hub/scrnavigator-nf.git
 ```
 
-### Generate the test EnsDb fixture
+### Generate the test fixtures
+
+#### Ensembldb
 
 This step is required once before running any process-level tests that use a real EnsDb sqlite. It downloads the full human EnsDb v113 via `download_ensdb.R` inside the pipeline container.
 
@@ -24,6 +26,41 @@ Once in the session:
 ```bash
 module load nextflow singularity
 ```
+
+#### Cell cycle RDS
+
+Required by `ANNOTATE_CELL_CYCLE` tests. Generate by running the pipeline through integration on the test RDS files. Create `samplesheet.csv`:
+
+```
+sample,rds,condition,res
+sample_1_ctrl,../scrnavigator-nf/tests/data/rds/sample_1.ctrl.Rds,ctrl,1
+sample_3_ctrl,../scrnavigator-nf/tests/data/rds/sample_3.ctrl.Rds,ctrl,1
+sample_2_stim,../scrnavigator-nf/tests/data/rds/sample_2.stim.Rds,stim,1
+sample_4_stim,../scrnavigator-nf/tests/data/rds/sample_4.stim.Rds,stim,1
+```
+
+Then run:
+
+```bash
+nextflow run ../scrnavigator-nf \
+  --input samplesheet.csv \
+  --species human \
+  -profile gadi \
+  --gadi_account ${PROJECT} \
+  --gadi_storage scratch/${PROJECT}+gdata/if89 \
+  -resume
+```
+
+Copy the integrated RDS output to `tests/data/rds/cohort.integrated.rds`, then subset it to a small test fixture (~10 MB):
+
+```bash
+singularity exec \
+  --bind /scratch/${PROJECT}/${USER} \
+  $SIF \
+  Rscript --vanilla scrnavigator-nf/tests/data/subset_integrated.R
+```
+
+This produces `tests/data/rds/cohort.integrated.test.rds`.
 
 ### Check whether the container image is already available
 

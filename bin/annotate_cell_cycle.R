@@ -22,7 +22,7 @@ dir.create("qc_results")
 
 # Get cell cycle genes for species
 species <- annotation_params$value[match("species", annotation_params$param)]
-s_genes_file <- annotation_params$value[match("s2_genes", annotation_params$param)]
+s_genes_file <- annotation_params$value[match("s_genes", annotation_params$param)]
 g2m_genes_file <- annotation_params$value[match("g2m_genes", annotation_params$param)]
 
 if (file.exists(s_genes_file) && file.exists(g2m_genes_file)) {
