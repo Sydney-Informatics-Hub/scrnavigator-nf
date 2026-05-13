@@ -1,4 +1,4 @@
-# How to run the test suite
+# Testing
 
 ## Setup
 
@@ -14,7 +14,7 @@ git clone https://github.com/Sydney-Informatics-Hub/scrnavigator-nf.git
 Process-level tests need a Singularity container and (for fixture generation) network access. Submit an interactive job on `copyq`:
 
 ```bash
-qsub -I -P ${PROJECT} -q copyq -l walltime=10:00:00,mem=4GB,jobfs=200GB,storage=scratch/${PROJECT}+gdata/if89
+qsub -I -P ${PROJECT} -q copyq -l walltime=10:00:00,mem=8GB,jobfs=200GB,storage=scratch/${PROJECT}+gdata/if89
 ```
 
 Once in the session:
@@ -139,16 +139,3 @@ singularity exec \
 ```
 
 This generates all fixtures in order and skips any that already exist. Re-run the failing test afterwards.
-
-## Debugging
-
-To inspect intermediate objects interactively, open a shell inside the container then launch R:
-
-```bash
-singularity shell \
-  --bind $PWD \
-  $SINGULARITY_CACHEDIR/sydneyinformaticshub-scrnavigator-nf-annotate.img
-
-# Inside the container:
-R
-```
