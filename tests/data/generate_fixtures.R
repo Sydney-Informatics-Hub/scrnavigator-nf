@@ -20,4 +20,21 @@ if (!file.exists(ensdb_dest)) {
 # ---------------------------------------------------------------------------
 # 2. Integrated RDS subset for ANNOTATE_CELL_CYCLE tests
 # ---------------------------------------------------------------------------
-source("tests/data/subset_integrated.R")
+integrated_rds <- "tests/data/rds/cohort.integrated.test.rds"
+if (!file.exists(integrated_rds)) {
+  message(paste0(integrated_rds, " not found, creating.."))
+  source("tests/data/subset_integrated.R")
+} else {
+  message(paste0(integrated_rds, " already exists, skipping generation."))
+}
+
+# ---------------------------------------------------------------------------
+# 3. Clustered RDS subset for ANNOTATE_CUSTOM tests
+# ---------------------------------------------------------------------------
+clustered_rds <- "tests/data/rds/cohort.integrated.clustered.test.rds"
+if (!file.exists(clustered_rds)) {
+  message(paste0(clustered_rds, " not found, creating.."))
+  source("tests/data/subset_clustered.R")
+} else {
+  message(paste0(clustered_rds, " already exists, skipping generation."))
+}

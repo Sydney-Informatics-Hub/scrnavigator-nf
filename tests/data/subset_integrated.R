@@ -1,13 +1,15 @@
 #!/usr/bin/env Rscript --vanilla
 # Subset the integrated RDS to a small test fixture (~10 MB).
-# Run from scrnavigator-nf/:
-#   singularity exec exec $SINGULARITY_CACHEDIR/sydneyinformaticshub-scrnavigator-nf-annotate.img Rscript --vanilla tests/data/subset_integrated.R
+# Run from scrnavigator-nf/, passing the pipeline-produced integrated RDS as the first argument:
+#   singularity exec $SINGULARITY_CACHEDIR/sydneyinformaticshub-scrnavigator-nf-annotate.img \
+#     Rscript --vanilla tests/data/subset_integrated.R /path/to/cohort.integrated.rds
 
 library(Seurat)
 
-# cohort.integrated.rds is produced by running the pipeline through integration
-# on the test RDS files. See docs/how-to-run-tests.md — "Cell cycle RDS" section.
-src  <- "tests/data/rds/cohort.integrated.rds"
+args <- commandArgs(trailingOnly = TRUE)
+if (length(args) < 1) stop("Usage: subset_integrated.R <path/to/cohort.integrated.rds>")
+
+src  <- args[1]
 dest <- "tests/data/rds/cohort.integrated.test.rds"
 
 if (file.exists(dest)) {
