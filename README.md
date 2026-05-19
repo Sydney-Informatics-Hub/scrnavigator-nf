@@ -341,7 +341,7 @@ results/
 
 ## Developer docs
 
-Testing, interactive development with Singularity containers, and instructions for keeping the schema and this README in sync when parameters change:
+For help with testing, interactive development with Singularity containers, and instructions for keeping the schema and this README in sync when parameters change:
 
 → [docs/developer-instructions.md](docs/developer-instructions.md)
 

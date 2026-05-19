@@ -1,6 +1,6 @@
 # Keeping docs up to date
 
-## When you add or change a parameter
+## When you add, remove, or change a parameter
 
 Follow these steps whenever a parameter is added, removed, or renamed in `nextflow.config`.
 
@@ -20,6 +20,8 @@ Work through the prompts:
 - Accept new parameters and fill in their descriptions.
 - Confirm removal of parameters that no longer exist.
 - Save when done - this writes `nextflow_schema.json`.
+
+For more information on nf-core tooling, see the [nf-core website](https://nf-co.re/docs/get_started/environment_setup/nf-core-tools) and the [nf-core/tools GitHub repository](https://github.com/nf-core/tools).
 
 ### 3. Regenerate the README parameters table
 

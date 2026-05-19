@@ -1,5 +1,7 @@
 # Testing
 
+The following instructions demonstrate how to set up and run the pipeline tests via nf-test. Note that some of the instructions are specific to running these tests on the Australian national HPC "Gadi", hosted by the National Computing Infrastructure (NCI); these steps have been marked as such. These instructions also assume you are using Singularity as your container software.
+
 ## Setup
 
 Clone the repository:
@@ -9,12 +11,12 @@ cd /scratch/${PROJECT}/${USER}
 git clone https://github.com/Sydney-Informatics-Hub/scrnavigator-nf.git
 ```
 
-### Start an interactive session
+### Gadi: start an interactive session
 
-Process-level tests need a Singularity container and (for fixture generation) network access. Submit an interactive job on `copyq`:
+Process-level tests need a Singularity container and (for fixture generation) network access. For running these tests on Gadi, you will need to submit an interactive job on `copyq`:
 
 ```bash
-qsub -I -P ${PROJECT} -q copyq -l walltime=10:00:00,mem=8GB,jobfs=200GB,storage=scratch/${PROJECT}+gdata/if89
+qsub -I -P ${PROJECT} -q copyq -l walltime=10:00:00,mem=8GB,jobfs=200GB,storage=scratch/${PROJECT}
 ```
 
 Once in the session:
@@ -25,27 +27,21 @@ module load nextflow singularity
 
 ### Resolve the container image
 
-The pipeline caches Singularity images under your Nextflow singularity cache directory. Check whether the annotate image has been pulled already:
+The pipeline caches Singularity images under your Nextflow singularity cache directory. By default, this is located at `<NXF_LAUNCH_DIR>/work/singularity`, where `<NXF_LAUNCH_DIR>` is the launch directory where Nextflow is run from. It is recommended that you set this to a different directory of your choosing, especially if you are running Nextflow on a shared system like an HPC. You can set the Nextflow singularity cache directory by exporting the environment variable `NXF_SINGULARITY_CACHEDIR`.
+
+Generating the test fixures requires the `sydneyinformaticshub/scrnavigator-nf-annotate` image. Check whether the annotate image has been pulled already (e.g. if you have previously run the pipeline):
 
 ```bash
-ls $SINGULARITY_CACHEDIR | grep scrnavigator-nf-annotate
+SIF=${NXF_SINGULARITY_CACHEDIR}/sydneyinformaticshub-scrnavigator-nf-annotate.img
+ls ${SIF}
 ```
 
-**If the image is listed**, set `SIF` to its path:
-
-```bash
-SIF=${SINGULARITY_CACHEDIR}/sydneyinformaticshub-scrnavigator-nf-annotate.img
-```
-
-**If the image is not listed**, pull it first:
+If the image is **not listed**, pull it now:
 
 ```bash
 singularity pull \
-  --dir ${SINGULARITY_CACHEDIR} \
+  ${SIF} \
   docker://sydneyinformaticshub/scrnavigator-nf-annotate
-
-SIF=$(ls $SINGULARITY_CACHEDIR | grep scrnavigator-nf-annotate | head -1)
-SIF="${SINGULARITY_CACHEDIR}/${SIF}"
 ```
 
 ## Generate the test fixtures
