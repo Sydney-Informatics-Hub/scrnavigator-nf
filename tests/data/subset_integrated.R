@@ -4,13 +4,15 @@
 #   singularity exec $SINGULARITY_CACHEDIR/sydneyinformaticshub-scrnavigator-nf-annotate.img \
 #     Rscript --vanilla tests/data/subset_integrated.R /path/to/cohort.integrated.rds
 
+here::i_am("tests/data/subset_integrated.R")
+
 library(Seurat)
 
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) < 1) stop("Usage: subset_integrated.R <path/to/cohort.integrated.rds>")
 
 src  <- args[1]
-dest <- "tests/data/rds/cohort.integrated.test.rds"
+dest <- here::("tests/data/rds/cohort.integrated.test.rds")
 
 if (file.exists(dest)) {
   message("Fixture already exists: ", dest)
