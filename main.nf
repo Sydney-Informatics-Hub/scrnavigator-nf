@@ -41,8 +41,9 @@ workflow {
 
     // Check annotation-related parameters are set
     assert params.species : "Error: Must provide species name."
+    def species_lower = params.species.toLowerCase()
     if (!params.no_mt) {
-        assert ['human', 'mouse'].contains(params.species.toLowerCase()) ||
+        assert ['human', 'mouse'].contains(species_lower) ||
             !!params.mt_gene_list :
             "Error: If --species is neither 'human' nor 'mouse', --mt_gene_list must be provided."
     }
@@ -53,8 +54,8 @@ workflow {
     cluster_method                  = channel.value(params.cluster_method)
     integrated_resolution           = channel.value(params.integrated_resolution)
     cohort_id                       = channel.value(params.cohort_id)
-    species                         = channel.value(params.species.toLowerCase())
-    ensembl_version                 = channel.value(params.ensembl_version)
+    species                         = channel.value(species_lower)
+    ens_db_version                  = channel.value(params.ens_db_version)
     annotate_mt                     = channel.value(!params.no_mt)
     min_cells_for_annotation        = channel.value(params.min_cells_for_annotation as Integer)
     custom_annotation_mad_threshold = channel.value(params.custom_annotation_mad_threshold as Float)
@@ -122,13 +123,19 @@ workflow {
             return [ sample, rds_paths ]
         }}
 
-    // Resolve ens_db source:
-    // 1. human/mouse + no --ens_db   → null (R scripts fall back to built-in defaults)
-    // 2. --ens_db provided           → use the supplied sqlite file (any species)
-    // 3. other species + no --ens_db → download via DOWNLOAD_ENSDB
-    if (!params.ens_db && !['human', 'mouse'].contains(params.species.toLowerCase())) {
-        ens_db = DOWNLOAD_ENSDB(params.species, params.ens_db_version)
+    // Download Ensembl DB when no DB file is provided but a DB version is
+    if (!params.ens_db && !!params.ens_db_version) {
+        ens_db = DOWNLOAD_ENSDB(species, ens_db_version)
     }
+
+    // Check that either:
+    // 1. An Ensembl DB file is provided
+    // 2. An Ensembl DB version is provided
+    // 3. The species is human or mouse (handled automatically)
+    assert !!params.ens_db ||
+        !!params.ens_db_version ||
+        ['human', 'mouse'].contains(species_lower) :
+        "Error: Must provide either an Ensembl database sqlite file, an Ensembl databaser version, or the species must be human or mouse."
 
     // Run initial quality control
     QUALITY_CONTROL(
