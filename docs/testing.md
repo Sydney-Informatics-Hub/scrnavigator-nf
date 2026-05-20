@@ -80,7 +80,7 @@ rm scrnavigator-nf/tests/data/cohort.integrated.test.rds
 rm scrnavigator-nf/tests/data/cohort.integrated.clustered.test.rds
 ```
 
-Run the pipeline through integration using the samplesheet provided in `tests/data/samplesheet.generate_fixtures.csv`:
+Run the pipeline through integration using the samplesheet provided in `tests/data/samplesheet.generate_fixtures.csv`. **Note**, if you have made significant changes to the exepcted structure of the samplesheet, you may need to update this file accordingly.
 
 ```bash
 # Assuming running from the project directory's parent
@@ -88,16 +88,17 @@ nextflow run scrnavigator-nf \
   --input scrnavigator-nf/tests/data/samplesheet.generate_fixtures.csv \
   --species human \
   --no_analysis true \
+  -profile singularity,test \
   -resume
 ```
 
-Pass the integrated RDS output path to `subset_integrated.R` — it saves the fixture to `tests/data/rds/` automatically:
+Pass the integrated RDS output path (`results/integration/cohort.integrated.rds`) to `subset_integrated.R` — it saves the fixture to `tests/data/rds/` automatically:
 
 ```bash
 singularity exec \
   $SIF \
   Rscript --vanilla scrnavigator-nf/tests/data/subset_integrated.R \
-  scrnavigator-nf/tests/data/cohort.integrated.test.rds
+  results/integration/cohort.integrated.rds
 ```
 
 Then re-run `generate_fixtures.R` [as described above](#generate-the-test-fixtures) to rebuild the clustered RDS from the updated integrated fixture.
