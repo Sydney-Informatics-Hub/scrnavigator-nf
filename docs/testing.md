@@ -56,32 +56,38 @@ singularity exec \
 
 This creates:
 - `tests/data/EnsDb_hsapiens_v113.sqlite` (~540 MB) — human Ensembl annotation database, excluded from version control
+
+It will also re-create the following committed fixture if it is missing:
 - `tests/data/rds/cohort.integrated.clustered.test.rds` — derived from the committed integrated fixture by applying Seurat clustering
 
 Each step is skipped if the file already exists.
 
 ## Regenerating committed fixtures
 
-The RDS fixtures below are committed to the repo and do not need to be regenerated in normal use. Follow these steps only if the pipeline's object structure has changed.
+The following RDS fixtures are committed to the repo and do not need to be regenerated in normal use:
 
-### Cell cycle RDS (`cohort.integrated.test.rds`)
+- `tests/data/cohort.integrated.test.rds`
+- `tests/data/cohort.integrated.clustered.test.rds`
 
-Create `samplesheet.csv`:
+Follow these steps only if the pipeline's object structure has changed and new versions of these files are required.
 
-```
-sample,rds,condition,res
-sample_1_ctrl,../scrnavigator-nf/tests/data/rds/sample_1.ctrl.Rds,ctrl,1
-sample_3_ctrl,../scrnavigator-nf/tests/data/rds/sample_3.ctrl.Rds,ctrl,1
-sample_2_stim,../scrnavigator-nf/tests/data/rds/sample_2.stim.Rds,stim,1
-sample_4_stim,../scrnavigator-nf/tests/data/rds/sample_4.stim.Rds,stim,1
-```
+These steps all assume you are running from the project directory's **parent directory**.
 
-Run the pipeline through integration:
+First, delete the existing fixtures:
 
 ```bash
-nextflow run ../scrnavigator-nf \
-  --input samplesheet.csv \
+rm scrnavigator-nf/tests/data/cohort.integrated.test.rds
+rm scrnavigator-nf/tests/data/cohort.integrated.clustered.test.rds
+```
+
+Run the pipeline through integration using the samplesheet provided in `tests/data/samplesheet.generate_fixtures.csv`:
+
+```bash
+# Assuming running from the project directory's parent
+nextflow run scrnavigator-nf \
+  --input scrnavigator-nf/tests/data/samplesheet.generate_fixtures.csv \
   --species human \
+  --no_analysis true \
   -resume
 ```
 
@@ -91,14 +97,10 @@ Pass the integrated RDS output path to `subset_integrated.R` — it saves the fi
 singularity exec \
   $SIF \
   Rscript --vanilla scrnavigator-nf/tests/data/subset_integrated.R \
-  /path/to/cohort.integrated.rds
+  scrnavigator-nf/tests/data/cohort.integrated.test.rds
 ```
 
-Then re-run `generate_fixtures.R` to rebuild the clustered RDS from the updated integrated fixture.
-
-### Clustered RDS (`cohort.integrated.clustered.test.rds`)
-
-Derived from the cell cycle RDS above. Re-run `generate_fixtures.R` after updating `cohort.integrated.test.rds`.
+Then re-run `generate_fixtures.R` [as described above](#generate-the-test-fixtures) to rebuild the clustered RDS from the updated integrated fixture.
 
 ## Running tests
 
