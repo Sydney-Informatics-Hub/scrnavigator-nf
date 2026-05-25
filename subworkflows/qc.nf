@@ -12,6 +12,7 @@ workflow QUALITY_CONTROL {
     ens_db
     annotate_mt
     mt_gene_list
+    vars_to_regress
 
     main:
     // Pre-process RDS files
@@ -45,6 +46,7 @@ workflow QUALITY_CONTROL {
         .merge(cluster_method)
     sct_in = FILTER.out.qc_rds
         .join(cluster_params, by: 0)
+        .merge(vars_to_regress)
     SCTRANSFORM(sct_in)
 
     emit:

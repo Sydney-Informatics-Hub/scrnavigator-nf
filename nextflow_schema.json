@@ -71,6 +71,11 @@
           "description": "Specifies that annotation of mitochondrial gene percentages should be skipped.",
           "help_text": "Specify `no_mt` when running nuclei samples."
         },
+        "vars_to_regress": {
+          "type": "string",
+          "description": "Comma-separated list of variables to regress out during SCTransform normalisation. When `--no_mt` is not set, `percent.mt` is always included automatically.",
+          "help_text": "Values must correspond to columns present in the Seurat object metadata; any additional metadata fields provided in the samplesheet will be added to the Seurat object metadata and will be available for use with --vars_to_regress."
+        },
         "mt_gene_list": {
           "type": "string",
           "description": "Path to a text file containing known mitochondrial genes in the species. Not required when --species is either 'human' or 'mouse'."

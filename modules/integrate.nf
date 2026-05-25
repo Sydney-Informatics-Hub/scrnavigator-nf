@@ -8,6 +8,7 @@ process INTEGRATION {
     input:
     path rds_paths
     val cohort_name
+    val vars_to_regress
 
     output:
     tuple val(cohort_name), path("${cohort_name}.integrated.rds"), emit: integrated_rds
@@ -17,6 +18,6 @@ process INTEGRATION {
     script:
     def all_rds_paths = rds_paths.collect { f -> "'${f}'" }.join(' ')
     """
-    integrate.R "${cohort_name}" ${all_rds_paths}
+    integrate.R "${cohort_name}" "${vars_to_regress}" ${all_rds_paths}
     """
 }

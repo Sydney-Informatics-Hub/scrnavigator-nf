@@ -6,7 +6,7 @@ process SCTRANSFORM {
     container "sydneyinformaticshub/scrnavigator-nf-cluster"
 
     input:
-    tuple val(sample), path(rds_path), val(default_res), val(all_resolutions), val(cluster_method)
+    tuple val(sample), path(rds_path), val(default_res), val(all_resolutions), val(cluster_method), val(vars_to_regress)
 
     output:
     tuple val(sample), path("${sample}.sct_clustered.rds"), emit: sct_rds
@@ -22,6 +22,6 @@ process SCTRANSFORM {
     # Create parameter samplesheet
     echo -e "${params_csv}" > params.csv
 
-    sct.R "${sample}" "${rds_path}" params.csv
+    sct.R "${sample}" "${rds_path}" params.csv "${vars_to_regress}"
     """
 }

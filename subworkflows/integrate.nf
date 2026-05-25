@@ -9,10 +9,11 @@ workflow INTEGRATE {
     all_resolutions
     cluster_method
     integrated_resolution
+    vars_to_regress
 
     main:
     // Perform integration
-    INTEGRATION(all_rds_to_integrate, cohort_id)
+    INTEGRATION(all_rds_to_integrate, cohort_id, vars_to_regress)
 
     // Cluster integrated data
     cluster_input = INTEGRATION.out.integrated_rds

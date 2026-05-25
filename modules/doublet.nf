@@ -6,7 +6,7 @@ process DETECT_DOUBLETS {
     container "sydneyinformaticshub/scrnavigator-nf-doublet"
 
     input:
-    tuple val(sample), path(rds_path, stageAs: "input/*"), val(multiplet_rate), val(default_res), val(all_resolutions), val(cluster_method)
+    tuple val(sample), path(rds_path, stageAs: "input/*"), val(multiplet_rate), val(default_res), val(all_resolutions), val(cluster_method), val(vars_to_regress)
 
     output:
     tuple val(sample), path("${sample}.doublets_removed.sct_clustered.rds"), emit: doublets_removed_rds
@@ -28,7 +28,7 @@ process DETECT_DOUBLETS {
     doublet.R "${sample}" "${rds_path}" params.csv
 
     # Once doublets are removed, re-run SCTransform and clustering
-    sct.R "${sample}" "${sample}.doublets_removed.rds" params.csv
+    sct.R "${sample}" "${sample}.doublets_removed.rds" params.csv "${vars_to_regress}"
     mv "${sample}.sct_clustered.rds" "${sample}.doublets_removed.sct_clustered.rds"
     """
 }
