@@ -128,11 +128,14 @@ purrr::walk(
     cat(paste("####", "Clustree plot", "\n\n"))
     cat(paste0('<img src="', p_clustree, '" alt="clustree plot: ', n, '" width="100%">\n\n'))
     cat(paste("####", "Per-cluster feature-count plots", "\n\n"))
+    cat(":::panel-tabset\n\n")
     for (res in sort(names(p_fc_plot_list))) {
       p_fc_plot <- p_fc_plot_list[[res]]
-      cat(paste("#####", "Cluster resolution:", res, "\n\n"))
+      cat(paste("#####", res, "\n\n"))
+      cat(paste("Cluster resolution:", res, "\n\n"))
       cat(paste0('<img src="', p_fc_plot, '" alt="Per-cluster feature-count plot: ', n, '; res: ', res, '" width="100%">\n\n'))
     }
+    cat(":::\n\n")
   }
 )
 ```

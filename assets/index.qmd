@@ -1,11 +1,13 @@
 ---
 title: "scRNAvigator Report"
-format: html
+format:
+  html:
+    embed-resources: true
 ---
 
 Thank you for using scRNAvigator!
 
-This website contains a report of your analysis. Depending on what sections of the pipeline were ran, it will include one or more of the following:
+This report contains a summary of your analysis. Depending on what sections of the pipeline were ran, it will include one or more of the following:
 
 - Quality control metrics and plots
 - Doublet detection and filtering results
@@ -151,4 +153,187 @@ The following modules were run for this analysis:
 #| message: false
 
 cat(modules_run_names_str)
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("qc_filter.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("# Quality control\n\n")
+cat("## Initial filtering\n\n")
+```
+
+```{r}
+#| child: "qc_filter.qmd"
+#| eval: !expr file.exists("qc_filter.qmd")
+#| warning: false
+#| error: false
+#| message: false
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("qc_cluster.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("## Clustering\n\n")
+```
+
+```{r}
+#| child: "qc_cluster.qmd"
+#| eval: !expr file.exists("qc_cluster.qmd")
+#| warning: false
+#| error: false
+#| message: false
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("qc_doublets.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("## Doublet detection and filtering\n\n")
+```
+
+```{r}
+#| child: "qc_doublets.qmd"
+#| eval: !expr file.exists("qc_doublets.qmd")
+#| warning: false
+#| error: false
+#| message: false
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("integration_qc.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("# Integration\n\n")
+cat("## Initial quality control\n\n")
+```
+
+```{r}
+#| child: "integration_qc.qmd"
+#| eval: !expr file.exists("integration_qc.qmd")
+#| warning: false
+#| error: false
+#| message: false
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("integration_cluster.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("## Clustering\n\n")
+```
+
+```{r}
+#| child: "integration_cluster.qmd"
+#| eval: !expr file.exists("integration_cluster.qmd")
+#| warning: false
+#| error: false
+#| message: false
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("annotation.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("# Annotation\n\n")
+```
+
+```{r}
+#| child: "annotation.qmd"
+#| eval: !expr file.exists("annotation.qmd")
+#| warning: false
+#| error: false
+#| message: false
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("analysis_pseudo.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("# Analysis\n\n")
+cat("## Pseudobulking\n\n")
+```
+
+```{r}
+#| child: "analysis_pseudo.qmd"
+#| eval: !expr file.exists("analysis_pseudo.qmd")
+#| warning: false
+#| error: false
+#| message: false
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("analysis_de.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("## Differential expression analysis\n\n")
+```
+
+```{r}
+#| child: "analysis_de.qmd"
+#| eval: !expr file.exists("analysis_de.qmd")
+#| warning: false
+#| error: false
+#| message: false
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("analysis_gsea.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("## Functional enrichment analysis: GSEA\n\n")
+```
+
+```{r}
+#| child: "analysis_gsea.qmd"
+#| eval: !expr file.exists("analysis_gsea.qmd")
+#| warning: false
+#| error: false
+#| message: false
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("analysis_ora.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("## Functional enrichment analysis: ORA\n\n")
+```
+
+```{r}
+#| child: "analysis_ora.qmd"
+#| eval: !expr file.exists("analysis_ora.qmd")
+#| warning: false
+#| error: false
+#| message: false
 ```
