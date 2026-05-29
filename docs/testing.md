@@ -46,28 +46,25 @@ singularity pull \
 
 ## Generate the test fixtures
 
-Process-level tests run against small subset datasets committed to the repo under `tests/data/`. Run the fixture script once inside the container to generate everything needed:
+Process-level tests run against small subset datasets committed to the repo under `tests/data/`. Run the fixture script once inside the container to generate everything needed. Ensure that you first change directory into the `scrnavigator-nf` project directory.
 
 ```bash
+cd scrnavigator-nf
+
 singularity exec \
   $SIF \
-  Rscript --vanilla scrnavigator-nf/tests/data/generate_fixtures.R
+  Rscript --vanilla tests/data/generate_fixtures.R
 ```
 
 This creates:
 - `tests/data/EnsDb_hsapiens_v113.sqlite` (~540 MB) — human Ensembl annotation database, excluded from version control
 
-It will also re-create the following committed fixture if it is missing:
-- `tests/data/rds/cohort.integrated.clustered.test.rds` — derived from the committed integrated fixture by applying Seurat clustering
-
-Each step is skipped if the file already exists.
-
 ## Regenerating committed fixtures
 
 The following RDS fixtures are committed to the repo and do not need to be regenerated in normal use:
 
-- `tests/data/cohort.integrated.test.rds`
-- `tests/data/cohort.integrated.clustered.test.rds`
+- `tests/data/rds/cohort.integrated.test.rds`
+- `tests/data/rds/cohort.integrated.clustered.test.rds`
 
 Follow these steps only if the pipeline's object structure has changed and new versions of these files are required.
 
@@ -76,8 +73,14 @@ These steps all assume you are running from the project directory's **parent dir
 First, delete the existing fixtures:
 
 ```bash
-rm scrnavigator-nf/tests/data/cohort.integrated.test.rds
-rm scrnavigator-nf/tests/data/cohort.integrated.clustered.test.rds
+rm tests/data/rds/cohort.integrated.test.rds
+rm tests/data/rds/cohort.integrated.clustered.test.rds
+```
+
+The next step will be to run the initial stages of the pipeline, so to prevent creating unnecessary intermediate files in the project directory, move out of the `scrnavigator-nf` project directory, e.g. to the parent directory.
+
+```bash
+cd ..
 ```
 
 Run the pipeline through integration using the samplesheet provided in `tests/data/samplesheet.generate_fixtures.csv`. **Note**, if you have made significant changes to the exepcted structure of the samplesheet, you may need to update this file accordingly.
@@ -92,20 +95,33 @@ nextflow run scrnavigator-nf \
   -resume
 ```
 
-Pass the integrated RDS output path (`results/integration/cohort.integrated.rds`) to `subset_integrated.R` — it saves the fixture to `tests/data/rds/` automatically:
+Get the absolute path to the integrated RDS output (`results/integration/cohort.integrated.rds`), then change directory back into the `scrnavigator-nf` project directory:
+
+```bash
+RDS=${PWD}/results/integration/cohort.integrated.rds
+cd scrnavigator-nf
+```
+
+Pass the integrated RDS output path  to `subset_integrated.R` — it saves the fixture to `tests/data/rds/` automatically.
 
 ```bash
 singularity exec \
   $SIF \
-  Rscript --vanilla scrnavigator-nf/tests/data/subset_integrated.R \
-  results/integration/cohort.integrated.rds
+  Rscript --vanilla tests/data/subset_integrated.R
+  ${RDS}
 ```
 
-Then re-run `generate_fixtures.R` [as described above](#generate-the-test-fixtures) to rebuild the clustered RDS from the updated integrated fixture.
+Run one more script to generate a fixture for clustered data. This will use as input `cohort.integrated.test.rds`, generated from the previous step.
+
+```bash
+singularity exec \
+  $SIF \
+  Rscript --vanilla tests/data/subset_clustered.R
+```
 
 ## Running tests
 
-Tests must be run from inside `projectDir` so nf-test can find `nf-test.config`:
+Tests must be run from inside `projectDir` (i.e. the `scrnavigator-nf` root directory) so nf-test can find `nf-test.config`. Ensure you have changed directory:
 
 ```bash
 cd scrnavigator-nf
@@ -125,16 +141,16 @@ To run a single module test:
 nf-test test tests/modules/preprocess_rds.nf.test --profile test,singularity
 ```
 
+## Regenerating snapshots
+
+If you have updated any of the fixtures as described above, you may need to update the test snapshots accordingly. To do this, run `nf-test` with the `--update-snapshot` flag. It is **recommended** that you run this **individually** on each test that needs updating to avoid accidentally updating snapshots that should not be updated, which could mask true errors in the pipeline.
+
+```bash
+nf-test test tests/modules/annotate_cell_cycle.nf.test --profile test,singularity --update-snapshot
+```
+
 ## Troubleshooting
 
 ### File not found errors during nf-test
 
-If a test fails with a `... file not found` or `checkIfExists` error, the required fixture has not been generated yet. Run the fixture script inside the container to create it:
-
-```bash
-singularity exec \
-  $SIF \
-  Rscript --vanilla tests/data/generate_fixtures.R
-```
-
-This generates all fixtures in order and skips any that already exist. Re-run the failing test afterwards.
+If a test fails with a `... file not found` or `checkIfExists` error, the required fixture has not been generated yet. Run the fixture script [as described above](#generate-the-test-fixtures) to create it.
