@@ -21,11 +21,11 @@ workflow QUALITY_CONTROL {
         .merge(ens_db_rds)
         .merge(annotate_mt)
         .merge(mt_gene_list)
-        .map { smp, rds, meta, spc, ens, mtann, mtlist -> {
+        .map { smp, rds, meta, spc, ens, mtann, mtlist ->
             def ens_opt = ens == null ? [] : ens
             def mtlist_opt = mtlist == null ? [] : mtlist
             return [ smp, rds, meta, spc, ens_opt, mtann, mtlist_opt ]
-        } }
+        }
 
     // Conduct initial QC
     PREPROCESS_RDS(rds_files)
