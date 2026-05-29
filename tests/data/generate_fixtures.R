@@ -24,15 +24,3 @@ if (!file.exists(ensdb_dest)) {
 }
 
 unlink(cache_dir, recursive = TRUE)
-
-# ---------------------------------------------------------------------------
-# 2. Clustered RDS subset for ANNOTATE_CUSTOM tests
-# ---------------------------------------------------------------------------
-clustered_rds <- here::here("tests/data/rds/cohort.integrated.clustered.test.rds")
-subset_script <- here::here("tests/data/subset_clustered.R")
-if (!file.exists(clustered_rds)) {
-  message(paste0(clustered_rds, " not found, creating.."))
-  source(subset_script)
-} else {
-  message(paste0(clustered_rds, " already exists, skipping generation."))
-}

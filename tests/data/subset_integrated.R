@@ -12,7 +12,7 @@ args <- commandArgs(trailingOnly = TRUE)
 if (length(args) < 1) stop("Usage: subset_integrated.R <path/to/cohort.integrated.rds>")
 
 src  <- args[1]
-dest <- here::("tests/data/rds/cohort.integrated.test.rds")
+dest <- here::here("tests/data/rds/cohort.integrated.test.rds")
 
 if (file.exists(dest)) {
   message("Fixture already exists: ", dest)

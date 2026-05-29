@@ -59,17 +59,12 @@ singularity exec \
 This creates:
 - `tests/data/EnsDb_hsapiens_v113.sqlite` (~540 MB) — human Ensembl annotation database, excluded from version control
 
-It will also re-create the following committed fixture if it is missing:
-- `tests/data/rds/cohort.integrated.clustered.test.rds` — derived from the committed integrated fixture by applying Seurat clustering
-
-Each step is skipped if the file already exists.
-
 ## Regenerating committed fixtures
 
 The following RDS fixtures are committed to the repo and do not need to be regenerated in normal use:
 
-- `tests/data/cohort.integrated.test.rds`
-- `tests/data/cohort.integrated.clustered.test.rds`
+- `tests/data/rds/cohort.integrated.test.rds`
+- `tests/data/rds/cohort.integrated.clustered.test.rds`
 
 Follow these steps only if the pipeline's object structure has changed and new versions of these files are required.
 
@@ -78,8 +73,8 @@ These steps all assume you are running from the project directory's **parent dir
 First, delete the existing fixtures:
 
 ```bash
-rm tests/data/cohort.integrated.test.rds
-rm tests/data/cohort.integrated.clustered.test.rds
+rm tests/data/rds/cohort.integrated.test.rds
+rm tests/data/rds/cohort.integrated.clustered.test.rds
 ```
 
 The next step will be to run the initial stages of the pipeline, so to prevent creating unnecessary intermediate files in the project directory, move out of the `scrnavigator-nf` project directory, e.g. to the parent directory.
@@ -112,11 +107,17 @@ Pass the integrated RDS output path  to `subset_integrated.R` — it saves the f
 ```bash
 singularity exec \
   $SIF \
-  Rscript --vanilla tests/data/subset_integrated.R \
+  Rscript --vanilla tests/data/subset_integrated.R
   ${RDS}
 ```
 
-Then re-run `generate_fixtures.R` [as described above](#generate-the-test-fixtures) to rebuild the clustered RDS from the updated integrated fixture.
+Run one more script to generate a fixture for clustered data. This will use as input `cohort.integrated.test.rds`, generated from the previous step.
+
+```bash
+singularity exec \
+  $SIF \
+  Rscript --vanilla tests/data/subset_clustered.R
+```
 
 ## Running tests
 
