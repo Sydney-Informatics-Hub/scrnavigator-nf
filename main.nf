@@ -433,5 +433,5 @@ workflow {
         .merge(analysis_ora_results)
         .merge(available_annotation_files)
         .merge(report_style)
-    REPORT(report_input, samplesheet_csv, custom_marker_genes_csv, comparisons_csv)
+    REPORT(report_input, samplesheet_csv, custom_marker_genes_csv, comparisons_csv, params)
 }

@@ -277,7 +277,11 @@ datatable(
 
 ### Methods
 
-TODO
+You can use the following text within your methods sections of any manuscripts using the results of this analysis:
+
+> #### Bioinformatics and data analysis
+> 
+> 
 
 ```{r}
 #| echo: false
