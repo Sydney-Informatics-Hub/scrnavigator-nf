@@ -174,9 +174,9 @@ By default, the annotation category used for cluster annotation is the first in 
 
 The annotation category used for cluster annotation can be overridden using the `--cluster_annotation`. See below for a list of valid values from your dataset.
 
-#### Dataset name: `{r} cohort_id`
+##### Dataset name: `r cohort_id`
 
-### All annotation fields available for cluster annotation
+#### All annotation fields available for cluster annotation
 
 The following annotation fields are available for cluster annotation:
 
@@ -190,9 +190,9 @@ for (ann in annotation_priority) {
 }
 ```
 
-The field used for cluster annotation was: **`{r} annotation_used_for_clusters`**
+The field used for cluster annotation was: **`r annotation_used_for_clusters`**
 
-### All annotation fields available for downstream analyses
+#### All annotation fields available for downstream analyses
 
 The following list contains all of the annotations listed above, as well as `cluster_annotation` and additional metadata fields you provided in the samplesheet. These are all of the fields available to you for performing downstream pseudobulking and subsequent differential expression and functional enrichment analyses.
 
@@ -212,7 +212,7 @@ for (ann in available_annotations) {
 #| results: asis
 #| echo: false
 #| eval: !expr cell_cycle_annotated
-cat("### Cell cycle annotation\n\n")
+cat("#### Cell cycle annotation\n\n")
 cat(paste0('<img src="', cc_umap_file, '" alt="cell cycle umap: ', cohort_id, '" width="100%">\n\n'))
 ```
 
@@ -220,10 +220,10 @@ cat(paste0('<img src="', cc_umap_file, '" alt="cell cycle umap: ', cohort_id, '"
 #| results: asis
 #| echo: false
 #| eval: !expr db_annotated
-cat("### Automatic cell type annotation\n\n")
-cat("#### Cell type UMAP\n\n")
+cat("#### Automatic cell type annotation\n\n")
+cat("##### Cell type UMAP\n\n")
 cat(paste0('<img src="', db_umap_file, '" alt="cell type umap: ', cohort_id, '" width="100%">\n\n'))
-cat("#### Cell type proportions\n\n")
+cat("##### Cell type proportions\n\n")
 cat(paste0('<img src="', cell_type_props, '" alt="cell type proportions: ', cohort_id, '" width="100%">\n\n'))
 ```
 
@@ -231,7 +231,7 @@ cat(paste0('<img src="', cell_type_props, '" alt="cell type proportions: ', coho
 #| results: asis
 #| echo: false
 #| eval: !expr db_annotated && file.exists(cell_type_prop_table_hpca_main)
-cat("#### HPCA Main annotations")
+cat("##### HPCA Main annotations")
 ```
 
 ```{r}
@@ -247,7 +247,7 @@ datatable(read_csv(cell_type_prop_table_hpca_main))
 #| results: asis
 #| echo: false
 #| eval: !expr db_annotated && file.exists(cell_type_prop_table_hpca_fine)
-cat("#### HPCA Fine annotations")
+cat("##### HPCA Fine annotations")
 ```
 
 ```{r}
@@ -263,7 +263,7 @@ datatable(read_csv(cell_type_prop_table_hpca_fine))
 #| results: asis
 #| echo: false
 #| eval: !expr db_annotated && file.exists(cell_type_prop_table_singler)
-cat("#### SingleR annotations")
+cat("##### SingleR annotations")
 ```
 
 ```{r}
@@ -279,10 +279,10 @@ datatable(read_csv(cell_type_prop_table_singler))
 #| results: asis
 #| echo: false
 #| eval: !expr custom_annotated
-cat("### Custom cell type annotations\n\n")
-cat("#### Cell type UMAP\n\n")
+cat("#### Custom cell type annotations\n\n")
+cat("##### Cell type UMAP\n\n")
 cat(paste0('<img src="', custom_umap, '" alt="cell type umap: ', cohort_id, '" width="100%">\n\n'))
-cat("#### Cell type proportions\n\n")
+cat("##### Cell type proportions\n\n")
 cat(paste0('<img src="', custom_cell_type_props, '" alt="cell type proportions: ', cohort_id, '" width="100%">\n\n'))
 ```
 
@@ -299,10 +299,10 @@ datatable(custom_cell_type_props_table)
 #| results: asis
 #| echo: false
 #| eval: !expr custom_annotated
-cat("#### Custom cell type feature plots\n\n")
+cat("##### Custom cell type feature plots\n\n")
 for (cell_type in names(custom_cell_type_feature_plots)) {
   p <- custom_cell_type_feature_plots[[cell_type]]
-  cat(paste0("##### ", cell_type, "\n\n"))
+  cat(paste0("###### ", cell_type, "\n\n"))
   cat(paste0('<img src="', p, '" alt="feature plot: ', cell_type, ' - ', cohort_id, '" width="100%">\n\n'))
 }
 ```
@@ -311,7 +311,7 @@ for (cell_type in names(custom_cell_type_feature_plots)) {
 #| results: asis
 #| echo: false
 #| eval: !expr clusters_annotated
-cat("### Cluster cell type annotation\n\n")
+cat("#### Cluster cell type annotation\n\n")
 cat(paste0('<img src="', cluster_umap_file, '" alt="cluster cell type assignment umap: ', cohort_id, '" width="100%">\n\n'))
 ```
 

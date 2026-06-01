@@ -43,10 +43,10 @@ integration_res <- as.numeric(scan(integration_res_file, character())[1])
 
 This page shows the clustering results for your dataset post-integration. As before with the [per-sample clustering analysis](qc_cluster.qmd), the dataset was clustered at several resolutions (outlined below). A cluster tree plot is shown below to aid you in selecting the best resolution for your dataset. Recall that you want to identify a resolution where the clusters remain relatively stable from one resolution to the next, i.e. most clusters have a single, opaque arrow incoming rather than multiple faint incoming arrows. When you have selected a suitable resolution, re-run the pipeline and pass the parameter `--integrated_resolution <RES>`, replacing `<RES>` with your chosen resolution. When this parameter is unset, the pipeline choose a default value of `1`, **but you will likely need to change this**. The UMAP and count vs. feature plots below will display the results for your chosen resolution.
 
-#### Dataset name: `{r} cohort_id`
-#### Integration resolution: `{r} integration_res`
+##### Dataset name: `r cohort_id`
+##### Integration resolution: `r integration_res`
 
-### Integrated clusters UMAP
+#### Integrated clusters UMAP
 
 These UMAP plots show your integrated dataset, colour-coded by either the sample of origin ("orig.ident") or the cluster each cell was assigned to in the chosen integration clustering resolution ("SCT_snn_res.*").
 
@@ -56,7 +56,7 @@ These UMAP plots show your integrated dataset, colour-coded by either the sample
 cat(paste0('<img src="', umap_file, '" alt="integrated clusters umap: ', cohort_id, '" width="100%">\n\n'))
 ```
 
-### Feature-count plot of integrated dataset
+#### Feature-count plot of integrated dataset
 
 This plot shows the count vs. feature plots for each cluster at your chosen clustering resolution.
 
@@ -66,7 +66,7 @@ This plot shows the count vs. feature plots for each cluster at your chosen clus
 cat(paste0('<img src="', fc_plot_file, '" alt="feature-count plot of integrated dataset: ', cohort_id, '" width="100%">\n\n'))
 ```
 
-### Clustree plot for integrated dataset
+#### Clustree plot for integrated dataset
 
 This cluster tree shows how cells move between clusters from one resolution to the next. Use this to identify the ideal clustering resolution for your dataset. Look for resolutions where most clusters have a single, dark arrow incoming, meaning that few cells moved between clusters when moving from the previous resolution.
 

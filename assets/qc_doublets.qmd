@@ -118,20 +118,20 @@ purrr::walk(
     p_umap <- doublet_umap_plots[[n]]
     p_clustree <- clustree_plot_files[[n]]
     p_fc_plot_list <- feature_count_plot_files[[n]]
-    cat(paste("###", n, "\n\n"))
-    cat(paste("####", "Doublets per cluster", prim_res_str, "\n\n"))
+    cat(paste("####", n, "\n\n"))
+    cat(paste("#####", "Doublets per cluster", prim_res_str, "\n\n"))
     cat(paste0('<img src="', p_doublets, '" alt="doublet per cluster plot: ', n, '; res: ', prim_res, '" width="100%">\n\n'))
-    cat(paste("####", "Doublet proportions per cluster", prim_res_str, "\n\n"))
+    cat(paste("#####", "Doublet proportions per cluster", prim_res_str, "\n\n"))
     cat(paste0('<img src="', p_doublet_props, '" alt="doublet proportions per cluster plot: ', n, '; res: ', prim_res, '" width="100%">\n\n'))
-    cat(paste("####", "Doublet UMAP", prim_res_str, "\n\n"))
+    cat(paste("#####", "Doublet UMAP", prim_res_str, "\n\n"))
     cat(paste0('<img src="', p_umap, '" alt="doublet UMAP: ', n, '; res: ', prim_res, '" width="100%">\n\n'))
-    cat(paste("####", "Clustree plot", "\n\n"))
+    cat(paste("#####", "Clustree plot", "\n\n"))
     cat(paste0('<img src="', p_clustree, '" alt="clustree plot: ', n, '" width="100%">\n\n'))
-    cat(paste("####", "Per-cluster feature-count plots", "\n\n"))
+    cat(paste("#####", "Per-cluster feature-count plots", "\n\n"))
     cat(":::panel-tabset\n\n")
     for (res in sort(names(p_fc_plot_list))) {
       p_fc_plot <- p_fc_plot_list[[res]]
-      cat(paste("#####", res, "\n\n"))
+      cat(paste("######", res, "\n\n"))
       cat(paste("Cluster resolution:", res, "\n\n"))
       cat(paste0('<img src="', p_fc_plot, '" alt="Per-cluster feature-count plot: ', n, '; res: ', res, '" width="100%">\n\n'))
     }

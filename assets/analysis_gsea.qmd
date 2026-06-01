@@ -92,7 +92,7 @@ Differential expression analyses can generate lots of results that can be quite 
 
 This page presents the results from the GSEA analysis conducted on your dataset. GSEA works by first ranking the entire set of differential expression results by their fold-change values; this includes **both** significant **and** non-significant genes. The method then looks at a database of **biological pathways** and the **gene sets** associated with each. For each gene set, GSEA assesses whether these genes appear clustered together within your ranked dataset, more so than would be expected by chance. The degree of clustering towards the upregulated or downregulated ends of your dataset is used to calculate an **enrichment score** for that gene set.
 
-#### Dataset name: `{r} cohort_id`
+##### Dataset name: `r cohort_id`
 
 #### All comparisons made:
 
@@ -102,7 +102,7 @@ One GSEA analysis was conducted for each differential expression comparison that
 datatable(comparisons_df, colnames = c("Reference group", "Test group"))
 ```
 
-### GSEA expression results
+#### GSEA expression results
 
 Below, you will find plots for each GSEA analysis. These plots show the enrichment score for each **significant** pathway from the analyses; more upregulated pathways have bars pointing to the right and are highlighted in orange; downregulated pathways point to the left and are highlighted in blue.
 
@@ -114,8 +114,8 @@ purrr::walk(
   sort(all_comparisons),
   function(n) {
     p <- gsea_plots[[n]]
-    cat(paste("####", n, "\n\n"))
-    cat(paste("#####", "Gene Set Enrichment Analysis Results:", n))
+    cat(paste("#####", n, "\n\n"))
+    cat(paste("######", "Gene Set Enrichment Analysis Results:", n))
     cat(paste0('<img src="', p, '" alt="gsea results: ', n, '" width="100%">\n\n'))
   }
 )

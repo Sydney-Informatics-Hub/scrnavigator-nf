@@ -28,6 +28,10 @@ library(DT)
 # Get cohort name
 cohort_name <- scan("cohort_name.txt", character())[1]
 
+# Get parameters TSV file
+params_tsv <- "parameters.tsv"
+params_df <- read_tsv(params_tsv)
+
 # Read sample sheet
 samplesheet <- read_csv("samplesheets/samplesheet.csv")
 
@@ -121,11 +125,111 @@ module_names <- list(
 modules_run_names <- unlist(module_names[unlist(modules_run)])
 modules_run_names_str <- paste("- ", modules_run_names, collapse = "\n")
 modules_run_names_str <- paste0(modules_run_names_str, "\n")
+
+# Get executive summary info
+n_samples <- c(metric = "# Samples", value = nrow(samplesheet_show))
+n_cells_filtered <- NULL
+n_cells_per_sample <- NULL
+n_clusters <- NULL
+cluster_annotations <- NULL
+n_de_comparisons <- NULL
+n_de_genes <- NULL
+
+if (file.exists("qc_doublets.qmd")) {
+  doublet_summary_files <- dir(
+    "qc_doublets",
+    pattern = ".*\\.doublet_summary\\.csv$",
+    recursive = TRUE,
+    full.names = TRUE
+  )
+  doublet_summaries <- lapply(doublet_summary_files, function(f) {
+    read_csv(f)
+  })
+  doublet_summary <- bind_rows(doublet_summaries)
+  n_cells_filtered <- c(metric = "# Cells (filtered)", value = sum(doublet_summary$n_singlets))
+} else if (file.exists("qc_filter.qmd")) {
+  filter_summary_files <- dir(
+    "qc_filter",
+    pattern = ".*\\.hard_filter_summary\\.csv$",
+    recursive = TRUE,
+    full.names = TRUE
+  )
+  filter_summaries <- lapply(filter_summary_files, function(f) {
+    read_csv(f)
+  })
+  filter_summary <- bind_rows(filter_summaries)
+  n_cells_filtered <- c(metric = "# Cells (filtered)", value = sum(filter_summary$n_cells_post_filtered))
+}
+
+if (!is.null(n_cells_filtered)) {
+  n_cells_per_sample <- c(metric = "Avg. cells per sample", value = round(as.integer(n_cells_filtered[["value"]]) / as.integer(n_samples[["value"]]), digits = 2))
+}
+
+if (file.exists("integration_cluster.qmd")) {
+  n_clusters_df <- read_csv(paste0("integration_cluster/", cohort_name, ".integrated.clusters.csv"))
+  n_clusters <- c(metric = "# Clusters", value = nrow(n_clusters_df))
+}
+
+if (file.exists("annotation.qmd")) {
+  cluster_annotations <- read_csv(paste0("annotation_clusters/", cohort_name, ".cluster_cell_type_assignments.csv")) %>%
+    group_by(cell_type) %>%
+    summarise(n_clusters = n())
+}
+
+if (file.exists("analysis_de.qmd")) {
+  comparisons_csv <- "samplesheets/comparisons.csv"
+  comparisons_df <- read_csv(comparisons_csv)
+  n_de_comparisons <- c(metric = "# DE comparisons", value = nrow(comparisons_df))
+
+  sig_de_table <- read_csv(paste0("analysis_de/", cohort_name, ".de.full.csv")) %>%
+    filter(sig == "sig")
+
+  n_de_genes <- c(metric = "# DE genes", value = length(unique(sig_de_table$Gene.Symbol)))
+}
+
+exec_summary <- bind_rows(n_samples, n_cells_filtered, n_cells_per_sample, n_clusters, n_de_comparisons, n_de_genes)
 ```
 
-## Dataset summary
+## Analysis summary: `r cohort_name`
 
-### Cohort name: `{r} cohort_name`
+The following table summarises the major findings from this analysis:
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+
+datatable(
+  exec_summary,
+  colnames = "",
+  rownames = FALSE
+)
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("annotation.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("The following annotations were assigned to clusters:\n\n")
+```
+
+```{r}
+#| echo: false
+#| eval: !expr (!is.null(cluster_annotations))
+#| warning: false
+#| error: false
+#| message: false
+
+datatable(
+  cluster_annotations,
+  colnames = c("Cell type", "# Clusters"),
+  rownames = FALSE
+)
+```
 
 ### Sample sheet
 
@@ -155,6 +259,26 @@ The following modules were run for this analysis:
 cat(modules_run_names_str)
 ```
 
+### Parameters
+
+The following parameters were set during the pipeline run:
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+
+datatable(
+  params_df,
+  colnames = c("Parameter", "Value")
+)
+```
+
+### Methods
+
+TODO
+
 ```{r}
 #| echo: false
 #| results: asis
@@ -162,8 +286,8 @@ cat(modules_run_names_str)
 #| warning: false
 #| error: false
 #| message: false
-cat("# Quality control\n\n")
-cat("## Initial filtering\n\n")
+cat("## Quality control\n\n")
+cat("### Initial filtering\n\n")
 ```
 
 ```{r}
@@ -181,7 +305,7 @@ cat("## Initial filtering\n\n")
 #| warning: false
 #| error: false
 #| message: false
-cat("## Clustering\n\n")
+cat("### Clustering\n\n")
 ```
 
 ```{r}
@@ -199,7 +323,7 @@ cat("## Clustering\n\n")
 #| warning: false
 #| error: false
 #| message: false
-cat("## Doublet detection and filtering\n\n")
+cat("### Doublet detection and filtering\n\n")
 ```
 
 ```{r}
@@ -217,8 +341,8 @@ cat("## Doublet detection and filtering\n\n")
 #| warning: false
 #| error: false
 #| message: false
-cat("# Integration\n\n")
-cat("## Initial quality control\n\n")
+cat("## Integration\n\n")
+cat("### Initial quality control\n\n")
 ```
 
 ```{r}
@@ -236,7 +360,7 @@ cat("## Initial quality control\n\n")
 #| warning: false
 #| error: false
 #| message: false
-cat("## Clustering\n\n")
+cat("### Clustering\n\n")
 ```
 
 ```{r}
@@ -254,7 +378,7 @@ cat("## Clustering\n\n")
 #| warning: false
 #| error: false
 #| message: false
-cat("# Annotation\n\n")
+cat("## Annotation\n\n")
 ```
 
 ```{r}
@@ -272,8 +396,8 @@ cat("# Annotation\n\n")
 #| warning: false
 #| error: false
 #| message: false
-cat("# Analysis\n\n")
-cat("## Pseudobulking\n\n")
+cat("## Analysis\n\n")
+cat("### Pseudobulking\n\n")
 ```
 
 ```{r}
@@ -291,7 +415,7 @@ cat("## Pseudobulking\n\n")
 #| warning: false
 #| error: false
 #| message: false
-cat("## Differential expression analysis\n\n")
+cat("### Differential expression analysis\n\n")
 ```
 
 ```{r}
@@ -309,7 +433,7 @@ cat("## Differential expression analysis\n\n")
 #| warning: false
 #| error: false
 #| message: false
-cat("## Functional enrichment analysis: GSEA\n\n")
+cat("### Functional enrichment analysis: GSEA\n\n")
 ```
 
 ```{r}
@@ -327,7 +451,7 @@ cat("## Functional enrichment analysis: GSEA\n\n")
 #| warning: false
 #| error: false
 #| message: false
-cat("## Functional enrichment analysis: ORA\n\n")
+cat("### Functional enrichment analysis: ORA\n\n")
 ```
 
 ```{r}

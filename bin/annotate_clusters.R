@@ -27,6 +27,8 @@ species <- annotation_params$value[match("species", annotation_params$param)]
 manual_annotations_file <- annotation_params$value[match("manual_cluster_annotations", annotation_params$param)]
 if (!is.na(manual_annotations_file)) {
   cluster_cell_type_assignments <- read_csv(manual_annotations_file)
+  cluster_cell_type_assignments %>%
+    write_csv(paste0(cohort_id, ".cluster_cell_type_assignments.csv"))
 } else {
   # Get user-supplied annotation to use or set default
   cluster_annotation <- annotation_params$value[match("cluster_annotation", annotation_params$param)]
@@ -127,6 +129,10 @@ p_cluster_cell_type_assignments_umap <- DimPlot(
   label.box = TRUE
 )
 ggsave(paste0("qc_results/", cohort_id, ".umap.cluster_cell_type_assignments.png"), p_cluster_cell_type_assignments_umap)
+
+# Save cluster cell type assignments to qc_results folder as well
+cluster_cell_type_assignments %>%
+  write_csv(paste0("qc_results/", cohort_id, ".cluster_cell_type_assignments.csv"))
 
 # Save pre-processed data to file
 SaveSeuratRds(integrated, paste0(cohort_id, ".annotated.clusters.rds"))

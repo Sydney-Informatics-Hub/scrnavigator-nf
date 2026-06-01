@@ -45,9 +45,9 @@ We use the anchor-based CCA ("Canonical Correlation Analysis") integration metho
 
 Below you will find two UMAP plots. The first plot shows the merged but un-corrected (unintegrated) dataset. Cells are colour-coded by their sample of origin. You may notice several clusters in this plot that appear to originate primarily from a single sample. In the second plot, the integrated, corrected dataset is shown. A good batch correction should show more homogeneous clusters, with cells from all samples mixing together. You should see much fewer clusters originating from a single sample in this plot.
 
-#### Dataset name: `{r} cohort_id`
+##### Dataset name: `r cohort_id`
 
-### Merged (unintegrated) dataset UMAP
+#### Merged (unintegrated) dataset UMAP
 
 ```{r}
 #| results: asis
@@ -55,7 +55,7 @@ Below you will find two UMAP plots. The first plot shows the merged but un-corre
 cat(paste0('<img src="', merged_umap_file, '" alt="merged dataset umap: ', cohort_id, '" width="100%">\n\n'))
 ```
 
-### Integrated dataset UMAP
+#### Integrated dataset UMAP
 
 ```{r}
 #| results: asis

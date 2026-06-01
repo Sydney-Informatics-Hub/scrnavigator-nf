@@ -27,16 +27,17 @@ process REPORT {
     path samplesheet_csv, stageAs: "samplesheets/samplesheet.csv"
     path custom_marker_genes_csv, stageAs: "samplesheets/custom_marker_genes.csv"
     path comparisons_csv, stageAs: "samplesheets/comparisons.csv"
+    val pipe_params
 
     output:
-    tuple val(cohort_name), path("report"), emit: report
-    tuple val(cohort_name), path("report.tar"), emit: report_tar
+    tuple val(cohort_name), path("report.${cohort_name}.html"), emit: report
 
     script:
     def int_res = (metadata.integration_resolution == null) ? '' : metadata.integration_resolution
     def pseudo_groups = (metadata.pseudo_groups == null) ? '' : metadata.pseudo_groups.tokenize(',').join('\n')
     def cluster_annotation = (metadata.cluster_annotation == null) ? '' : metadata.cluster_annotation
     def meta_fields = (metadata.meta_fields == null) ? '' : metadata.meta_fields.join('\n')
+    def param_tsv = 'parameter\tvalue\n' + pipe_params.collect { p, v -> "${p}\t${v}" }.join('\n') + '\n'
     """
     # Save important metadata to file for reporting
     echo "${cohort_name}" > cohort_name.txt
@@ -48,6 +49,7 @@ process REPORT {
     if [ -d "annotation_clusters" ]; then
         echo "cluster_annotation" > available_annotations/clusters.txt
     fi
+    echo -e "${param_tsv}" > parameters.tsv
 
     # Generate quarto config
     create_quarto_yml.py
@@ -57,9 +59,6 @@ process REPORT {
     export XDG_CACHE_HOME="\${PWD}/.cache"
 
     # Render the quarto website
-    quarto render .
-
-    # Tar the report directory
-    tar -cf report.tar report/
+    quarto render index.qmd --output report.${cohort_name}.html
     """
 }

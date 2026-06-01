@@ -53,7 +53,7 @@ See the section titled [All annotation fields available for downstream analyses]
 
 The pseudobulked expression profiles will be named after the individual levels within each metadata field. Again, taking the example of B and T cells in a treatment vs control experiment, if the cell labels are `B-cell` and `T-cell` and the labels in the `treatment` field are `drug` and `control`, your pseudobulked groups will be called `B-cell_drug`, `B-cell_control`, `T-cell_drug`, and `T-cell_control`.
 
-#### Dataset name: `{r} cohort_id`
+##### Dataset name: `r cohort_id`
 
 #### Fields used for pseudobulking
 

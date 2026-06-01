@@ -90,7 +90,7 @@ This page shows the differential expression results for the comparisons you requ
 - [Volcano plots](#volcano-plots)
 - [Differential expression results table](#differential-expression-table)
 
-#### Dataset name: `{r} cohort_id`
+##### Dataset name: `r cohort_id`
 
 #### All comparisons made:
 
@@ -102,9 +102,9 @@ datatable(comparisons_df, colnames = c("Reference group", "Test group"))
 
 *Note that the group names above must match the [pseudobulk groups shown in the previous section of the report](analysis_pseudo.qmd#pseudobulked-groups-availablle-for-comparison).*
 
-### Differential expression results
+#### Differential expression results
 
-#### p-value distributions
+##### p-value distributions
 
 The following plots show the distribution of p-values for each comparison made. These can be useful to determine the quality of the results: a well-powered experiment with true positive results shoudl show an enrichment of low p-values (i.e. towards the left side of each plot). Uniformly distributed p-values indicate no true positive results or low power to detect true positives.
 
@@ -114,7 +114,7 @@ The following plots show the distribution of p-values for each comparison made. 
 cat(paste0('<img src="', p_dist_plot_file, '" alt="p-value distributions: ', cohort_id, '" width="100%">\n\n'))
 ```
 
-#### Log-fold-change distributions
+##### Log-fold-change distributions
 
 Log-fold-change distributions are also useful in determining **how much** your significant genes are differentially expressed by. In the plots below, the red histograms represent the distribution of non-significant ("ns") genes, while the blue histograms represent significant genes ("sig").
 
@@ -128,7 +128,7 @@ Keep in mind that in many biological contexts, small fold-changes can be very bi
 cat(paste0('<img src="', log_fc_dist_plot_file, '" alt="log-fold-change distributions: ', cohort_id, '" width="100%">\n\n'))
 ```
 
-#### Volcano plots
+##### Volcano plots
 
 Volcano plots combine both the p-value and fold-change information into one very useful plot. At a glance, you can identify the most significant results (higher up on the vertical axis, and highlighted in red) and the most differentially expressed genes (further away from the centre). If you have provided a fold-change threshold, vertical lines will be drawn at the relevant fold-change positions on the plot and any genes between them will be greyed out and considered non-significant. The plots below additionally highlight the top-most significant genes for your convenience.
 
@@ -138,13 +138,13 @@ Volcano plots combine both the p-value and fold-change information into one very
 cat(paste0('<img src="', volcano_plot_file, '" alt="volcano plots: ', cohort_id, '" width="100%">\n\n'))
 ```
 
-#### Differential expression table
+##### Differential expression table
 
 Finally, below is a table summarising all of the differential expression results performed. The "Significant results only" tab shows just those genes that pass the p-value and fold-change thresholds provided. The "All results" tab shows all genes from all comparisons, regardless of significance.
 
 :::panel-tabset
 
-##### Significant results only
+###### Significant results only
 
 ```{r}
 #| echo: false
@@ -154,7 +154,7 @@ Finally, below is a table summarising all of the differential expression results
 datatable(sig_de_table, colnames = de_table_col_names_ordered)
 ```
 
-##### All results
+###### All results
 
 ```{r}
 #| echo: false
