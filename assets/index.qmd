@@ -357,7 +357,7 @@ if (file.exists("annotation.qmd")) {
   }
 
   if (dir.exists("annotation_db")) {
-    cat(paste0("Cell types were annotated using the `SingleR` R package (version ", singler_version, ") and a pre-built annotation database (", annotation_db_source, ").\n"))
+    cat(paste0("Cell types were annotated using the `SingleR` R package (version ", singler_version, ") and a pre-built annotation database: ", annotation_db_source, ".\n"))
   }
 
   if (dir.exists("annotation_custom")) {
