@@ -409,6 +409,7 @@ workflow {
         .collect()
         .map { tmp -> [ tmp ] }
     report_style = channel.fromPath("${projectDir}/assets/styles.scss")
+    quarto_yaml = channel.fromPath("${projectDir}/assets/_quarto.yml", checkIfExists: true)
 
     // Gather CSV inputs
     custom_marker_genes_csv = !!params.custom_marker_genes ? channel.fromPath(params.custom_marker_genes, checkIfExists: true) : channel.value([])
@@ -433,5 +434,13 @@ workflow {
         .merge(analysis_ora_results)
         .merge(available_annotation_files)
         .merge(report_style)
-    REPORT(report_input, samplesheet_csv, custom_marker_genes_csv, comparisons_csv, params)
+
+    def env_vars = [
+        params:params,
+        pipe_version:(workflow.manifest.version ?: "0.0.0"),
+        nxf_version:workflow.nextflow.version,
+        cmd:workflow.commandLine,
+        software_versions:[:]
+    ]
+    REPORT(report_input, samplesheet_csv, custom_marker_genes_csv, comparisons_csv, quarto_yaml, env_vars)
 }

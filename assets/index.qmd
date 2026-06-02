@@ -188,6 +188,33 @@ if (file.exists("analysis_de.qmd")) {
 }
 
 exec_summary <- bind_rows(n_samples, n_cells_filtered, n_cells_per_sample, n_clusters, n_de_comparisons, n_de_genes)
+
+# Get information for methods section
+# TODO: Get values from environment
+pipeline_version <- scan("version.txt", character())[1]
+nextflow_version <- scan("nextflow.txt", character())[1]
+nextflow_command <- scan("cmd.sh", character(), sep = "\n")
+nextflow_command <- paste(nextflow_command, collapse = "\n")
+nextflow_command <- paste("```bash", nextflow_command, "```", sep = "\n")
+software_versions <- read_csv("software.csv")
+r_version <- software_versions$version[match("R", software_versions$tool)]
+seurat_version <- software_versions$version[match("Seurat", software_versions$tool)]
+tidyverse_ersion <- software_versions$version[match("tidyverse", software_versions$tool)]
+clustree_version <- software_versions$version[match("clustree", software_versions$tool)]
+doubletfinder_version <- software_versions$version[match("DoubletFinder", software_versions$tool)]
+singler_version <- software_versions$version[match("SingleR", software_versions$tool)]
+deseq_version <- software_versions$version[match("DESeq2", software_versions$tool)]
+webgestaltr_version <- software_versions$version[match("WebGestaltR", software_versions$tool)]
+hard_filtered <- TRUE  # TODO
+mt_qc <- !as.logical(params_df$value[match("no_mt", params_df$parameter)])
+mt_filtered <- TRUE  # TODO
+cluster_algorithm <- str_to_sentence(params_df$value[match("cluster_method", params_df$parameter)])
+integration_resolution <- params_df$value[match("integrated_resolution", params_df$parameter)]
+annotation_species <- params_df$value[match("species", params_df$parameter)]
+annotation_db_source <- "the Human Primary Cell Atlas (HPCA)"  # TODO
+annotation_custom_mad_threshold <- params_df$value[match("custom_annotation_mad_threshold", params_df$parameter)]
+cluster_annotation <- "custom marker gene cell type"  # TODO
+cluster_annotation_threshold <- params_df$value[match("cell_type_proportion_threshold", params_df$parameter)]
 ```
 
 ## Analysis summary: `r cohort_name`
@@ -279,9 +306,94 @@ datatable(
 
 You can use the following text within your methods sections of any manuscripts using the results of this analysis:
 
-> #### Bioinformatics and data analysis
-> 
-> 
+::: {.callout-note appearance="minimal"}
+
+#### Bioinformatics and data analysis
+
+Data was processed using scrnavigator-nf `r pipeline_version` (https://github.com/Sydney-Informatics-Hub/scrnavigator-nf), a Nextflow pipeline developed by the Sydney Informatics Hub for analysing single cell RNA sequencing data. The pipeline was executed using version `r nextflow_version` of Nextflow (Di Tommaso, et al. 2017; doi: [10.1038/nbt.3820](http://www.nature.com/nbt/journal/v35/n4/full/nbt.3820.html)) with the following command:
+
+```{r}
+#| echo: false
+#| results: asis
+#| warning: false
+#| error: false
+#| message: false
+cat(nextflow_command)
+```
+
+The pipeline is built around the `Seurat` framework (version `r seurat_version`) and the `R` programming language (version `r r_version`).
+```{r}
+#| echo: false
+#| results: asis
+#| warning: false
+#| error: false
+#| message: false
+if (file.exists("qc_filter.qmd") && hard_filtered) {
+  cat("Distributions of UMI and gene counts were inspected to select hard filtering thresholds for removal of low-quality cells.\n")
+  if (mt_qc && mt_filtered) {
+    cat("Mitochondrial gene fractions per cell were also inspected to select hard filtering thresholds for removal of potentailly dying cells.\n")
+  }
+}
+if (file.exists("qc_cluster.qmd")) {
+  cat(paste0("Cells were clustered using the ", cluster_algorithm, " algorithm, with clustering resolutions selected using the R package `clustree` (version ", clustree_version, ").\n"))
+}
+
+if (file.exists("qc_doublets.qmd")) {
+  cat(paste0("Doublets were detected and removed using the R package `DoubletFinder` (version ", doubletfinder_version, ").\n"))
+}
+
+if (file.exists("integration_qc.qmd")) {
+  cat("Samples were merged into a single dataset and integrated to correct for batch effects with the `Seurat` Canonical Correlation Analysis (CCA) algorithm.\n")
+}
+
+if (file.exists("integration_cluster.qmd")) {
+  cat(paste0("The integrated dataset was re-clustered using the ", cluster_algorithm, " algorithm, with a clustering resolution of ", integration_resolution, " selected using Clustree.\n"))
+}
+
+if (file.exists("annotation.qmd")) {
+  cat("\nCells were annotated as follows.\n")
+  if (dir.exists("annotation_cc")) {
+    cat("Cell cycle states were annotated using the `Seurat` built-in function `CellCycleScoring`.\n")
+  }
+
+  if (dir.exists("annotation_db")) {
+    cat(paste0("Cell types were annotated using the `SingleR` R package (version ", singler_version, ") and a pre-built annotation database (", annotation_db_source, ").\n"))
+  }
+
+  if (dir.exists("annotation_custom")) {
+    cat("Cells types were annotated using custom marker gene sets and the `Seurat` built-in function `AddModuleScore`.\n")
+    cat(paste0("The cell type with the highest ranking module score was used if the difference between the top two module scores was greater than ", annotation_custom_mad_threshold, " median absolute deviation (MAD) of all scores.\n"))
+    cat("Cells that did not meet this criteria were labelled 'Ambiguous'.\n")
+  }
+
+  if (dir.exists("annotation_cluster")) {
+    cat(paste0("Clusters were annotated with the most prevalent ", cluster_annotation, " present within them, if that prevalence exceeded ", cluster_annotation_threshold, ".\n"))
+    cat("Clusters not meeting this criteria were labelled 'Ambiguous'.\n")
+  }
+}
+
+if (dir.exists("analysis_pseudo")) {
+  cat("\nPseudobulking was performed to aggregate expression values from cells within each sample using `Seurat`'s built-in function `AggregateExpression`.\n")
+}
+
+if (dir.exists("analysis_de")) {
+  cat(paste0("Differential expression analysis was performed on pseudobulked data using `Seurat`'s built-in function `FindMarkers` and the `DESeq2` R package (version ", deseq_version, ").\n"))
+}
+
+if (dir.exists("analysis_gsea") || dir.exists("analysis_ora")) {
+  cat(paste0("Functional enrichment analysis (FEA) was performed with the `WebGestaltR` R package (version ", webgestaltr_version, "). The following FEA methods were used:\n"))
+  if (dir.exists("analysis_gsea")) {
+    cat("Gene Set Enrichment Analysis (GSEA).\n")
+  }
+
+  if (dir.exists("analysis_ora")) {
+    cat("Over-Representation Analysis (ORA).\n")
+  }
+
+}
+```
+
+:::
 
 ```{r}
 #| echo: false
