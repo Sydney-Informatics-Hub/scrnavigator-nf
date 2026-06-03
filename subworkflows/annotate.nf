@@ -127,4 +127,6 @@ workflow ANNOTATE {
     custom_annotation_qc_results = ANNOTATE_CUSTOM.out.qc_results
     cluster_annotation_qc_results = ANNOTATE_CLUSTERS.out.qc_results
     available_annotations = all_available_annotations
+    singler_version = ANNOTATE_DATABASE.out.singler_version
+    celldex_version = ANNOTATE_DATABASE.out.celldex_version
 }

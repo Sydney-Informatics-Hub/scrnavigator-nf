@@ -29,6 +29,7 @@ process REPORT {
     path comparisons_csv, stageAs: "samplesheets/comparisons.csv"
     path quarto_yaml
     val env_vars
+    val software_versions
 
     output:
     tuple val(cohort_name), path("report.${cohort_name}.html"), emit: report
@@ -39,7 +40,7 @@ process REPORT {
     def cluster_annotation = (metadata.cluster_annotation == null) ? '' : metadata.cluster_annotation
     def meta_fields = (metadata.meta_fields == null) ? '' : metadata.meta_fields.join('\n')
     def param_tsv = 'parameter\tvalue\n' + env_vars.params.collect { p, v -> "${p}\t${v}" }.join('\n') + '\n'
-    def software_versions_csv = 'tool,version\n' + env_vars.software_versions.collect { p, v -> "${p},${v}" }.join('\n') + '\n'
+    def software_versions_csv = 'tool,version\n' + software_versions.collect { p, v -> "${p},${v}" }.join('\n') + '\n'
     """
     # Save important metadata to file for reporting
     echo "${cohort_name}" > cohort_name.txt

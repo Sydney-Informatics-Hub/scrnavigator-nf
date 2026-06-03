@@ -13,10 +13,14 @@ process ORA {
     tuple val(cohort_name), path("${cohort_name}.ora.${test_group}.${ref_group}.Rds"), emit: ora_rds, optional: true
     tuple val(cohort_name), path("${cohort_name}.ora.${test_group}.${ref_group}.csv"), val(ref_group), val(test_group), emit: ora_csv, optional: true
     tuple val(cohort_name), path("${test_group}_vs_${ref_group}"), val(ref_group), val(test_group), emit: ora_dir, optional: true
+    path "version.webgestaltr.txt", emit: version
 
     script:
     def ora_db_param = !!ora_db_file ? ora_db_file : ''
     """
     ora.R "${cohort_name}" "${de_rds_path}" "${ref_group}" "${test_group}" "${species}" "${ora_db_param}"
+
+    # Get DESeq2 version
+    Rscript -e "cat(as.character(packageVersion('WebGestaltR')), '\\n')" > version.webgestaltr.txt
     """
 }

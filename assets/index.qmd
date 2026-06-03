@@ -197,23 +197,62 @@ nextflow_command <- scan("cmd.sh", character(), sep = "\n")
 nextflow_command <- paste(nextflow_command, collapse = "\n")
 nextflow_command <- paste("```bash", nextflow_command, "```", sep = "\n")
 software_versions <- read_csv("software.csv")
-r_version <- software_versions$version[match("R", software_versions$tool)]
-seurat_version <- software_versions$version[match("Seurat", software_versions$tool)]
-tidyverse_ersion <- software_versions$version[match("tidyverse", software_versions$tool)]
+r_version <- paste(version$major, version$minor, sep = ".")
+seurat_version <- as.character(packageVersion("Seurat"))
+tidyverse_ersion <- as.character(packageVersion("tidyverse"))
 clustree_version <- software_versions$version[match("clustree", software_versions$tool)]
 doubletfinder_version <- software_versions$version[match("DoubletFinder", software_versions$tool)]
 singler_version <- software_versions$version[match("SingleR", software_versions$tool)]
 deseq_version <- software_versions$version[match("DESeq2", software_versions$tool)]
 webgestaltr_version <- software_versions$version[match("WebGestaltR", software_versions$tool)]
-hard_filtered <- TRUE  # TODO
+celldex_version <- software_versions$version[match("celldex", software_versions$tool)]
+hard_filter_cols <- c("min_ncount", "max_ncount", "min_nfeature", "max_nfeature")
+hard_filter_cols <- hard_filter_cols[hard_filter_cols %in% samplesheet]
+hard_filtered <- any(!is.na(samplesheet[hard_filter_cols]))
 mt_qc <- !as.logical(params_df$value[match("no_mt", params_df$parameter)])
-mt_filtered <- TRUE  # TODO
+mt_filter_cols <- c("min_mt_pct", "max_mt_pct")
+mt_filter_cols <- mt_filter_cols[mt_filter_cols %in% samplesheet]
+mt_filtered <- any(!is.na(samplesheet[mt_filter_cols]))
 cluster_algorithm <- str_to_sentence(params_df$value[match("cluster_method", params_df$parameter)])
 integration_resolution <- params_df$value[match("integrated_resolution", params_df$parameter)]
 annotation_species <- params_df$value[match("species", params_df$parameter)]
-annotation_db_source <- "the Human Primary Cell Atlas (HPCA)"  # TODO
+annotation_db_param <- params_df$value[match("annotation_db", params_df$parameter)]
+if (is.null(annotation_db_param) || is.na(annotation_db_param) || annotation_db_param == "null" || annotation_db_param == "") {
+  annotation_db_source <- paste0("the Human Primary Cell Atlas (HPCA) via the R package `celldex` (version ", celldex_version, ")")
+} else {
+  annotation_db_source <- "a pre-built annotation database"
+  annotation_db_source <- paste0(annotation_db_param)
+}
 annotation_custom_mad_threshold <- params_df$value[match("custom_annotation_mad_threshold", params_df$parameter)]
-cluster_annotation <- "custom marker gene cell type"  # TODO
+available_annotation_files <- dir(
+  "available_annotations",
+  pattern = "\\.txt$",
+  recursive = TRUE,
+  full.names = TRUE
+)
+available_annotations <- unlist(sapply(available_annotation_files, scan, character()))
+annotation_priority <- c(
+  "custom_cell_type",
+  "custom_cell_type.max_score",
+  "SingleR.annotation",
+  "SingleR.hpca_main",
+  "SingleR.hpca_fine",
+  "Phase"
+)
+annotation_priority <- annotation_priority[annotation_priority %in% available_annotations]
+cluster_annotation_param <- params_df$value[match("cluster_annotation", params_df$parameter)]
+if (is.null(cluster_annotation_param) || is.na(cluster_annotation_param) || cluster_annotation_param == "null" || cluster_annotation_param == "") {
+  cluster_annotation_param <- annotation_priority[1]
+}
+cluster_annotation_descriptions <- list(
+  custom_cell_type = "custom marker gene cell type",
+  custom_cell_type.max_score = "custom marker gene cell type",
+  SingleR.annotation = "cell type from the SingleR annotation",
+  SingleR.hpca_main = "cell type from the SingleR annotation",
+  SingleR.hpca_fine = "cell type from the SingleR annotation",
+  Phase = "cell cycle phase"
+)
+cluster_annotation <- cluster_annotation_descriptions[[cluster_annotation_param]]
 cluster_annotation_threshold <- params_df$value[match("cell_type_proportion_threshold", params_df$parameter)]
 ```
 
@@ -357,16 +396,20 @@ if (file.exists("annotation.qmd")) {
   }
 
   if (dir.exists("annotation_db")) {
-    cat(paste0("Cell types were annotated using the `SingleR` R package (version ", singler_version, ") and a pre-built annotation database: ", annotation_db_source, ".\n"))
+    cat(paste0("Cell types were annotated using the `SingleR` R package (version ", singler_version, ") and ", annotation_db_source, ".\n"))
   }
 
   if (dir.exists("annotation_custom")) {
     cat("Cells types were annotated using custom marker gene sets and the `Seurat` built-in function `AddModuleScore`.\n")
-    cat(paste0("The cell type with the highest ranking module score was used if the difference between the top two module scores was greater than ", annotation_custom_mad_threshold, " median absolute deviation (MAD) of all scores.\n"))
-    cat("Cells that did not meet this criteria were labelled 'Ambiguous'.\n")
+    if (cluster_annotation_param == "custom_cell_type.max_score") {
+      cat(paste0("The cell type with the highest ranking module score was used.\n"))
+    } else {
+      cat(paste0("The cell type with the highest ranking module score was used if the difference between the top two module scores was greater than ", annotation_custom_mad_threshold, " median absolute deviation (MAD) of all scores.\n"))
+      cat("Cells that did not meet this criteria were labelled 'Ambiguous'.\n")
+    }
   }
 
-  if (dir.exists("annotation_cluster")) {
+  if (dir.exists("annotation_clusters")) {
     cat(paste0("Clusters were annotated with the most prevalent ", cluster_annotation, " present within them, if that prevalence exceeded ", cluster_annotation_threshold, ".\n"))
     cat("Clusters not meeting this criteria were labelled 'Ambiguous'.\n")
   }
@@ -576,4 +619,23 @@ cat("### Functional enrichment analysis: ORA\n\n")
 #| warning: false
 #| error: false
 #| message: false
+```
+
+## Software versions
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+
+tibble(
+  tool = c("R", "Seurat"),
+  version = c(r_version, seurat_version)
+) %>%
+  bind_rows(software_versions) %>%
+  datatable(
+    colnames = c("Tool", "Version"),
+    rownames = FALSE
+  )
 ```

@@ -343,7 +343,7 @@ workflow {
         .merge(integrated_resolution)
         .merge(pseudo_groups)
         .merge(cluster_annotation)
-        .map { meta, int_res, pseudo -> [ meta_fields: meta, integration_resolution: int_res, pseudo_groups: pseudo, cluster_annotation: cluster_annotation ] }
+        .map { meta, int_res, pseudo, clust_annot -> [ meta_fields: meta, integration_resolution: int_res, pseudo_groups: pseudo, cluster_annotation: clust_annot ] }
 
     // Gather all report templates
     index_template = channel.fromPath("${projectDir}/assets/index.qmd", checkIfExists: true)
@@ -394,7 +394,6 @@ workflow {
         .merge(analysis_ora_results)
         .filter { _t, r -> !!r }
         .map { t, _r -> t }
-        .map { t, _r -> t }
     report_templates = index_template
         .mix(qc_filter_template)
         .mix(qc_cluster_template)
@@ -435,12 +434,46 @@ workflow {
         .merge(available_annotation_files)
         .merge(report_style)
 
+    // Get software versions for report
+    clustree_version = INTEGRATE.out.clustree_version
+        .splitText()
+        .first()
+        .map { v -> [ clustree:v ] }
+    doubletfinder_version = DETECT_DOUBLETS.out.version
+        .splitText()
+        .first()
+        .map { v -> [ DoubletFinder:v ] }
+    singler_version = ANNOTATE.out.singler_version
+        .splitText()
+        .first()
+        .map { v -> [ SingleR:v ] }
+    celldex_version = ANNOTATE.out.celldex_version
+        .splitText()
+        .first()
+        .map { v -> [ celldex:v ] }
+    deseq2_version = DIFFERENTIAL_EXPRESSION.out.version
+        .splitText()
+        .first()
+        .map { v -> [ DESeq2:v ] }
+    webgestaltr_version = GSEA.out.version
+        .mix(ORA.out.version)
+        .first()
+        .splitText()
+        .first()
+        .map { v -> [ WebGestaltR:v ] }
+    software_versions = clustree_version
+        .mix(doubletfinder_version)
+        .mix(singler_version)
+        .mix(celldex_version)
+        .mix(deseq2_version)
+        .mix(webgestaltr_version)
+        .reduce { acc, v -> acc + v }
+
     def env_vars = [
         params:params,
         pipe_version:(workflow.manifest.version ?: "0.0.0"),
         nxf_version:workflow.nextflow.version,
-        cmd:workflow.commandLine,
-        software_versions:[:]
+        cmd:workflow.commandLine
     ]
-    REPORT(report_input, samplesheet_csv, custom_marker_genes_csv, comparisons_csv, quarto_yaml, env_vars)
+    REPORT(report_input, samplesheet_csv, custom_marker_genes_csv, comparisons_csv, quarto_yaml, env_vars, software_versions)
 }

@@ -12,6 +12,7 @@ process DETECT_DOUBLETS {
     tuple val(sample), path("${sample}.doublets_removed.sct_clustered.rds"), emit: doublets_removed_rds
     tuple val(sample), path("${sample}.doublets_detected.rds"), emit: doublets_marked_rds
     tuple val(sample), path("qc_results"), emit: qc_results
+    path "version.doubletfinder.txt", emit: version
 
     script:
     def mr = multiplet_rate == null ? '' : multiplet_rate
@@ -30,5 +31,8 @@ process DETECT_DOUBLETS {
     # Once doublets are removed, re-run SCTransform and clustering
     sct.R "${sample}" "${sample}.doublets_removed.rds" params.csv
     mv "${sample}.sct_clustered.rds" "${sample}.doublets_removed.sct_clustered.rds"
+
+    # Get clustree version
+    Rscript -e "cat(as.character(packageVersion('DoubletFinder')), '\\n')" > version.doubletfinder.txt
     """
 }
