@@ -41,10 +41,9 @@ integration_res_file <- "integration_resolution.txt"
 integration_res <- as.numeric(scan(integration_res_file, character())[1])
 ```
 
-This page shows the clustering results for your dataset post-integration. As before with the [per-sample clustering analysis](qc_cluster.qmd), the dataset was clustered at several resolutions (outlined below). A cluster tree plot is shown below to aid you in selecting the best resolution for your dataset. Recall that you want to identify a resolution where the clusters remain relatively stable from one resolution to the next, i.e. most clusters have a single, opaque arrow incoming rather than multiple faint incoming arrows. When you have selected a suitable resolution, re-run the pipeline and pass the parameter `--integrated_resolution <RES>`, replacing `<RES>` with your chosen resolution. When this parameter is unset, the pipeline choose a default value of `1`, **but you will likely need to change this**. The UMAP and count vs. feature plots below will display the results for your chosen resolution.
+This section shows the clustering results for your dataset post-integration. As before with the [per-sample clustering analysis](#sample-clustering), the dataset was clustered at several resolutions (outlined below). A cluster tree plot is shown below to aid you in selecting the best resolution for your dataset. Recall that you want to identify a resolution where the clusters remain relatively stable from one resolution to the next, i.e. most clusters have a single, opaque arrow incoming rather than multiple faint incoming arrows. When you have selected a suitable resolution, re-run the pipeline and pass the parameter `--integrated_resolution <RES>`, replacing `<RES>` with your chosen resolution. When this parameter is unset, the pipeline choose a default value of `1`, **but you will likely need to change this**. The UMAP and count vs. feature plots below will display the results for your chosen resolution.
 
-##### Dataset name: `r cohort_id`
-##### Integration resolution: `r integration_res`
+##### Current integration resolution: `r integration_res`
 
 #### Integrated clusters UMAP
 

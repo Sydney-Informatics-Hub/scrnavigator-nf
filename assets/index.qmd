@@ -464,7 +464,7 @@ cat("### Initial filtering\n\n")
 #| warning: false
 #| error: false
 #| message: false
-cat("### Clustering\n\n")
+cat("### Sample clustering\n\n")
 ```
 
 ```{r}

@@ -62,7 +62,46 @@ To aid in this process, we have clustered your data at multiple resolutions (see
 
 A good rule of thumb for selecting a clustering resolution for your data is to look for the resolutions at which the clusters remain relatively stable, i.e. there is little movement of cells between clusters. In the cluster trees this looks like rows of clusters where most of the clusters have a single, solid arrow incoming from the previous resolution. In contrast, unstable resolutions will have clusters with many, faint arrows incoming, representing clusters that are splitting and merging with each other from one resolution to the next.
 
-Below, you will find cluster trees for each of your samples, plus count vs. feature scatter plots for each of the clusters at each resolution.
+Below, you will find cluster trees for each of your samples, plus count vs. feature scatter plots for each of the clusters at each resolution. Use these plots to select a clustering resolution for each of your samples and set these in the samplesheet using the `res` column.
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+
+cluster_res <- read_csv("samplesheets/samplesheet.csv")
+if ("res" %in% colnames(cluster_res) && any(!is.na(cluster_res$res))) {
+  cluster_res <- cluster_res %>%
+    select(sample, res)
+} else {
+  cluster_res <- NULL
+}
+```
+
+```{r}
+#| echo: false
+#| eval: !expr (!is.null(cluster_res))
+#| results: asis
+#| warning: false
+#| error: false
+#| message: false
+
+cat("You have already set the following clustering resolutions for you sample. If you are happy with these values, you can proceed to the next step: [doublet detection and filtering](#doublet-detection-and-filtering).")
+```
+
+```{r}
+#| echo: false
+#| eval: !expr (!is.null(cluster_res))
+#| warning: false
+#| error: false
+#| message: false
+
+datatable(
+  cluster_res,
+  colnames = c("Sample", "Sample clustering resolution")
+)
+```
 
 #### Clustering resolutions
 
