@@ -349,7 +349,7 @@ You can use the following text within your methods sections of any manuscripts u
 
 #### Bioinformatics and data analysis
 
-Data was processed using scrnavigator-nf `r pipeline_version` (https://github.com/Sydney-Informatics-Hub/scrnavigator-nf), a Nextflow pipeline developed by the Sydney Informatics Hub for analysing single cell RNA sequencing data. The pipeline was executed using version `r nextflow_version` of Nextflow (Di Tommaso, et al. 2017; doi: [10.1038/nbt.3820](http://www.nature.com/nbt/journal/v35/n4/full/nbt.3820.html)) with the following command:
+Data was processed using scrnavigator-nf `r pipeline_version` (https://github.com/Sydney-Informatics-Hub/scrnavigator-nf), a Nextflow pipeline developed by the Sydney Informatics Hub for analysing single cell RNA sequencing data. The pipeline was executed using version `r nextflow_version` of Nextflow (Di Tommaso, et al., 2017; doi: [10.1038/nbt.3820](http://www.nature.com/nbt/journal/v35/n4/full/nbt.3820.html)) with the following command:
 
 ```{r}
 #| echo: false
@@ -360,7 +360,7 @@ Data was processed using scrnavigator-nf `r pipeline_version` (https://github.co
 cat(nextflow_command)
 ```
 
-The pipeline is built around the `Seurat` framework (version `r seurat_version`) and the `R` programming language (version `r r_version`).
+The pipeline is built around the `Seurat` framework (version `r seurat_version`; Satija et al., 2015; doi: [10.1038/nbt.3192](https://doi.org/10.1038/nbt.3192)) and the `R` programming language (version `r r_version`).
 ```{r}
 #| echo: false
 #| results: asis
@@ -374,11 +374,11 @@ if (file.exists("qc_filter.qmd") && hard_filtered) {
   }
 }
 if (file.exists("qc_cluster.qmd")) {
-  cat(paste0("Cells were clustered using the ", cluster_algorithm, " algorithm, with clustering resolutions selected using the R package `clustree` (version ", clustree_version, ").\n"))
+  cat(paste0("Cells were clustered using the ", cluster_algorithm, " algorithm, with clustering resolutions selected using the R package `clustree` (version ", clustree_version, "; Zappia and Oshlack, 2018; doi: [10.1093/gigascience/giy083](https://doi.org/10.1093/gigascience/giy083)).\n"))
 }
 
 if (file.exists("qc_doublets.qmd")) {
-  cat(paste0("Doublets were detected and removed using the R package `DoubletFinder` (version ", doubletfinder_version, ").\n"))
+  cat(paste0("Doublets were detected and removed using the R package `DoubletFinder` (version ", doubletfinder_version, "; McGinnis et al., 2019; doi: [10.1016/j.cels.2019.03.003](https://doi.org/10.1016/j.cels.2019.03.003)).\n"))
 }
 
 if (file.exists("integration_qc.qmd")) {
@@ -396,7 +396,7 @@ if (file.exists("annotation.qmd")) {
   }
 
   if (dir.exists("annotation_db")) {
-    cat(paste0("Cell types were annotated using the `SingleR` R package (version ", singler_version, ") and ", annotation_db_source, ".\n"))
+    cat(paste0("Cell types were annotated using the `SingleR` R package (version ", singler_version, "; Aran et al., 2019; doi: [10.1038/s41590-018-0276-y](https://doi.org/10.1038/s41590-018-0276-y)) and ", annotation_db_source, ".\n"))
   }
 
   if (dir.exists("annotation_custom")) {
@@ -420,11 +420,11 @@ if (dir.exists("analysis_pseudo")) {
 }
 
 if (dir.exists("analysis_de")) {
-  cat(paste0("Differential expression analysis was performed on pseudobulked data using `Seurat`'s built-in function `FindMarkers` and the `DESeq2` R package (version ", deseq_version, ").\n"))
+  cat(paste0("Differential expression analysis was performed on pseudobulked data using `Seurat`'s built-in function `FindMarkers` and the `DESeq2` R package (version ", deseq_version, "; Love et al., 2014; doi: [10.1186/s13059-014-0550-8](http://dx.doi.org/10.1186/s13059-014-0550-8)).\n"))
 }
 
 if (dir.exists("analysis_gsea") || dir.exists("analysis_ora")) {
-  cat(paste0("Functional enrichment analysis (FEA) was performed with the `WebGestaltR` R package (version ", webgestaltr_version, "). The following FEA methods were used:\n"))
+  cat(paste0("Functional enrichment analysis (FEA) was performed with the `WebGestaltR` R package (version ", webgestaltr_version, "; Elizarraras et al., 2024; doi: [10.1093/nar/gkae456](https://doi.org/10.1093/nar/gkae456)). The following FEA methods were used:\n"))
   if (dir.exists("analysis_gsea")) {
     cat("Gene Set Enrichment Analysis (GSEA).\n")
   }
