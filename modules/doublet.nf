@@ -1,5 +1,5 @@
 process DETECT_DOUBLETS {
-    publishDir "${params.outdir}/qc/${sample}/doublets", mode: 'copy'
+    publishDir { "${params.outdir}/qc/${sample}/doublets" }, mode: 'copy'
     // ext input_size: { new InputFileSizes(rds_path) }
     ext input_size: { rds_path.size() }
     memory { 16.GB + task.ext.input_size.B * 10 }

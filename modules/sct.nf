@@ -1,5 +1,5 @@
 process SCTRANSFORM {
-    publishDir "${params.outdir}/qc/${sample}/cluster", mode: 'copy'
+    publishDir { "${params.outdir}/qc/${sample}/cluster" }, mode: 'copy'
     // ext input_size: { new InputFileSizes(rds_path) }
     ext input_size: { rds_path.size() }
     memory { 8.GB + task.ext.input_size.B * 10 }

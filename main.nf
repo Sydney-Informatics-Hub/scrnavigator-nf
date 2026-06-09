@@ -79,7 +79,7 @@ workflow {
     // Read in samplesheet
     samplesheet = channel.fromPath(params.input)
         .splitCsv( header: true )
-        .map { row -> {
+        .map { row ->
             def sample = row.sample
             assert !!sample : "Error: Must provide a sample name in the samplesheet."
             def rds_path = file(row.rds, checkIfExists: true)
@@ -111,17 +111,17 @@ workflow {
                 meta:sample_meta,
                 cells_to_remove:cells_to_remove
             ]
-        }}
+        }
 
     // Validate samplesheet: only one entry per sample
     samplesheet
         .map { row -> [ row.sample, row.rds_path ] }
         .groupTuple()
-        .map { sample, rds_paths -> {
+        .map { sample, rds_paths ->
             assert rds_paths.size() != 0 : "Error: Missing RDS file for sample '${sample}'."
             assert rds_paths.size() == 1 : "Error: Duplicate entries found for sample '${sample}'."
             return [ sample, rds_paths ]
-        }}
+        }
 
     // Download Ensembl DB when no DB file is provided but a DB version is
     if (!params.ens_db && !!params.ens_db_version) {
@@ -201,20 +201,20 @@ workflow {
         // Pseudobulking
         pseudo_in = ANNOTATE.out.rds
             .merge(pseudo_groups)
-            .filter { _id, _rds, grps -> {
+            .filter { _id, _rds, grps ->
                 grps != null
-            } }
+            }
         PSEUDOBULK(pseudo_in)
 
         // Differential expression
         comparisons = !params.comparisons ? channel.empty() : (
             channel.fromPath(params.comparisons)
                 .splitCsv( header: true )
-                .map { row -> {
+                .map { row ->
                     assert row.ref != null && row.ref != ''
                     assert row.test != null && row.test != ''
                     [ row.ref, row.test ]
-                } }
+                }
         )
         de_in = PSEUDOBULK.out.pseudobulked_rds
             .combine(comparisons)
