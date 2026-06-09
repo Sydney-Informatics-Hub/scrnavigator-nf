@@ -10,7 +10,7 @@ workflow ANNOTATE {
     species
     s_genes
     g2m_genes
-    ens_db_rds
+    ens_db
     min_cells_for_annotation
     annotation_db
     custom_marker_genes
@@ -24,7 +24,7 @@ workflow ANNOTATE {
     valid_cc_annotation_params = species
         .merge(s_genes)
         .merge(g2m_genes)
-        .merge(ens_db_rds)
+        .merge(ens_db)
         .filter { spc, sg, gg, _ens ->
             spc == 'human' || (
                 sg != null &&
@@ -74,7 +74,7 @@ workflow ANNOTATE {
 
     // Perform custom cell type annotation if required annotation data is provided
     valid_custom_annotation_params = species
-        .merge(ens_db_rds)
+        .merge(ens_db)
         .merge(custom_marker_genes)
         .merge(custom_annotation_mad_threshold)
         .filter { _spc, _ens, cus, _mad ->

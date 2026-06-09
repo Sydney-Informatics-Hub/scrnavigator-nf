@@ -1,0 +1,38 @@
+{
+    "human: ens_db provided and used": {
+        "content": [
+            [
+                [
+                    "cohort",
+                    "available_annotations.txt:md5,af498a22c6a52e4c73ce192fbe64f4da"
+                ]
+            ],
+            [
+                "cohort"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.3"
+        },
+        "timestamp": "2026-05-06T13:31:18.588887183"
+    },
+    "human: null ens_db uses built-in EnsDb": {
+        "content": [
+            [
+                [
+                    "cohort",
+                    "available_annotations.txt:md5,af498a22c6a52e4c73ce192fbe64f4da"
+                ]
+            ],
+            [
+                "cohort"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.3"
+        },
+        "timestamp": "2026-05-06T13:30:27.547706853"
+    }
+}
