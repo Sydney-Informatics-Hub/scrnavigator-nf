@@ -588,11 +588,26 @@ cat("### Differential expression analysis\n\n")
 ```{r}
 #| echo: false
 #| results: asis
+#| eval: !expr (file.exists("analysis_gsea.qmd") || file.exists("analysis_ora.qmd"))
+#| warning: false
+#| error: false
+#| message: false
+
+cat("### Functional enrichment analysis (FEA)\n\n")
+
+cat("Differential expression analyses can generate lots of results that can be quite difficult to interpret by themselves.\n")
+cat("Functional enrichment analyses are a set of methods designed to take the raw differential expression results and identify patterns of expression that point to altered **biological function**.\n")
+cat("There are several such approaches, but the two we apply in this pipeline are **Gene Set Enrichment Analysis** (GSEA) and **Over-Representation Analysis** (ORA).\n\n")
+```
+
+```{r}
+#| echo: false
+#| results: asis
 #| eval: !expr file.exists("analysis_gsea.qmd")
 #| warning: false
 #| error: false
 #| message: false
-cat("### Functional enrichment analysis: GSEA\n\n")
+cat("#### Gene Set Enrichment Analysis (GSEA)\n\n")
 ```
 
 ```{r}
@@ -610,7 +625,7 @@ cat("### Functional enrichment analysis: GSEA\n\n")
 #| warning: false
 #| error: false
 #| message: false
-cat("### Functional enrichment analysis: ORA\n\n")
+cat("#### Over-Representation Analysis (ORA)\n\n")
 ```
 
 ```{r}

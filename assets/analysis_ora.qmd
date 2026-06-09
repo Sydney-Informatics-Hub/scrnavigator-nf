@@ -88,23 +88,9 @@ ora_plots <- sapply(all_comparisons_str, function(cmp) {
 })
 ```
 
-Differential expression analyses can generate lots of results that can be quite difficult to interpret by themselves. Functional enrichment analyses are a set of methods designed to take the raw differential expression results and identify patterns of expression that point to altered **biological function**. There are several such approaches, but the two we apply in this pipeline are **Gene Set Enrichment Analysis** (GSEA) and **Over-Representation Analysis** (ORA).
+This section presents the results from the ORA analysis conducted on your dataset. ORA works by taking the set of your **significantly differentially expressed** genes and comparing that against each set of genes mapped to **biological pathways** in a curated database. For each pathway, ORA looks at the proportion of those genes that appear in your list of significant genes. If that proportion is higher than what would be expected by chance, the gene set is considered **over-represented** or **enriched** in your dataset. In contrast, some pathways may have very low representation in your dataset, in which case they can be considered **under-represented** or **depleted**. The ORA method generates a list of **enrichment ratios** for each pathway.
 
-This page presents the results from the ORA analysis conducted on your dataset. ORA works by taking the set of your **significantly differentially expressed** genes and comparing that against each set of genes mapped to **biological pathways** in a curated database. For each pathway, ORA looks at the proportion of those genes that appear in your list of significant genes. If that proportion is higher than what would be expected by chance, the gene set is considered **over-represented** or **enriched** in your dataset. In contrast, some pathways may have very low representation in your dataset, in which case they can be considered **under-represented** or **depleted**. The ORA method generates a list of **enrichment ratios** for each pathway.
-
-##### Dataset name: `r cohort_id`
-
-#### All comparisons made:
-
-One GSEA analysis was conducted for each differential expression comparison that was made. As per the [differential expression page](analysis_de.qmd), these comparisons were:
-
-```{r}
-datatable(comparisons_df, colnames = c("Reference group", "Test group"))
-```
-
-#### ORA expression results
-
-Below, you will find plots for each ORA analysis. These plots show the log2-transformed enrichment ratio for each **significant** pathway from the analysis; more enriched pathways have bars pointing to the right and are highlighted in orange; depleted or under-represented pathways point to the left and are highlighted in blue.
+One ORA analysis was conducted for [each differential expression comparison](#differential-expression-analysis) that was made. Below, you will find plots showing the log2-transformed *enrichment ratio* for each **significant** pathway from the analysis: more enriched pathways have bars pointing to the right and are highlighted in orange, while depleted or under-represented pathways point to the left and are highlighted in blue.
 
 :::panel-tabset
 

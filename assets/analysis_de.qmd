@@ -83,30 +83,22 @@ p_dist_plot_file <- paste0("analysis_de/results/", cohort_id, ".p_val_dist.png")
 log_fc_dist_plot_file <- paste0("analysis_de/results/", cohort_id, ".log_fc_dist.png")
 ```
 
-This page shows the differential expression results for the comparisons you requested on your dataset. The results are presented in four sections:
+This section shows the differential expression (DE) results for the comparisons made for your dataset. Each DE analysis is a simple case vs. control comparison of two [pseudobulk groups](#pseudobulked-groups-availablle-for-comparison) from your dataset. The following table lists the DE comparisons that were made:
+
+```{r}
+datatable(comparisons_df, colnames = c("Reference group", "Test group"))
+```
+
+The results are presented in four sections:
 
 - [p-value distribution results](#p-value-distributions)
 - [Log-fold change distribution results](#log-fold-change-distributions)
 - [Volcano plots](#volcano-plots)
 - [Differential expression results table](#differential-expression-table)
 
-##### Dataset name: `r cohort_id`
+#### p-value distributions
 
-#### All comparisons made:
-
-You provided the following table of comparisons to perform via the `--comparisons` pipeline parameter:
-
-```{r}
-datatable(comparisons_df, colnames = c("Reference group", "Test group"))
-```
-
-*Note that the group names above must match the [pseudobulk groups shown in the previous section of the report](analysis_pseudo.qmd#pseudobulked-groups-availablle-for-comparison).*
-
-#### Differential expression results
-
-##### p-value distributions
-
-The following plots show the distribution of p-values for each comparison made. These can be useful to determine the quality of the results: a well-powered experiment with true positive results shoudl show an enrichment of low p-values (i.e. towards the left side of each plot). Uniformly distributed p-values indicate no true positive results or low power to detect true positives.
+The following plots show the distribution of p-values for each comparison made. These can be useful to determine the quality of the results: a well-powered experiment with true positive results should show an enrichment of low p-values (i.e. towards the left side of each plot). Uniformly distributed p-values indicate no true positive results or low power to detect true positives.
 
 ```{r}
 #| results: asis
@@ -114,13 +106,11 @@ The following plots show the distribution of p-values for each comparison made. 
 cat(paste0('<img src="', p_dist_plot_file, '" alt="p-value distributions: ', cohort_id, '" width="100%">\n\n'))
 ```
 
-##### Log-fold-change distributions
+#### Log-fold-change distributions
 
 Log-fold-change distributions are also useful in determining **how much** your significant genes are differentially expressed by. In the plots below, the red histograms represent the distribution of non-significant ("ns") genes, while the blue histograms represent significant genes ("sig").
 
-You can use these plots to determine whether you want to apply an additional fold-change threshold to your data. Such a threshold can help to remove noise from very lowly perturbed genes that may not represent a significant biological change. You can apply a fold-change threshold with the `--fc_threshold` parameter. **Note** that this parameter takes a **positive, non-log-transformed value**; i.e., to filter out all results with less than a 1.5x change in either direction (equivalent to ±0.58 in these log-scaled plots), you would provide `--fc_threshold 1.5`.
-
-Keep in mind that in many biological contexts, small fold-changes can be very biologically significant, so only use this parameter if you are sure you want to discard low fold-change results.
+These plots can be used to determine whether an additional fold-change threshold should be applied to the data. Such a threshold can help to remove noise from very lowly-perturbed genes that may not represent a significant biological change. However, **keep in mind** that in many biological contexts, small fold-changes can be biologically significant, so apply a fold-change threshold with care.
 
 ```{r}
 #| results: asis
@@ -128,9 +118,9 @@ Keep in mind that in many biological contexts, small fold-changes can be very bi
 cat(paste0('<img src="', log_fc_dist_plot_file, '" alt="log-fold-change distributions: ', cohort_id, '" width="100%">\n\n'))
 ```
 
-##### Volcano plots
+#### Volcano plots
 
-Volcano plots combine both the p-value and fold-change information into one very useful plot. At a glance, you can identify the most significant results (higher up on the vertical axis, and highlighted in red) and the most differentially expressed genes (further away from the centre). If you have provided a fold-change threshold, vertical lines will be drawn at the relevant fold-change positions on the plot and any genes between them will be greyed out and considered non-significant. The plots below additionally highlight the top-most significant genes for your convenience.
+Volcano plots combine both the p-value and fold-change information into one very useful plot. At a glance, you can identify the most significant results (higher up on the vertical axis, and highlighted in red) and the most differentially expressed genes (further away from the centre). If a fold-change threshold was specified, vertical lines will be drawn at the relevant fold-change positions on the plot and any genes between them will be greyed out and considered *non-significant*. The plots below additionally highlight the top-most significant genes for your convenience.
 
 ```{r}
 #| results: asis
@@ -138,13 +128,13 @@ Volcano plots combine both the p-value and fold-change information into one very
 cat(paste0('<img src="', volcano_plot_file, '" alt="volcano plots: ', cohort_id, '" width="100%">\n\n'))
 ```
 
-##### Differential expression table
+#### Differential expression table
 
 Finally, below is a table summarising all of the differential expression results performed. The "Significant results only" tab shows just those genes that pass the p-value and fold-change thresholds provided. The "All results" tab shows all genes from all comparisons, regardless of significance.
 
 :::panel-tabset
 
-###### Significant results only
+##### Significant results only
 
 ```{r}
 #| echo: false
@@ -154,7 +144,7 @@ Finally, below is a table summarising all of the differential expression results
 datatable(sig_de_table, colnames = de_table_col_names_ordered)
 ```
 
-###### All results
+##### All results
 
 ```{r}
 #| echo: false

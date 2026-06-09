@@ -37,27 +37,13 @@ pseudo_groups_file <- "pseudo_groups.txt"
 pseudo_groups <- scan(pseudo_groups_file, character())
 ```
 
-When we run a differential expression analysis on a single cell RNA-seq dataset, we are constructing a statistical model that looks for changes in the mean expression of each gene between case and control samples. These statistical models are built upon several **assumptions** about the underlying data, and if our dataset violates those assumptions, the results can be incorrect.
+With the dataset filtered, integrated, and annotated, the next step is to perform pseudobulking. This is the process of aggregating the RNA counts across many cells within a sample into a single data point. For example, we may have a sample with 5000 B cells and 4000 T cells. During pseudobulking, we would aggregate (i.e. sum together) the expression profiles of all B cells and all T cells, leaving us with one pseudobulked B cell expression profile and one pseudobulked T cell expression profile for that sample. We would then repeat this procedure for every sample.
 
-One of the major assumptions that these models make is that each data point is an independent, random sample drawn from some population. In the case of a bulk RNA-seq experiment, this assumption is valid: each data point is an RNA sample from an individual person or organism, and those individuals were (hopefully) chosen randomly from their respective populations. In the case of a single-cell RNA-seq experiment though, things get a bit more complicated.
-
-If we naively pass our scRNA-seq data into a standard differential expression algorithm, it will treat **each cell** as a separate data point and make the **assumption** that each cell is independently sampled from the population. But that isn't the case: cells from the same individual are **not** independent of one another - they originate from the same individual and share the exact same genetic background. This means the cells' expression profiles are correlated with one another, and this will invalidate the independence assumption, bias our results, and ultimately lead to over-inflated test statistics and estimates of significance. This issue is called **pseudoreplication**.
-
-There are a few ways to deal with pseudoreplication, but the method we have implemented in this pipeline is called **pseudobulking**. Pseudobulking is the process of aggregating the RNA counts across many cells within a sample into a single data point. For example, we may have a sample with 5000 B cells and 4000 T cells. During pseudobulking, we would aggregate (i.e. sum together) the expression profiles of all B cells and all T cells, leaving us with one pseudobulked B cell expression profile and one pseudobulked T cell expression profile for that sample. We would then repeat this procedure for every sample. Once complete, the B cell profiles from each sample would be suitably independent of one another and could be compared between cases and controls; the same could be done for the T cell profiles.
-
-The process of pseudobulking effectively performs a bulk RNA-seq experiment for each cell type - hence the name "pseudobulk". But, instead of relying on cell sorting methods to isolate each cell type from one another, we can use our single cell resolution data and cell annotations.
-
-When the pseudobulking stage of the pipeline runs, it uses the metadata fields provided with the `--pseudo_groups` parameter to decide how to group the cells prior to aggregation. By default, the pipeline will use the `cluster_annotation` field generated in the [annotation stage](annotation.qmd). This means all cells with the same cluster annotation within a sample will be aggregated together. You can provide multiple grouping fields for to this parameter, separated by commas, to refine the groups; for example, if you have a sample of B and T cells and ran both cluster annotation and cell cycle annotation, `--pseudo_groups cluster_annotation,Phase` would result in six pseudobulked expression profiles per cell: S-phase B cells, S-phase T cells, G1-phase B cells, etc.
-
-See the section titled [All annotation fields available for downstream analyses](annotation.qmd#all-annotation-fields-available-for-downstream-analyses) for a full list of fields relevant to your data that you can provide to `--pseudo_groups`. **Note** that you should include sample-level metadata fields here that are relevant to your differential expression analysis; for example, if you are comparing a particular treatment vs a control, and the relevant metadata field was called `treatment`, you would provide `treatment` to the `--pseudo_groups` parameter, along with any other fields you need.
-
-The pseudobulked expression profiles will be named after the individual levels within each metadata field. Again, taking the example of B and T cells in a treatment vs control experiment, if the cell labels are `B-cell` and `T-cell` and the labels in the `treatment` field are `drug` and `control`, your pseudobulked groups will be called `B-cell_drug`, `B-cell_control`, `T-cell_drug`, and `T-cell_control`.
-
-##### Dataset name: `r cohort_id`
+The process of pseudobulking effectively performs a bulk RNA-seq experiment for each cell type - hence the name "pseudobulk". But, instead of relying on cell sorting methods to isolate each cell type from one another, we can use our single cell resolution data and cell annotations. The main advantage of pseudobulking is that we can use well-established statistical techniques for assessing differentially expressed genes that were developed for bulk RNA-seq and are more robust than newer, more complex scRNA-seq techniques. See the [single-cell best practices guide](https://www.sc-best-practices.org/conditions/differential_gene_expression.html) for more information on the benefits of pseudobulking.
 
 #### Fields used for pseudobulking
 
-The following metadata fields were provided to the `--pseudo_groups` parameter and used for aggregation of cells:
+The following [metadata fields](#all-annotation-fields-available-for-downstream-analysis) were used for aggregation of cells:
 
 ```{r}
 #| echo: false
@@ -71,7 +57,7 @@ for (g in pseudo_groups) {
 
 ### Pseudobulked groups availablle for comparison
 
-Below is a table summarising all your final pseudobulk groups and the number of samples in your dataset that are represented in each group. You will need to note down these group names to construct a list of your desired differential expression comparisons. **Note** that for differential expression analysis, you will ideally have *at least three* samples for each of your case and control groups, if not more.
+Below is a table summarising all of your final pseudobulk groups and the number of samples in your dataset that are represented in each group. These pseudobulk group names are now available for comparison during differential expression analysis. **Note** that for differential expression analysis, you will ideally have *at least three* samples for each of your case and control groups, if not more.
 
 ```{r}
 #| echo: false

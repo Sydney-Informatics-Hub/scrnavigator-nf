@@ -207,7 +207,7 @@ datatable(
 
 Cell **clusters** were annotated with the labels from the **`r annotation_used_for_clusters`** annotation field.
 
-#### All annotation fields available for downstream analyses
+#### All annotation fields available for downstream analysis
 
 The following list contains all of the annotations listed above, as well as the `cluster_annotation` field and additional metadata fields that were provided in the samplesheet. These are all of the fields available for performing downstream pseudobulking and subsequent differential expression and functional enrichment analyses.
 

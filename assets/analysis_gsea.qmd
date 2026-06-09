@@ -88,23 +88,9 @@ gsea_plots <- sapply(all_comparisons_str, function(cmp) {
 })
 ```
 
-Differential expression analyses can generate lots of results that can be quite difficult to interpret by themselves. Functional enrichment analyses are a set of methods designed to take the raw differential expression results and identify patterns of expression that point to altered **biological function**. There are several such approaches, but the two we apply in this pipeline are **Gene Set Enrichment Analysis** (GSEA) and **Over-Representation Analysis** (ORA).
+This section presents the results from the GSEA analysis conducted on your dataset. GSEA works by first ranking the entire set of differential expression results by their fold-change values; this includes **both** significant **and** non-significant genes. The method then looks at a database of **biological pathways** and the **gene sets** associated with each. For each gene set, GSEA assesses whether these genes appear clustered together within your ranked dataset, more so than would be expected by chance. The degree of clustering towards the upregulated or downregulated ends of your dataset is used to calculate an **enrichment score** for that gene set.
 
-This page presents the results from the GSEA analysis conducted on your dataset. GSEA works by first ranking the entire set of differential expression results by their fold-change values; this includes **both** significant **and** non-significant genes. The method then looks at a database of **biological pathways** and the **gene sets** associated with each. For each gene set, GSEA assesses whether these genes appear clustered together within your ranked dataset, more so than would be expected by chance. The degree of clustering towards the upregulated or downregulated ends of your dataset is used to calculate an **enrichment score** for that gene set.
-
-##### Dataset name: `r cohort_id`
-
-#### All comparisons made:
-
-One GSEA analysis was conducted for each differential expression comparison that was made. As per the [differential expression page](analysis_de.qmd), these comparisons were:
-
-```{r}
-datatable(comparisons_df, colnames = c("Reference group", "Test group"))
-```
-
-#### GSEA expression results
-
-Below, you will find plots for each GSEA analysis. These plots show the enrichment score for each **significant** pathway from the analyses; more upregulated pathways have bars pointing to the right and are highlighted in orange; downregulated pathways point to the left and are highlighted in blue.
+One GSEA analysis was conducted for [each differential expression comparison](#differential-expression-analysis) that was made. Below, you will find plots showing the enrichment score for each **significant** pathway from each analysis: more upregulated pathways have bars pointing to the right and are highlighted in orange, while downregulated pathways point to the left and are highlighted in blue.
 
 :::panel-tabset
 
