@@ -41,9 +41,7 @@ integration_res_file <- "integration_resolution.txt"
 integration_res <- as.numeric(scan(integration_res_file, character())[1])
 ```
 
-This section shows the clustering results for your dataset post-integration. As before with the [per-sample clustering analysis](#sample-clustering), the dataset was clustered at several resolutions (outlined below). A cluster tree plot is shown below to aid you in selecting the best resolution for your dataset. Recall that you want to identify a resolution where the clusters remain relatively stable from one resolution to the next, i.e. most clusters have a single, opaque arrow incoming rather than multiple faint incoming arrows. When you have selected a suitable resolution, re-run the pipeline and pass the parameter `--integrated_resolution <RES>`, replacing `<RES>` with your chosen resolution. When this parameter is unset, the pipeline choose a default value of `1`, **but you will likely need to change this**. The UMAP and count vs. feature plots below will display the results for your chosen resolution.
-
-##### Current integration resolution: `r integration_res`
+This section shows the clustering results for your dataset post-integration. As before with the [per-sample clustering analysis](#sample-clustering), the dataset was clustered at several resolutions (outlined below). A cluster tree plot is shown below to aid you in selecting the best resolution for your dataset. Recall that we want to identify a resolution where the clusters remain relatively stable from one resolution to the next, i.e. most clusters have a single, opaque arrow incoming rather than multiple faint incoming arrows. By default, the pipeline will choose a value of `1`, **but often this will need to be altered to suit the dataset**. For your dataset, a value of **`r integration_res`** was selected. The UMAP and count vs. feature plots below will display the clustering results for your chosen resolution.
 
 #### Integrated clusters UMAP
 
@@ -67,7 +65,7 @@ cat(paste0('<img src="', fc_plot_file, '" alt="feature-count plot of integrated 
 
 #### Clustree plot for integrated dataset
 
-This cluster tree shows how cells move between clusters from one resolution to the next. Use this to identify the ideal clustering resolution for your dataset. Look for resolutions where most clusters have a single, dark arrow incoming, meaning that few cells moved between clusters when moving from the previous resolution.
+This cluster tree shows how cells move between clusters from one resolution to the next. Stable resolutions are where most clusters have a single, dark incoming arrow, meaning that few cells moved between clusters when moving from the previous resolution.
 
 ```{r}
 #| results: asis

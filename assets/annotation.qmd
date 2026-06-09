@@ -151,50 +151,65 @@ if (is.null(cohort_id)) {
 }
 ```
 
-There are three main annotation options you can choose when running the scRNAvigator pipeline:
+There are three main annotation options supported by the scRNAvigator pipeline:
 
 - Cell cycle annotation
 - Automatic cell type annotation
 - Custom marker gene-based annotation
 
-Cell cycle annotation is useful if you are studying rapidly-dividing cells such as tumor samples and wish to capture information about which stage of the cell cycle each cell is in. This annotation is automatic for human samples and can be enabled for non-human samples by providing lists of cell cycle marker genes for your species using the `--s_genes` and `--g2m_genes` parameters.
+Cell cycle annotation is useful if you are studying rapidly-dividing cells such as tumor samples and wish to capture information about which stage of the cell cycle each cell is in.
 
-Automatic cell type annotation is performed by comparing your data against curated and pre-annotated public datasets and assigning annotations to your cells based on their similarities to the curated datasets. For human samples, the Human Primary Cell Atlas (HPCA) database is used for this purpose by default, although you can override the database used with the `--annotation_db` parameter. For non-human species, you will need to use this parameter and provide a database file in order to perform automatic cell type annotation.
+Automatic cell type annotation is performed by comparing your data against curated and pre-annotated public datasets and assigning annotations to your cells based on their similarities to the curated datasets. For human samples, the Human Primary Cell Atlas (HPCA) database is used for this purpose by default, while for non-human species, an external database needs to be provided in order to perform automatic cell type annotation.
 
-Custom marker gene-based annotation takes a list of cell types and associated marker genes and runs a scoring algorithm to determine the closest matching cell type for each cell. You provide this list of cell types using the `--custom_marker_genes` parameter. The file provided must be a CSV file and contain an annotation label and a list of genes associated with it. Cells that score highly for more than one cell type will be labelled "Ambiguous".
+Custom marker gene-based annotation takes a list of cell types and associated marker genes and runs a scoring algorithm to determine the closest matching cell type for each cell. Custom cell type annotations creates two annotation fields in the sample metadata: `custom_cell_type` and `custom_cell_type.max_score`. The `custom_cell_type.max_score` annotation simply picks the custom cell type that scored the highest. The `custom_cell_type` annotation, however, also takes into account how much the highest score differs from the second-highest score; when these are too close together for a given cell, the cell will be labelled "Ambiguous". Of these two annotation fields, we recommend using `custom_cell_type` for downstream analysis due to it being more conservative.
 
-After annotation with one or more of the above methods, your cell **clusters** will be annotated as well. This takes one of the annotation categories from above and determines whether that cluster predominantly consists of a single cell type or label. If so, that label is applied to the whole cluster. If there is too much heterogeneity within a cluster, it is labelled "Ambiguous". By default, a cell type must make up 2/3 of the cluster for that label to be applied to the cluster as well. You can choose the threshold used with the `--cell_type_proportion_threshold` parameter.
-
-By default, the annotation category used for cluster annotation is the first in the following list that has been performed:
-
-- Custom marker gene-based annotation
-- Automatic cell type annotation
-  - For human HPCA annotations, the 'main' level annotation is prioritised over the 'fine' level annotation
-- Cell cycle annotation
-
-The annotation category used for cluster annotation can be overridden using the `--cluster_annotation`. See below for a list of valid values from your dataset.
-
-##### Dataset name: `r cohort_id`
+After annotation with one or more of the above methods, your cell **clusters** will be annotated as well. This takes one of the annotation categories from above and determines whether that cluster predominantly consists of a single cell type or label. If so, that label is applied to the whole cluster. If there is too much heterogeneity within a cluster, it is labelled "Ambiguous".
 
 #### All annotation fields available for cluster annotation
 
-The following annotation fields are available for cluster annotation:
+Your cells were annotated with the following annotation fields:
 
 ```{r}
 #| echo: false
-#| results: asis
+#| warning: false
+#| error: false
+#| message: false
+all_annotations_df <- tibble(
+  annotation_field = c(),
+  description = c()
+)
+annotation_descriptions <- list(
+  custom_cell_type = "Custom marker gene-based cell type annotation (highest score significantly higher than second-highest score)",
+  custom_cell_type.max_score = "Custom marker gene-based cell type annotation (highest score only)",
+  SingleR.annotation = "SingleR annotation with custom cell annotation database",
+  SingleR.hpca_main = "SingleR annotation with HPCA database ('main' cell type category)",
+  SingleR.hpca_fine = "SingleR annotation with HPCA database ('fine' cell type category)",
+  Phase = "Cell cycle phase"
+)
 for (ann in annotation_priority) {
-  cat("- ")
-  cat(ann)
-  cat("\n")
+  all_annotations_df <- all_annotations_df %>%
+    bind_rows(tibble(
+      annotation_field = ann,
+      description = annotation_descriptions[[ann]]
+    ))
 }
 ```
 
-The field used for cluster annotation was: **`r annotation_used_for_clusters`**
+```{r}
+#| echo: false
+#| eval: !expr (dim(all_annotations_df)[1] > 0)
+
+datatable(
+  all_annotations_df,
+  colnames = c("Annotation field", "Description")
+)
+```
+
+Cell **clusters** were annotated with the labels from the **`r annotation_used_for_clusters`** annotation field.
 
 #### All annotation fields available for downstream analyses
 
-The following list contains all of the annotations listed above, as well as `cluster_annotation` and additional metadata fields you provided in the samplesheet. These are all of the fields available to you for performing downstream pseudobulking and subsequent differential expression and functional enrichment analyses.
+The following list contains all of the annotations listed above, as well as the `cluster_annotation` field and additional metadata fields that were provided in the samplesheet. These are all of the fields available for performing downstream pseudobulking and subsequent differential expression and functional enrichment analyses.
 
 ```{r}
 #| echo: false

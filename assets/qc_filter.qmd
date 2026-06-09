@@ -124,9 +124,7 @@ filtering_params_non_null_cols <- filtering_params_cols[colnames(filtering_param
 datatable(filtering_params_non_null, colnames = unname(filtering_params_non_null_cols))
 ```
 
-The following violin plots show the distributions of UMI counts (called `nCount_RNA`) and unique gene counts (called `nFeature_RNA`) per cell, as well as the mitochondiral gene percentages (`percent.mt`) per cell. These three values are plotted against each other in the "Features vs counts" scatter plots further down. Ideally, you want to see a roughly linear relationship between these values, up to a plateau point where greater sequencing depth no longer captures additional genes. Poor quality or dying cells may appear as additional clusters of cells towards the bottom-right corners of the plots. Additionally, high mitochondrial gene percentages may be indicative of dying cells, although be aware that some cell types may show high mitochondrial gene percentages even when healthy.
-
-Use these plots to identify hard-filtering thresholds to remove poor quality cells. The table below the plots summarises the number of cells in each sample and the number of cells retained after filtering.
+The following violin plots show the distributions of UMI counts (called `nCount_RNA`) and unique gene counts (called `nFeature_RNA`) per cell, as well as the mitochondiral gene percentages (`percent.mt`) per cell. These three values are plotted against each other in the "Features vs counts" scatter plots further down. These plots can be used together to identify hard-filtering thresholds for removing poor quality cells. Ideally, you want to see a roughly linear relationship between these values, up to a plateau point where greater sequencing depth no longer captures additional genes. Poor quality or dying cells may appear as additional clusters of cells towards the bottom-right corners of the plots. Additionally, high mitochondrial gene percentages may be indicative of dying cells, although be aware that some cell types may show high mitochondrial gene percentages even when healthy.
 
 :::panel-tabset
 
@@ -155,6 +153,8 @@ purrr::walk(
 :::
 
 #### Filtering summary
+
+The following table summarises the number of cells in each sample and the number of cells retained after filtering.
 
 ```{r}
 #| echo: false
