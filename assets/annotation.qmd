@@ -32,7 +32,9 @@ annotation_priority <- c(
   "custom_cell_type.max_score",
   "SingleR.annotation",
   "SingleR.hpca_main",
+  "SingleR.mouse_main",
   "SingleR.hpca_fine",
+  "SingleR.mouse_fine",
   "Phase"
 )
 annotation_priority <- annotation_priority[annotation_priority %in% available_annotations]
@@ -183,7 +185,9 @@ annotation_descriptions <- list(
   custom_cell_type.max_score = "Custom marker gene-based cell type annotation (highest score only)",
   SingleR.annotation = "SingleR annotation with custom cell annotation database",
   SingleR.hpca_main = "SingleR annotation with HPCA database ('main' cell type category)",
+  SingleR.mouse_main = "SingleR annotation with celldex mouse database ('main' cell type category)",
   SingleR.hpca_fine = "SingleR annotation with HPCA database ('fine' cell type category)",
+  SingleR.mouse_fine = "SingleR annotation with celldex mouse database ('fine' cell type category)",
   Phase = "Cell cycle phase"
 )
 for (ann in annotation_priority) {
