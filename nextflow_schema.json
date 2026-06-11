@@ -107,7 +107,7 @@
         },
         "cluster_annotation": {
           "type": "string",
-          "description": "The annotation label to use for annotating clusters. If not supplied, defaults to the first of the following that exists: 'custom_cell_type', 'custom_cell_type.max_score', 'SingleR.annotation', 'SingleR.hpca_main', 'SingleR.hpca_fine', 'Phase'."
+          "description": "The annotation label to use for annotating clusters. If not supplied, defaults to the first of the following that exists: 'custom_cell_type', 'custom_cell_type.max_score', 'SingleR.annotation', 'SingleR.hpca_main', 'SingleR.mouse_main', 'SingleR.hpca_fine', 'SingleR.mouse_fine', 'Phase'."
         },
         "cell_type_proportion_threshold": {
           "type": "number",

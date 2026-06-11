@@ -54,7 +54,7 @@ workflow ANNOTATE {
         .merge(min_cells_for_annotation)
         .merge(annotation_db)
         .filter { spc, _mc, anndb -> {
-            spc == 'human' || anndb != null
+            spc == 'human' || spc == 'mouse' || anndb != null
         } }
         .map { spc, mc, anndb -> {
             def anndb_opt = anndb == null ? [] : anndb
