@@ -1,5 +1,5 @@
 process PREPROCESS_RDS {
-    publishDir "${params.outdir}/qc/${sample}/preprocess", mode: 'copy'
+    publishDir { "${params.outdir}/qc/${sample}/preprocess" }, mode: 'copy'
     // ext input_size: { new InputFileSizes(rds_path) + new InputFileSizes(ens_db) }
     ext input_size: { rds_path.size() + ( ens_db ? ens_db.size() : 0 ) }
     memory { 4.GB + task.ext.input_size.B * 10 }

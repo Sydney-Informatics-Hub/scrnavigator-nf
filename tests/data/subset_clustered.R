@@ -3,10 +3,12 @@
 # Run from scrnavigator-nf/:
 #   singularity exec $SIF Rscript --vanilla tests/data/subset_clustered.R
 
+here::i_am("tests/data/subset_clustered.R")
+
 library(Seurat)
 
-src  <- "tests/data/rds/cohort.integrated.test.rds"
-dest <- "tests/data/rds/cohort.integrated.clustered.test.rds"
+src  <- here::here("tests/data/rds/cohort.integrated.test.rds")
+dest <- here::here("tests/data/rds/cohort.integrated.clustered.test.rds")
 
 if (file.exists(dest)) {
   message("Fixture already exists: ", dest)

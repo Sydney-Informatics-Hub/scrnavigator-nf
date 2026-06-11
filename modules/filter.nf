@@ -1,5 +1,5 @@
 process FILTER {
-    publishDir "${params.outdir}/qc/${sample}/filter", mode: 'copy'
+    publishDir { "${params.outdir}/qc/${sample}/filter" }, mode: 'copy'
     // ext input_size: { new InputFileSizes(rds_path) }
     ext input_size: { rds_path.size() }
     memory { 4.GB + task.ext.input_size.B * 10 }
