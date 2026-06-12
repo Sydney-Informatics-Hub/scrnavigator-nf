@@ -43,6 +43,7 @@ Parameters that control the pipeline execution and flow.
 | `gsea_db` | Path to a .gmt file containing an enrichment database for use with gene set enrichment analysis with WebGestaltR. Must contain three tab-delimited columns: category ID, external link, and gene ID. | `string` |  |  |  |
 | `ens_db` | Path to an sqlite ensembldb for the species. <details><summary>Help</summary><small>Leave empty to use the built in ensembld e.g. humans: `EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86`; mice: `EnsDb.Mmusculus.v79::EnsDb.Mmusculus.v79`</small></details>| `string` |  |  |  |
 | `ens_db_version` | Version of the ensembldb <details><summary>Help</summary><small>Used to download the specified version in DOWNLOAD_ENSDB. The default is v113 for the most recent available version for human.</small></details>| `string` | v113 |  |  |
+| `vars_to_regress` | Comma-separated list of metadata variables to regress out when performing scaling and normalisation with the `SCTransform` function in `Seurat`. If MT genes have been annotated, the percentage of MT genes per sample (`percent.mt`) is automatically added to this list. | `string` |  |  |  |
 
 ## Miscellaneous parameters
 
