@@ -86,7 +86,7 @@ merged <-
   Seurat::RunPCA()
 
 # Calculate the minimum number of PCs that explain the majority of the variation
-vars <- merged@reductions$pca@stdev
+vars <- merged@reductions$pca@stdev ^ 2
 percent_var <- (vars / sum(vars)) * 100
 cumulative <- cumsum(percent_var)
 co1 <- which(cumulative > 90 & percent_var < 5)[1]

@@ -19,7 +19,7 @@ integrated <- readRDS(src)
 message(sprintf("Loaded: %d cells, %d features", ncol(integrated), nrow(integrated)))
 
 # Calculate min_pc (same logic as cluster_integrated.R)
-vars <- integrated@reductions$pca@stdev
+vars <- integrated@reductions$pca@stdev ^ 2
 percent_var <- (vars / sum(vars)) * 100
 cumulative <- cumsum(percent_var)
 co1 <- which(cumulative > 90 & percent_var < 5)[1]
