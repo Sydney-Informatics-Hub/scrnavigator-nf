@@ -43,15 +43,15 @@ sct <-
   Seurat::RunPCA()
 
 # Calculate the minimum number of PCs that explain the majority of the variation
-stdvs <- sct@reductions$pca@stdev
-percent_stdv <- (stdvs / sum(stdvs)) * 100
-cumulative <- cumsum(percent_stdv)
-co1 <- which(cumulative > 90 & percent_stdv < 5)[1]
+vars <- sct@reductions$pca@stdev ^ 2
+percent_var <- (vars / sum(vars)) * 100
+cumulative <- cumsum(percent_var)
+co1 <- which(cumulative > 90 & percent_var < 5)[1]
 co2 <- sort(
   which(
     (
-      percent_stdv[1:length(percent_stdv) - 1] -
-        percent_stdv[2:length(percent_stdv)]
+      percent_var[1:length(percent_var) - 1] -
+        percent_var[2:length(percent_var)]
     ) > 0.1
   ),
   decreasing = TRUE
