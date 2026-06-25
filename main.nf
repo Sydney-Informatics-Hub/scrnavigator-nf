@@ -57,7 +57,7 @@ workflow {
     species                         = channel.value(species_lower)
     ens_db_version                  = channel.value(params.ens_db_version)
     annotate_mt                     = channel.value(!params.no_mt)
-    def _vars_to_regress            = ( params.vars_to_regress + ( params.no_mt ? '' : ',percent.mt' ) )
+    def _vars_to_regress            = ( ( params.vars_to_regress ?: '' ) + ( params.no_mt ? '' : ',percent.mt' ) )
                                             .tokenize(',')
                                             .collect { v -> v.trim() }
                                             .findAll { v -> !!v }
