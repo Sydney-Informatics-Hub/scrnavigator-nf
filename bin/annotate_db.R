@@ -31,6 +31,7 @@ annotation_db_file <- annotation_params$value[match("annotation_db", annotation_
 data_is_ensembl <- all(startsWith(rownames(integrated@assays$RNA), "ENS"))
 
 use_hpca <- FALSE
+use_mouse <- FALSE
 if (!is.na(annotation_db_file)) {
   annotation_db <- readRDS(annotation_db_file)
 } else if (species == 'human') {
@@ -56,15 +57,16 @@ sceM <- logNormCounts(sce)
 
 if (use_hpca || use_mouse) {
   # Add the main-level annotations
+  field_to_plot <- ifelse(use_hpca, "SingleR.hpca_main", "SingleR.mouse_main")
   predicted <- SingleR(test = sceM, ref = annotation_db, labels = annotation_db$label.main)
   keep <- table(predicted$labels) > min_cells_for_annotation
-  integrated$SingleR.hpca_main <- ifelse(keep[predicted$labels], predicted$labels, "Other")
-  field_to_plot <- ifelse(use_hpca, "SingleR.hpca_main", "SingleR.mouse_main")
+  integrated[[field_to_plot]] <- ifelse(keep[predicted$labels], predicted$labels, "Other")
 
   # Also add the fine-level annotations
+  field_to_plot <- ifelse(use_hpca, "SingleR.hpca_fine", "SingleR.mouse_fine")
   predicted <- SingleR(test = sceM, ref = annotation_db, labels = annotation_db$label.fine)
   keep <- table(predicted$labels) > min_cells_for_annotation
-  integrated$SingleR.hpca_fine <- ifelse(keep[predicted$labels], predicted$labels, "Other")
+  integrated[[field_to_plot]] <- ifelse(keep[predicted$labels], predicted$labels, "Other")
 } else {
   predicted <- SingleR(test = sceM, ref= annotation_db, labels = annotation_db$label)
   keep <- table(predicted$labels) > min_cells_for_annotation
