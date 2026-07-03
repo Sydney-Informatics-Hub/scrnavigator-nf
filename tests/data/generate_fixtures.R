@@ -2,8 +2,13 @@
 # Requires: nextflow singularity loaded; network access (copyq or equivalent).
 # Also requires: tests/data/rds/cohort.integrated.test.rds
 #
-# Usage (inside the singularity container):
-#   singularity exec ${SINGULARITY_CACHEDIR}/sydneyinformaticshub-scrnavigator-nf-annotate.img Rscript --vanilla tests/data/generate_fixtures.R
+# Usage (inside the annotate singularity container):
+#   SIF=/scratch/er01/fj9712/.nextflow/singularity/sydneyinformaticshub-scrnavigator-nf-annotate.img
+#   singularity exec $SIF Rscript --vanilla tests/data/generate_fixtures.R
+#
+# NOTE: Section 4 (mouse per-sample fixtures) must be generated separately in a
+# Bioconductor R session with MouseGastrulationData installed — it does NOT run
+# inside the annotate container. See tests/data/make_mouse_samples.R.
 
 here::i_am("tests/data/generate_fixtures.R")
 

@@ -31,6 +31,7 @@ annotation_db_file <- annotation_params$value[match("annotation_db", annotation_
 data_is_ensembl <- all(startsWith(rownames(integrated@assays$RNA), "ENS"))
 
 use_hpca <- FALSE
+use_mouse <- FALSE
 if (!is.na(annotation_db_file)) {
   annotation_db <- readRDS(annotation_db_file)
 } else if (species == 'human') {
@@ -40,24 +41,32 @@ if (!is.na(annotation_db_file)) {
   } else {
     annotation_db <- celldex::HumanPrimaryCellAtlasData(ensembl = FALSE)
   }
+} else if (species == 'mouse') {
+  use_mouse <- TRUE
+  if (data_is_ensembl) {
+    annotation_db <- celldex::MouseRNAseqData(ensembl = TRUE)
+  } else {
+    annotation_db <- celldex::MouseRNAseqData(ensembl = FALSE)
+  }
 } else {
-  stop("Error: For non-human species, valid external annotation database RDS file must be provided.")
+  stop("Error: For species other than human and mouse, valid external annotation database RDS file must be provided.")
 }
 
 sce <- as.SingleCellExperiment(integrated, assay = "RNA")
 sceM <- logNormCounts(sce)
 
-if (use_hpca) {
+if (use_hpca || use_mouse) {
   # Add the main-level annotations
+  field_to_plot <- ifelse(use_hpca, "SingleR.hpca_main", "SingleR.mouse_main")
   predicted <- SingleR(test = sceM, ref = annotation_db, labels = annotation_db$label.main)
   keep <- table(predicted$labels) > min_cells_for_annotation
-  integrated$SingleR.hpca_main <- ifelse(keep[predicted$labels], predicted$labels, "Other")
-  field_to_plot <- "SingleR.hpca_main"
+  integrated[[field_to_plot]] <- ifelse(keep[predicted$labels], predicted$labels, "Other")
 
   # Also add the fine-level annotations
+  field_to_plot <- ifelse(use_hpca, "SingleR.hpca_fine", "SingleR.mouse_fine")
   predicted <- SingleR(test = sceM, ref = annotation_db, labels = annotation_db$label.fine)
   keep <- table(predicted$labels) > min_cells_for_annotation
-  integrated$SingleR.hpca_fine <- ifelse(keep[predicted$labels], predicted$labels, "Other")
+  integrated[[field_to_plot]] <- ifelse(keep[predicted$labels], predicted$labels, "Other")
 } else {
   predicted <- SingleR(test = sceM, ref= annotation_db, labels = annotation_db$label)
   keep <- table(predicted$labels) > min_cells_for_annotation
@@ -128,6 +137,22 @@ if (use_hpca) {
     write_csv(paste0("qc_results/", cohort_id, ".cell_type_proportions.singleR_annotation.hpca_fine.csv"))
 
   available_annotations <- c("SingleR.hpca_main", "SingleR.hpca_fine")
+} else if (use_mouse) {
+  integrated@meta.data %>%
+    dplyr::select(any_of(default_res_name), SingleR.mouse_main) %>%
+    group_by(.data[[default_res_name]], SingleR.mouse_main) %>%
+    summarise(n_cells = n()) %>%
+    pivot_wider(names_from = default_res_name, values_from = n_cells) %>%
+    write_csv(paste0("qc_results/", cohort_id, ".cell_type_proportions.singleR_annotation.mouse_main.csv"))
+
+  integrated@meta.data %>%
+    dplyr::select(any_of(default_res_name), SingleR.mouse_fine) %>%
+    group_by(.data[[default_res_name]], SingleR.mouse_fine) %>%
+    summarise(n_cells = n()) %>%
+    pivot_wider(names_from = default_res_name, values_from = n_cells) %>%
+    write_csv(paste0("qc_results/", cohort_id, ".cell_type_proportions.singleR_annotation.mouse_fine.csv"))
+
+  available_annotations <- c("SingleR.mouse_main", "SingleR.mouse_fine")
 } else {
   integrated@meta.data %>%
     dplyr::select(any_of(c(default_res_name, "SingleR.annotation"))) %>%

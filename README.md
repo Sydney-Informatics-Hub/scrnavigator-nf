@@ -183,9 +183,9 @@ Inspect the integration UMAPs in the report to confirm that samples mix well aft
 
 ### Cell annotation
 
-Cell annotation assigns biological identity to each cluster using three complementary approaches run in parallel: database-driven annotation (SingleR), cell cycle phase scoring, and cluster-level consensus assignment. By default, human samples are annotated against the Human Primary Cell Atlas (HPCA). A cluster is labelled with a cell type if that type represents more than 67% of cells in the cluster; otherwise it is marked "Ambiguous".
+Cell annotation assigns biological identity to each cell using three complementary approaches: database-driven annotation (SingleR), cell cycle phase scoring, and custom marker gene-based annotation. Cell cycle scoring is performed automatically for human samples; database-driven annotation is also performed automatically for both human and mouse samples, using the [Human Primary Cell Atlas (HPCA)](https://www.bioconductor.org/packages/release/data/experiment/vignettes/celldex/inst/doc/userguide.html#1_Human_Primary_Cell_Atlas) and [MouseRNAseqData](https://www.bioconductor.org/packages/release/data/experiment/vignettes/celldex/inst/doc/userguide.html#2_Mouse_RNA-seq_Data) databases, respectively, both sourced from the `celldex` package. See [How-to: use a custom annotation database](#how-to-use-a-custom-annotation-database) for using an alternative reference database with SingleR.
 
-See [How-to customise annotation]() for using custom marker gene lists or alternative reference databases.
+Along with cell-level annotation, cell clusters are labelled with a cell type if that type represents more than 67% of cells in the cluster; otherwise it is marked "Ambiguous". The default 67% threshold can be overridden with the `--cell_type_proportion_threshold` parameter.
 
 Drop `--no_analysis` to run annotation (and pseudobulking, described below) for the first time:
 
@@ -220,6 +220,61 @@ results/
 ```
 
 Inspect the annotation UMAPs and cell type proportion plots in the report. Verify that cluster assignments look biologically plausible before defining comparison groups for downstream analysis.
+
+### How-to: use a custom annotation database
+
+By default the pipeline annotates human samples against the [Human Primary Cell Atlas](https://www.bioconductor.org/packages/release/data/experiment/vignettes/celldex/inst/doc/userguide.html#1_Human_Primary_Cell_Atlas) and mouse samples against [MouseRNAseqData](https://www.bioconductor.org/packages/release/data/experiment/vignettes/celldex/inst/doc/userguide.html#2_Mouse_RNA-seq_Data), both sourced from the `celldex` package. You can supply any alternative reference by providing a path to an RDS file via the `--annotation_db` parameter.
+
+**Required format**
+
+The database must be a [`SummarizedExperiment`](https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html) object with:
+
+- A `logcounts` assay containing log-normalised expression values, with genes as rows and reference cells/samples as columns.
+- A `label` column in `colData` containing the cell type label for each reference cell/sample.
+
+Row names must use the same gene identifier type as your data (Ensembl IDs or gene symbols).
+
+**Building a custom database**
+
+The example below constructs a minimal compliant object from a raw counts matrix and a vector of cell type labels:
+
+```r
+library(SummarizedExperiment)
+library(scuttle)
+
+# counts_matrix: genes x cells, raw counts
+# cell_labels:   character vector, one label per cell
+
+sce <- SummarizedExperiment(
+  assays = list(counts = counts_matrix),
+  colData = DataFrame(label = cell_labels)
+)
+sce <- logNormCounts(sce)   # adds the required 'logcounts' assay
+
+saveRDS(sce, "my_annotation_db.rds")
+```
+
+Any `celldex` reference is already in this format and can be saved and reused directly:
+
+```r
+db <- celldex::HumanPrimaryCellAtlasData()
+saveRDS(db, "hpca.rds")
+```
+
+**Running the pipeline with a custom database**
+
+Pass the RDS path with `--annotation_db`. The `--species` parameter is still required for other steps in the pipeline but does not affect which database is used when `--annotation_db` is provided:
+
+```bash
+nextflow run scrnavigator-nf \
+    --input path/to/samplesheet.csv \
+    --outdir results \
+    --species human \
+    --annotation_db path/to/my_annotation_db.rds \
+    -resume
+```
+
+The resulting per-cell annotations will be stored in the `SingleR.annotation` metadata column of the output Seurat object.
 
 ### Pseudobulking
 

@@ -28,7 +28,8 @@ BiocManager::install(
     "glmGamPoi",
     "scuttle",
     "DESeq2",
-    "EnsDb.Hsapiens.v86"
+    "EnsDb.Hsapiens.v86",
+    "EnsDb.Mmusculus.v79"
   ),
   site_repository = "https://cran.csiro.au/",
   ask = FALSE
