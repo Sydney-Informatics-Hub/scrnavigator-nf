@@ -12,6 +12,13 @@ args <- commandArgs(trailingOnly = TRUE)
 sample_id <- args[1]
 rds_path <- args[2]
 params_file <- args[3]
+vars_to_regress_str <- args[4]
+
+vars_to_regress <- if (!is.na(vars_to_regress_str) && nchar(vars_to_regress_str) > 0) {
+  strsplit(vars_to_regress_str, ",")[[1]]
+} else {
+  NULL
+}
 
 # Read in Seurat object from RDS file
 so <- readRDS(rds_path)
@@ -37,7 +44,7 @@ random_seed <- ifelse(cluster_algorithm == 1, 0, 1)
 sct <-
   Seurat::SCTransform(
     so,
-    vars.to.regress = c("percent.mt"),
+    vars.to.regress = vars_to_regress,
     verbose = FALSE
   ) |>
   Seurat::RunPCA()

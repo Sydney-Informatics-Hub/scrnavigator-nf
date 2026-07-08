@@ -10,7 +10,14 @@ options(future.globals.maxSize = 1000*1024^2)
 args <- commandArgs(trailingOnly = TRUE)
 
 cohort_id <- args[1]
-rds_paths <- args[2:length(args)]
+vars_to_regress_str <- args[2]
+rds_paths <- args[3:length(args)]
+
+vars_to_regress <- if (!is.na(vars_to_regress_str) && nchar(vars_to_regress_str) > 0) {
+  strsplit(vars_to_regress_str, ",")[[1]]
+} else {
+  NULL
+}
 
 # Read in Seurat objects from RDS files
 all_so <- lapply(rds_paths, readRDS)
@@ -80,7 +87,7 @@ merged@meta.data <- merged@meta.data[, !meta_cols_to_remove]
 merged <-
   Seurat::SCTransform(
     merged,
-    vars.to.regress = c("percent.mt"),
+    vars.to.regress = vars_to_regress,
     verbose = FALSE
   ) |>
   Seurat::RunPCA()

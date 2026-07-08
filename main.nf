@@ -56,6 +56,13 @@ workflow {
     cohort_id                       = channel.value(params.cohort_id)
     species                         = channel.value(species_lower)
     annotate_mt                     = channel.value(!params.no_mt)
+    def _vars_to_regress            = ( ( params.vars_to_regress ?: '' ) + ( params.no_mt ? '' : ',percent.mt' ) )
+                                            .tokenize(',')
+                                            .collect { v -> v.trim() }
+                                            .findAll { v -> !!v }
+                                            .unique( false )
+                                            .join(',')
+    vars_to_regress                 = channel.value(_vars_to_regress)
     min_cells_for_annotation        = channel.value(params.min_cells_for_annotation as Integer)
     custom_annotation_mad_threshold = channel.value(params.custom_annotation_mad_threshold as Float)
     cell_type_proportion_threshold  = channel.value(params.cell_type_proportion_threshold as Float)
@@ -145,7 +152,8 @@ workflow {
         species,
         ens_db,
         annotate_mt,
-        mt_gene_list
+        mt_gene_list,
+        vars_to_regress
     )
 
     // If only running QC, stop here, otherwise continue on
@@ -157,6 +165,7 @@ workflow {
             .merge(cluster_method)
         doublet_in = QUALITY_CONTROL.out.rds
             .join(doublet_params, by: 0)
+            .merge(vars_to_regress)
         DETECT_DOUBLETS(doublet_in)
 
         // Integration
@@ -168,7 +177,8 @@ workflow {
             cohort_id,
             all_resolutions,
             cluster_method,
-            integrated_resolution
+            integrated_resolution,
+            vars_to_regress
         )
 
         detect_doublets_qc = DETECT_DOUBLETS.out.qc_results
