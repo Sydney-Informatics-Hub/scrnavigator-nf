@@ -84,7 +84,8 @@ workflow {
     gsea_db                    = !!params.gsea_db                    ? channel.fromPath(params.gsea_db, checkIfExists: true).first()                    : channel.value([])
 
     // Read in samplesheet
-    samplesheet = channel.fromPath(params.input)
+    samplesheet_csv = channel.fromPath(params.input, checkIfExists: true)
+    samplesheet = samplesheet_csv
         .splitCsv( header: true )
         .map { row ->
             def sample = row.sample
@@ -365,7 +366,8 @@ workflow {
         .map { meta_fields -> [ meta_fields ] }
         .merge(integrated_resolution)
         .merge(pseudo_groups)
-        .map { meta, int_res, pseudo -> [ meta_fields: meta, integration_resolution: int_res, pseudo_groups: pseudo ] }
+        .merge(cluster_annotation)
+        .map { meta, int_res, pseudo, clust_annot -> [ meta_fields: meta, integration_resolution: int_res, pseudo_groups: pseudo, cluster_annotation: clust_annot ] }
 
     // Gather all report templates
     index_template = channel.fromPath("${projectDir}/assets/index.qmd", checkIfExists: true)
@@ -416,7 +418,6 @@ workflow {
         .merge(analysis_ora_results)
         .filter { _t, r -> !!r }
         .map { t, _r -> t }
-        .map { t, _r -> t }
     report_templates = index_template
         .mix(qc_filter_template)
         .mix(qc_cluster_template)
@@ -431,6 +432,11 @@ workflow {
         .collect()
         .map { tmp -> [ tmp ] }
     report_style = channel.fromPath("${projectDir}/assets/styles.scss")
+    quarto_yaml = channel.fromPath("${projectDir}/assets/_quarto.yml", checkIfExists: true)
+
+    // Gather CSV inputs
+    custom_marker_genes_csv = !!params.custom_marker_genes ? channel.fromPath(params.custom_marker_genes, checkIfExists: true) : channel.value([])
+    comparisons_csv = !!params.comparisons ? channel.fromPath(params.comparisons, checkIfExists: true) : channel.value([])
 
     // Run the report module
     report_input = cohort_id
@@ -451,5 +457,47 @@ workflow {
         .merge(analysis_ora_results)
         .merge(available_annotation_files)
         .merge(report_style)
-    REPORT(report_input)
+
+    // Get software versions for report
+    clustree_version = INTEGRATE.out.clustree_version
+        .splitText()
+        .first()
+        .map { v -> [ clustree:v ] }
+    doubletfinder_version = DETECT_DOUBLETS.out.version
+        .splitText()
+        .first()
+        .map { v -> [ DoubletFinder:v ] }
+    singler_version = ANNOTATE.out.singler_version
+        .splitText()
+        .first()
+        .map { v -> [ SingleR:v ] }
+    celldex_version = ANNOTATE.out.celldex_version
+        .splitText()
+        .first()
+        .map { v -> [ celldex:v ] }
+    deseq2_version = DIFFERENTIAL_EXPRESSION.out.version
+        .splitText()
+        .first()
+        .map { v -> [ DESeq2:v ] }
+    webgestaltr_version = GSEA.out.version
+        .mix(ORA.out.version)
+        .first()
+        .splitText()
+        .first()
+        .map { v -> [ WebGestaltR:v ] }
+    software_versions = clustree_version
+        .mix(doubletfinder_version)
+        .mix(singler_version)
+        .mix(celldex_version)
+        .mix(deseq2_version)
+        .mix(webgestaltr_version)
+        .reduce { acc, v -> acc + v }
+
+    def env_vars = [
+        params:params,
+        pipe_version:(workflow.manifest.version ?: "0.0.0"),
+        nxf_version:workflow.nextflow.version,
+        cmd:workflow.commandLine
+    ]
+    REPORT(report_input, samplesheet_csv, custom_marker_genes_csv, comparisons_csv, quarto_yaml, env_vars, software_versions)
 }

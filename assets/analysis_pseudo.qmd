@@ -37,8 +37,13 @@ pseudo_groups_file <- "pseudo_groups.txt"
 pseudo_groups <- scan(pseudo_groups_file, character())
 ```
 
-#### Dataset name: `{r} cohort_id`
-#### Fields used for pseudobulking:
+With the dataset filtered, integrated, and annotated, the next step is to perform pseudobulking. This is the process of aggregating the RNA counts across many cells within a sample into a single data point. For example, we may have a sample with 5000 B cells and 4000 T cells. During pseudobulking, we would aggregate (i.e. sum together) the expression profiles of all B cells and all T cells, leaving us with one pseudobulked B cell expression profile and one pseudobulked T cell expression profile for that sample. We would then repeat this procedure for every sample.
+
+The process of pseudobulking effectively performs a bulk RNA-seq experiment for each cell type - hence the name "pseudobulk". But, instead of relying on cell sorting methods to isolate each cell type from one another, we can use our single cell resolution data and cell annotations. The main advantage of pseudobulking is that we can use well-established statistical techniques for assessing differentially expressed genes that were developed for bulk RNA-seq and are more robust than newer, more complex scRNA-seq techniques. See the [single-cell best practices guide](https://www.sc-best-practices.org/conditions/differential_gene_expression.html) for more information on the benefits of pseudobulking.
+
+#### Fields used for pseudobulking
+
+The following [metadata fields](#all-annotation-fields-available-for-downstream-analysis) were used for aggregation of cells:
 
 ```{r}
 #| echo: false
@@ -51,6 +56,8 @@ for (g in pseudo_groups) {
 ```
 
 ### Pseudobulked groups availablle for comparison
+
+Below is a table summarising all of your final pseudobulk groups and the number of samples in your dataset that are represented in each group. These pseudobulk group names are now available for comparison during differential expression analysis. **Note** that for differential expression analysis, you will ideally have *at least three* samples for each of your case and control groups, if not more.
 
 ```{r}
 #| echo: false

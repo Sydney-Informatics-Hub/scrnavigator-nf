@@ -27,4 +27,5 @@ workflow INTEGRATE {
     qc_results = INTEGRATION.out.qc_results
     cluster_qc_results = CLUSTER_INTEGRATED.out.qc_results
     gene_symbols = INTEGRATION.out.gene_symbols
+    clustree_version = CLUSTER_INTEGRATED.out.version
 }

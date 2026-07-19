@@ -11,6 +11,7 @@ process CLUSTER_INTEGRATED {
     output:
     tuple val(cohort_name), path("${cohort_name}.integrated.clustered.rds"), emit: integrated_rds
     tuple val(cohort_name), path("qc_results"), emit: qc_results
+    path "version.clustree.txt", emit: version
 
     script:
     def params_csv = 'param,value\n' +
@@ -22,5 +23,8 @@ process CLUSTER_INTEGRATED {
     echo -e "${params_csv}" > params.csv
 
     cluster_integrated.R "${cohort_name}" "${rds_path}" params.csv
+
+    # Get clustree version
+    Rscript -e "cat(as.character(packageVersion('clustree')), '\\n')" > version.clustree.txt
     """
 }

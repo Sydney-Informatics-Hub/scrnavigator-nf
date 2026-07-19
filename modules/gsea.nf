@@ -13,11 +13,14 @@ process GSEA {
     tuple val(cohort_name), path("${cohort_name}.gsea.${test_group}.${ref_group}.Rds"), emit: gsea_rds, optional: true
     tuple val(cohort_name), path("${cohort_name}.gsea.${test_group}.${ref_group}.csv"), val(ref_group), val(test_group), emit: gsea_csv, optional: true
     tuple val(cohort_name), path("${test_group}_vs_${ref_group}"), val(ref_group), val(test_group), emit: gsea_dir, optional: true
-
+    path "version.webgestaltr.txt", emit: version
 
     script:
     def gsea_db_param = !!gsea_db_file ? gsea_db_file : ''
     """
     gsea.R "${cohort_name}" "${de_rds_path}" "${ref_group}" "${test_group}" "${species}" "${gsea_db_param}"
+
+    # Get DESeq2 version
+    Rscript -e "cat(as.character(packageVersion('WebGestaltR')), '\\n')" > version.webgestaltr.txt
     """
 }

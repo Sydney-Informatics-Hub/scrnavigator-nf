@@ -98,5 +98,11 @@ p_fvc_integrated_clustered <- integrated@meta.data %>%
     ggtitle(paste0("Integrated Dataset: ", default_res_name))
 ggsave(paste0("qc_results/", cohort_id, ".feature_count_plot.integrated.cluster.png"), p_fvc_integrated_clustered)
 
+# Get number of clusters
+n_clusters <- table(integrated@meta.data[default_res_name])
+n_clusters <- tibble(data.frame(n_clusters))
+colnames(n_clusters) <- c("cluster", "n_cells")
+n_clusters %>% write_csv(paste0("qc_results/", cohort_id, ".integrated.clusters.csv"))
+
 # Save Seurat object to file
 SaveSeuratRds(integrated, paste0(cohort_id, ".integrated.clustered.rds"))

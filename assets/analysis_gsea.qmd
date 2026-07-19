@@ -78,27 +78,19 @@ all_comparisons_str <- unique_comparisons %>%
   .$comparison
 names(all_comparisons_str) <- all_comparisons
 
+# Get comparisons CSV
+comparisons_csv <- "samplesheets/comparisons.csv"
+comparisons_df <- read_csv(comparisons_csv)
+
 # Get GSEA plots
 gsea_plots <- sapply(all_comparisons_str, function(cmp) {
   paste0("analysis_gsea/plots/", cohort_id, ".gsea.", cmp, ".png")
 })
 ```
 
-#### Dataset name: `{r} cohort_id`
+This section presents the results from the GSEA analysis conducted on your dataset. GSEA works by first ranking the entire set of differential expression results by their fold-change values; this includes **both** significant **and** non-significant genes. The method then looks at a database of **biological pathways** and the **gene sets** associated with each. For each gene set, GSEA assesses whether these genes appear clustered together within your ranked dataset, more so than would be expected by chance. The degree of clustering towards the upregulated or downregulated ends of your dataset is used to calculate an **enrichment score** for that gene set.
 
-#### All comparisons made:
-
-```{r}
-#| echo: false
-#| results: asis
-for (cmp in all_comparisons) {
-  cat("- ")
-  cat(cmp)
-  cat("\n")
-}
-```
-
-### GSEA expression results
+One GSEA analysis was conducted for [each differential expression comparison](#differential-expression-analysis) that was made. Below, you will find plots showing the enrichment score for each **significant** pathway from each analysis: more upregulated pathways have bars pointing to the right and are highlighted in orange, while downregulated pathways point to the left and are highlighted in blue.
 
 :::panel-tabset
 
@@ -108,8 +100,8 @@ purrr::walk(
   sort(all_comparisons),
   function(n) {
     p <- gsea_plots[[n]]
-    cat(paste("####", n, "\n\n"))
-    cat(paste("#####", "Gene Set Enrichment Analysis Results:", n))
+    cat(paste("#####", n, "\n\n"))
+    cat(paste("######", "Gene Set Enrichment Analysis Results:", n))
     cat(paste0('<img src="', p, '" alt="gsea results: ', n, '" width="100%">\n\n'))
   }
 )

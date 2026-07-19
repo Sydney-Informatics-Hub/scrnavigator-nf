@@ -1,0 +1,12 @@
+format:
+  html:
+    code-fold: true
+    code-line-numbers: true
+    code-link: true
+    theme:
+      light:
+      - flatly
+      - styles.scss
+    toc: true
+    toc-depth: 3
+    toc-location: left

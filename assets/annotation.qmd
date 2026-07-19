@@ -27,6 +27,19 @@ available_annotation_files <- dir(
   full.names = TRUE
 )
 available_annotations <- unlist(sapply(available_annotation_files, scan, character()))
+annotation_priority <- c(
+  "custom_cell_type",
+  "custom_cell_type.max_score",
+  "SingleR.annotation",
+  "SingleR.hpca_main",
+  "SingleR.hpca_fine",
+  "Phase"
+)
+annotation_priority <- annotation_priority[annotation_priority %in% available_annotations]
+annotation_used_for_clusters <- scan("cluster_annotation.txt", character())
+if (length(annotation_used_for_clusters) == 0) {
+  annotation_used_for_clusters <- annotation_priority[1]
+}
 ```
 
 ```{r}
@@ -138,9 +151,65 @@ if (is.null(cohort_id)) {
 }
 ```
 
-#### Dataset name: `{r} cohort_id`
+There are three main annotation options supported by the scRNAvigator pipeline:
 
-### All annotation fields available for downstream analyses
+- Cell cycle annotation
+- Automatic cell type annotation
+- Custom marker gene-based annotation
+
+Cell cycle annotation is useful if you are studying rapidly-dividing cells such as tumor samples and wish to capture information about which stage of the cell cycle each cell is in.
+
+Automatic cell type annotation is performed by comparing your data against curated and pre-annotated public datasets and assigning annotations to your cells based on their similarities to the curated datasets. For human samples, the Human Primary Cell Atlas (HPCA) database is used for this purpose by default, while for non-human species, an external database needs to be provided in order to perform automatic cell type annotation.
+
+Custom marker gene-based annotation takes a list of cell types and associated marker genes and runs a scoring algorithm to determine the closest matching cell type for each cell. Custom cell type annotations creates two annotation fields in the sample metadata: `custom_cell_type` and `custom_cell_type.max_score`. The `custom_cell_type.max_score` annotation simply picks the custom cell type that scored the highest. The `custom_cell_type` annotation, however, also takes into account how much the highest score differs from the second-highest score; when these are too close together for a given cell, the cell will be labelled "Ambiguous". Of these two annotation fields, we recommend using `custom_cell_type` for downstream analysis due to it being more conservative.
+
+After annotation with one or more of the above methods, your cell **clusters** will be annotated as well. This takes one of the annotation categories from above and determines whether that cluster predominantly consists of a single cell type or label. If so, that label is applied to the whole cluster. If there is too much heterogeneity within a cluster, it is labelled "Ambiguous".
+
+#### All annotation fields available for cluster annotation
+
+Your cells were annotated with the following annotation fields:
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+all_annotations_df <- tibble(
+  annotation_field = c(),
+  description = c()
+)
+annotation_descriptions <- list(
+  custom_cell_type = "Custom marker gene-based cell type annotation (highest score significantly higher than second-highest score)",
+  custom_cell_type.max_score = "Custom marker gene-based cell type annotation (highest score only)",
+  SingleR.annotation = "SingleR annotation with custom cell annotation database",
+  SingleR.hpca_main = "SingleR annotation with HPCA database ('main' cell type category)",
+  SingleR.hpca_fine = "SingleR annotation with HPCA database ('fine' cell type category)",
+  Phase = "Cell cycle phase"
+)
+for (ann in annotation_priority) {
+  all_annotations_df <- all_annotations_df %>%
+    bind_rows(tibble(
+      annotation_field = ann,
+      description = annotation_descriptions[[ann]]
+    ))
+}
+```
+
+```{r}
+#| echo: false
+#| eval: !expr (dim(all_annotations_df)[1] > 0)
+
+datatable(
+  all_annotations_df,
+  colnames = c("Annotation field", "Description")
+)
+```
+
+Cell **clusters** were annotated with the labels from the **`r annotation_used_for_clusters`** annotation field.
+
+#### All annotation fields available for downstream analysis
+
+The following list contains all of the annotations listed above, as well as the `cluster_annotation` field and additional metadata fields that were provided in the samplesheet. These are all of the fields available for performing downstream pseudobulking and subsequent differential expression and functional enrichment analyses.
 
 ```{r}
 #| echo: false
@@ -158,7 +227,7 @@ for (ann in available_annotations) {
 #| results: asis
 #| echo: false
 #| eval: !expr cell_cycle_annotated
-cat("### Cell cycle annotation\n\n")
+cat("#### Cell cycle annotation\n\n")
 cat(paste0('<img src="', cc_umap_file, '" alt="cell cycle umap: ', cohort_id, '" width="100%">\n\n'))
 ```
 
@@ -166,10 +235,10 @@ cat(paste0('<img src="', cc_umap_file, '" alt="cell cycle umap: ', cohort_id, '"
 #| results: asis
 #| echo: false
 #| eval: !expr db_annotated
-cat("### Automatic cell type annotation\n\n")
-cat("#### Cell type UMAP\n\n")
+cat("#### Automatic cell type annotation\n\n")
+cat("##### Cell type UMAP\n\n")
 cat(paste0('<img src="', db_umap_file, '" alt="cell type umap: ', cohort_id, '" width="100%">\n\n'))
-cat("#### Cell type proportions\n\n")
+cat("##### Cell type proportions\n\n")
 cat(paste0('<img src="', cell_type_props, '" alt="cell type proportions: ', cohort_id, '" width="100%">\n\n'))
 ```
 
@@ -177,7 +246,7 @@ cat(paste0('<img src="', cell_type_props, '" alt="cell type proportions: ', coho
 #| results: asis
 #| echo: false
 #| eval: !expr db_annotated && file.exists(cell_type_prop_table_hpca_main)
-cat("#### HPCA Main annotations")
+cat("##### HPCA Main annotations")
 ```
 
 ```{r}
@@ -193,7 +262,7 @@ datatable(read_csv(cell_type_prop_table_hpca_main))
 #| results: asis
 #| echo: false
 #| eval: !expr db_annotated && file.exists(cell_type_prop_table_hpca_fine)
-cat("#### HPCA Fine annotations")
+cat("##### HPCA Fine annotations")
 ```
 
 ```{r}
@@ -209,7 +278,7 @@ datatable(read_csv(cell_type_prop_table_hpca_fine))
 #| results: asis
 #| echo: false
 #| eval: !expr db_annotated && file.exists(cell_type_prop_table_singler)
-cat("#### SingleR annotations")
+cat("##### SingleR annotations")
 ```
 
 ```{r}
@@ -225,10 +294,10 @@ datatable(read_csv(cell_type_prop_table_singler))
 #| results: asis
 #| echo: false
 #| eval: !expr custom_annotated
-cat("### Custom cell type annotations\n\n")
-cat("#### Cell type UMAP\n\n")
+cat("#### Custom cell type annotations\n\n")
+cat("##### Cell type UMAP\n\n")
 cat(paste0('<img src="', custom_umap, '" alt="cell type umap: ', cohort_id, '" width="100%">\n\n'))
-cat("#### Cell type proportions\n\n")
+cat("##### Cell type proportions\n\n")
 cat(paste0('<img src="', custom_cell_type_props, '" alt="cell type proportions: ', cohort_id, '" width="100%">\n\n'))
 ```
 
@@ -245,10 +314,10 @@ datatable(custom_cell_type_props_table)
 #| results: asis
 #| echo: false
 #| eval: !expr custom_annotated
-cat("#### Custom cell type feature plots\n\n")
+cat("##### Custom cell type feature plots\n\n")
 for (cell_type in names(custom_cell_type_feature_plots)) {
   p <- custom_cell_type_feature_plots[[cell_type]]
-  cat(paste0("##### ", cell_type, "\n\n"))
+  cat(paste0("###### ", cell_type, "\n\n"))
   cat(paste0('<img src="', p, '" alt="feature plot: ', cell_type, ' - ', cohort_id, '" width="100%">\n\n'))
 }
 ```
@@ -257,7 +326,7 @@ for (cell_type in names(custom_cell_type_feature_plots)) {
 #| results: asis
 #| echo: false
 #| eval: !expr clusters_annotated
-cat("### Cluster cell type annotation\n\n")
+cat("#### Cluster cell type annotation\n\n")
 cat(paste0('<img src="', cluster_umap_file, '" alt="cluster cell type assignment umap: ', cohort_id, '" width="100%">\n\n'))
 ```
 

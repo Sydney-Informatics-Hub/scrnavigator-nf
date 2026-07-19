@@ -78,27 +78,19 @@ all_comparisons_str <- unique_comparisons %>%
   .$comparison
 names(all_comparisons_str) <- all_comparisons
 
+# Get comparisons CSV
+comparisons_csv <- "samplesheets/comparisons.csv"
+comparisons_df <- read_csv(comparisons_csv)
+
 # Get ORA plots
 ora_plots <- sapply(all_comparisons_str, function(cmp) {
   paste0("analysis_ora/plots/", cohort_id, ".ora.", cmp, ".png")
 })
 ```
 
-#### Dataset name: `{r} cohort_id`
+This section presents the results from the ORA analysis conducted on your dataset. ORA works by taking the set of your **significantly differentially expressed** genes and comparing that against each set of genes mapped to **biological pathways** in a curated database. For each pathway, ORA looks at the proportion of those genes that appear in your list of significant genes. If that proportion is higher than what would be expected by chance, the gene set is considered **over-represented** or **enriched** in your dataset. In contrast, some pathways may have very low representation in your dataset, in which case they can be considered **under-represented** or **depleted**. The ORA method generates a list of **enrichment ratios** for each pathway.
 
-#### All comparisons made:
-
-```{r}
-#| echo: false
-#| results: asis
-for (cmp in all_comparisons) {
-  cat("- ")
-  cat(cmp)
-  cat("\n")
-}
-```
-
-### ORA expression results
+One ORA analysis was conducted for [each differential expression comparison](#differential-expression-analysis) that was made. Below, you will find plots showing the log2-transformed *enrichment ratio* for each **significant** pathway from the analysis: more enriched pathways have bars pointing to the right and are highlighted in orange, while depleted or under-represented pathways point to the left and are highlighted in blue.
 
 :::panel-tabset
 
@@ -108,8 +100,8 @@ purrr::walk(
   sort(all_comparisons),
   function(n) {
     p <- ora_plots[[n]]
-    cat(paste("####", n, "\n\n"))
-    cat(paste("#####", "Over-Representation Analysis Results:", n))
+    cat(paste("#####", n, "\n\n"))
+    cat(paste("######", "Over-Representation Analysis Results:", n))
     cat(paste0('<img src="', p, '" alt="ora results: ', n, '" width="100%">\n\n'))
   }
 )

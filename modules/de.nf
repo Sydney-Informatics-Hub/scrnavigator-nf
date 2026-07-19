@@ -11,9 +11,13 @@ process DIFFERENTIAL_EXPRESSION {
     output:
     tuple val(cohort_name), path("${cohort_name}.de.${test_group}.${ref_group}.Rds"), emit: de_rds
     tuple val(cohort_name), path("${cohort_name}.de.${test_group}.${ref_group}.csv"), val(ref_group), val(test_group), emit: de_csv
+    path "version.deseq.txt", emit: version
 
     script:
     """
     de.R "${cohort_name}" "${rds_path}" "${ref_group}" "${test_group}"
+
+    # Get DESeq2 version
+    Rscript -e "cat(as.character(packageVersion('DESeq2')), '\\n')" > version.deseq.txt
     """
 }
