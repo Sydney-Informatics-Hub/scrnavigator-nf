@@ -126,10 +126,132 @@
                 ]
             ]
         ],
+        "timestamp": "2026-02-27T16:10:06.206507485",
         "meta": {
             "nf-test": "0.9.3",
             "nextflow": "25.10.2"
-        },
-        "timestamp": "2026-02-27T16:10:06.206507485"
+        }
+    },
+    "Test QC subworkflow": {
+        "content": [
+            [
+                [
+                    "sample_1_ctrl",
+                    [
+                        "sample_1_ctrl.count_distributions.log.png:md5,248c0661ed6c1bfe810d028bbf9b1627",
+                        "sample_1_ctrl.count_distributions.png:md5,d5a7c9d31d95b0ee854e3b1c24068a32",
+                        "sample_1_ctrl.feature_count_plot.post_filtered.png:md5,86475c7f764bff29a81a32ff1066ea30",
+                        "sample_1_ctrl.feature_count_plot.pre_filtered.png:md5,86475c7f764bff29a81a32ff1066ea30",
+                        "sample_1_ctrl.hard_filter_summary.csv:md5,ab46e5280f4e6240e8897775d4b74f9d"
+                    ]
+                ],
+                [
+                    "sample_4_stim",
+                    [
+                        "sample_4_stim.count_distributions.log.png:md5,3744eb92ad543819fa0660cd211d4226",
+                        "sample_4_stim.count_distributions.png:md5,6687328c5ea84f50f6f170f72a969f66",
+                        "sample_4_stim.feature_count_plot.post_filtered.png:md5,fc07049deb61863e6a877d5148e8d26d",
+                        "sample_4_stim.feature_count_plot.pre_filtered.png:md5,fc07049deb61863e6a877d5148e8d26d",
+                        "sample_4_stim.hard_filter_summary.csv:md5,eb466035e155c08aa27b4ac6a49bb33d"
+                    ]
+                ]
+            ],
+            [
+                [
+                    "sample_1_ctrl",
+                    [
+                        [
+                            [
+                                "1.txt:md5,0009ccff64a4ea66a3df94d277d807c0",
+                                "2.txt:md5,c8532bfc689ef0c5cfd8ace71eeb1987",
+                                "3.txt:md5,9b5ca406e20eecb353c75976f019c6f0",
+                                "4.txt:md5,806f1304b69d5d68e6c4bf3d401c1016",
+                                "5.txt:md5,d6c124161fe3a142a76059062fc11f48",
+                                "6.txt:md5,aeae9e7ac56a728696c59fe2ed95bdeb",
+                                "7.txt:md5,d2e0f46987f25a052cf628e997584298",
+                                "8.txt:md5,2f13f72f13870f143ff00caa965121ef",
+                                "9.txt:md5,a8d6a4b95cbdc4d6f36e5c8d8767bd2e"
+                            ],
+                            [
+                                "1.txt:md5,0009ccff64a4ea66a3df94d277d807c0",
+                                "2.txt:md5,394a8e9778932daf56a0c12db3791743",
+                                "3.txt:md5,60b8a13c0e5584f5d2e8c9a7100f3779",
+                                "4.txt:md5,eea258f522776b16429701f5b9dd2194",
+                                "5.txt:md5,d6c124161fe3a142a76059062fc11f48",
+                                "6.txt:md5,bf36920e68f5e37caa5e24cea59d1b77",
+                                "7.txt:md5,2e7f54f006ee8ea6581fc7657e657802",
+                                "8.txt:md5,2f13f72f13870f143ff00caa965121ef",
+                                "9.txt:md5,dc5e05a8bbd0a36ba3c0c6254c565d30"
+                            ],
+                            [
+                                "1.txt:md5,5dfc520418bef4032a93ccb04e017946",
+                                "10.txt:md5,dc5e05a8bbd0a36ba3c0c6254c565d30",
+                                "2.txt:md5,6312443bbb3574cb3148f2294cc80158",
+                                "3.txt:md5,4898ede75fdb4c2a6aab7f39033e9c73",
+                                "4.txt:md5,3eac10b03a1fa5b9ba1c4c29734ca4c0",
+                                "5.txt:md5,1dead8d42d01d4d3939c5e299cd2d5f7",
+                                "6.txt:md5,d6c124161fe3a142a76059062fc11f48",
+                                "7.txt:md5,961dfcdd5f6d28d45f85a802056242f1",
+                                "8.txt:md5,2e7f54f006ee8ea6581fc7657e657802",
+                                "9.txt:md5,0a57786fdad94f5e340aff1f3533c40f"
+                            ]
+                        ],
+                        "sample_1_ctrl.clustree.png:md5,b8f22e2c3eb5c4e60e57fa094677188b",
+                        "sample_1_ctrl.feature_count_plot.cluster.0.8.png:md5,22092648043c0912be41fae4b11902b6",
+                        "sample_1_ctrl.feature_count_plot.cluster.1.2.png:md5,f05d2542695e402071d90fd3a171e674",
+                        "sample_1_ctrl.feature_count_plot.cluster.1.png:md5,0b36602b98c96a73f59e45b7380c2b26"
+                    ]
+                ],
+                [
+                    "sample_4_stim",
+                    [
+                        [
+                            [
+                                "1.txt:md5,ac1a41f607cd57a97808f9c8935a14b9",
+                                "2.txt:md5,74a03c3aaecfa77550420e6f0dee0ccd",
+                                "3.txt:md5,e5cf83fe224f2fd6c080a5bcf19db38d",
+                                "4.txt:md5,c2ee1bf20f821cd573a03c00a569060c",
+                                "5.txt:md5,4bb4a31596bc969a75b2716ee0284eca",
+                                "6.txt:md5,d79e7321fd23ad3f723ea1e0270b419b",
+                                "7.txt:md5,25c95b9c4f1c84d38215c2b35aaaca3f",
+                                "8.txt:md5,03043c85ce424cc0796ff26ca5b01038"
+                            ],
+                            [
+                                "1.txt:md5,ac1a41f607cd57a97808f9c8935a14b9",
+                                "2.txt:md5,3eb63c7c001e1004e3669e8e20d6b7a3",
+                                "3.txt:md5,210afd74ab972a737d64dd41fb1dce9e",
+                                "4.txt:md5,c2ee1bf20f821cd573a03c00a569060c",
+                                "5.txt:md5,f1ddf396b68b4fae3ebb6ec2dca3ceca",
+                                "6.txt:md5,4bb4a31596bc969a75b2716ee0284eca",
+                                "7.txt:md5,d79e7321fd23ad3f723ea1e0270b419b",
+                                "8.txt:md5,6bd221d593df01b716a21c40bfd3f4d7",
+                                "9.txt:md5,03043c85ce424cc0796ff26ca5b01038"
+                            ],
+                            [
+                                "1.txt:md5,e88d1e3d274b75d37115e4890de10e61",
+                                "10.txt:md5,6bd221d593df01b716a21c40bfd3f4d7",
+                                "2.txt:md5,402202c516e770e9fcdfd3c8507e2f28",
+                                "3.txt:md5,c2ee1bf20f821cd573a03c00a569060c",
+                                "4.txt:md5,8ea903f1ef8d6e497b221085edfc2b19",
+                                "5.txt:md5,2649018fd08deb6770f4898133f59e98",
+                                "6.txt:md5,b37fd1d17d9808d3ed65ae28ead3f280",
+                                "7.txt:md5,63f1665f7effb3ec567e4afdb0c1e1e9",
+                                "8.txt:md5,3ff85e7336a270939547b075cd09f3b9",
+                                "9.txt:md5,a9d94d228c1a5bc63189f7bdbf5de987"
+                            ]
+                        ],
+                        "sample_4_stim.clustree.png:md5,d7216edc6732056332aaac820b3d8ed6",
+                        "sample_4_stim.feature_count_plot.cluster.0.8.png:md5,826b176845c14106f462ac568d36abbd",
+                        "sample_4_stim.feature_count_plot.cluster.1.2.png:md5,46c81bda890baaa1b285160507034eeb",
+                        "sample_4_stim.feature_count_plot.cluster.1.png:md5,35435fcd4b93218d05d5655ab0afcef3"
+                    ]
+                ]
+            ]
+        ],
+        "timestamp": "2026-07-31T13:56:45.361060282",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
+        }
     }
 }
