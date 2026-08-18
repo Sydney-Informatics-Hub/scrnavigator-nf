@@ -24,19 +24,17 @@ The Seurat data object should at the very minimum contain the count matrix data 
 
 This pipeline was designed to work with the filtered output from the [nf-core `scrnaseq` Nextflow pipeline](https://nf-co.re/scrnaseq/). The `scrnaseq` pipeline can handle various scRNAseq datasets, including those from the 10X platform, and will generate RDS files containing the Seurat data required for this pipeline. We highly recommend using the `scrnaseq` pipeline for the initial alignment, counting and pre-processing of your data prior to using this workflow.
 
-### Example samplesheet
-
-## Parameters
+### Parameters
 
 See [docs/params.md](docs/params.md) for the full parameter reference.
 
-## Usage
+### Usage
 
 > **Note:** The pipeline is currently under active development and usage may change rapidly.
 
 Run each step sequentially, inspecting the interactive report (`results/report/report.*.html`) before proceeding to the next. Outputs from each step are cached, so re-running with `-resume` skips completed work.
 
-### Quality control and filtering
+#### Quality control and filtering
 
 Start with an unfiltered QC pass to understand the quality characteristics of each sample before applying any cell filters. The `--qc_only` flag runs only the QC subworkflow, producing per-sample metrics to guide threshold selection.
 
@@ -72,11 +70,11 @@ results/
 │   ├── sample_2
 │   │   └── ...
 ├── report
-│   └── report         # Interactive HTML report to explore QC and clustering results
+│   └── report.cohort.html  # Interactive HTML report to explore QC and clustering results
 └── run_info
 ```
 
-**3. Inspect the report.** Open `results/report/index.html` and identify per-sample filtering thresholds by examining the distributions of:
+**3. Inspect the report.** Open `results/report/report.cohort.html` and identify per-sample filtering thresholds by examining the distributions of:
 
 - **nCount_RNA** - total RNA counts per cell
 - **nFeature_RNA** - unique genes per cell
@@ -105,20 +103,22 @@ nextflow run scrnavigator-nf \
 
 Once satisfied with the per-sample filtering, proceed to doublet detection.
 
-### Doublet detection and dataset integration
+#### Doublet detection and dataset integration
 
 Next, we proceed to doublet detection and integration. 
 
-Doublets are droplets that captured two cells and are flagged using DoubletFinder. Once removed, samples are merged, batch-corrected using CCA integration, and clustered. This is run by dropping the `--qc-only` flag. The `--no_analysis` flag is set to prevent moving on to cell annotation and analysis before inspecting the doublet and integration QC results (command specified below).
+Doublets are droplets that captured two cells and are flagged using DoubletFinder. Once removed, samples are merged, batch-corrected using CCA integration, and clustered. This is run by dropping the `--qc_only` flag. The `--no_analysis` flag is set to prevent moving on to cell annotation and analysis before inspecting the doublet and integration QC results (command specified below).
 
-Before running, **add a clustering resolution column (`res`) to the samplesheet** for each sample. The resolution controls the granularity of per-sample clusters used to inform doublet detection. Review the clustree plots from the QC step to choose an appropriate value per sample:
+Before running, add a clustering resolution column (`res`) to the samplesheet for each sample. The resolution controls the granularity of per-sample clusters used to inform doublet detection. Review the clustree plots from the QC step to choose an appropriate value per sample.
+
+You can also add an optional `multiplet_rate` column giving the expected proportion of multiplets (doublets) for each sample (e.g. `0.008` for a 0.8% expected doublet rate), which DoubletFinder uses to estimate how many doublets to flag. Leave this blank to have the pipeline estimate it automatically from the sample's cell count, following 10x Genomics' guidance of roughly 0.8% doublets per 1,000 cells recovered:
 
 ```console
-sample,rds,condition,min_ncount,max_ncount,min_nfeature,max_nfeature,min_mt_pct,max_mt_pct,res
-sample_1,scrnavigator-nf/tests/data/rds/sample_1.ctrl.Rds,ctrl,300,,2000,,,10,1.2
-sample_2,scrnavigator-nf/tests/data/rds/sample_2.ctrl.Rds,ctrl,300,,2000,,,10,1
-sample_3,scrnavigator-nf/tests/data/rds/sample_3.stim.Rds,stim,300,,2000,,,10,1.2
-sample_4,scrnavigator-nf/tests/data/rds/sample_4.stim.Rds,stim,300,,2000,,,10,0.6
+sample,rds,condition,min_ncount,max_ncount,min_nfeature,max_nfeature,min_mt_pct,max_mt_pct,res,multiplet_rate
+sample_1,scrnavigator-nf/tests/data/rds/sample_1.ctrl.Rds,ctrl,300,,2000,,,10,1.2,
+sample_2,scrnavigator-nf/tests/data/rds/sample_2.ctrl.Rds,ctrl,300,,2000,,,10,1,
+sample_3,scrnavigator-nf/tests/data/rds/sample_3.stim.Rds,stim,300,,2000,,,10,1.2,
+sample_4,scrnavigator-nf/tests/data/rds/sample_4.stim.Rds,stim,300,,2000,,,10,0.6,
 ```
 
 Replace `--qc_only` with `--no_analysis` and re-run. QC steps will be retrieved from cache:
@@ -176,15 +176,15 @@ results/
 │   ├── sample_2
 │   │   └── ...
 ├── report
-│   └── report                               # UPDATED: Interactive HTML report
+│   └── report.cohort.html                   # UPDATED: Interactive HTML report
 └── run_info
 ```
 
 Inspect the integration UMAPs in the report to confirm that samples mix well after batch correction. If samples remain separated post-integration, consider revisiting QC thresholds or integration parameters.
 
-### Cell annotation
+#### Cell annotation
 
-Cell annotation assigns biological identity to each cell using three complementary approaches: database-driven annotation (SingleR), cell cycle phase scoring, and custom marker gene-based annotation. Cell cycle scoring is performed automatically for human samples; database-driven annotation is also performed automatically for both human and mouse samples, using the [Human Primary Cell Atlas (HPCA)](https://www.bioconductor.org/packages/release/data/experiment/vignettes/celldex/inst/doc/userguide.html#1_Human_Primary_Cell_Atlas) and [MouseRNAseqData](https://www.bioconductor.org/packages/release/data/experiment/vignettes/celldex/inst/doc/userguide.html#2_Mouse_RNA-seq_Data) databases, respectively, both sourced from the `celldex` package. See [How-to: use a custom annotation database](#how-to-use-a-custom-annotation-database) for using an alternative reference database with SingleR.
+Cell annotation assigns biological identity to each cell using three complementary approaches: database-driven annotation (SingleR), cell cycle phase scoring, and custom marker gene-based annotation. Cell cycle scoring is performed automatically for human samples; database-driven annotation is also performed automatically for both human and mouse samples, using the [Human Primary Cell Atlas (HPCA)](https://www.bioconductor.org/packages/release/data/experiment/vignettes/celldex/inst/doc/userguide.html#1_Human_Primary_Cell_Atlas) and [MouseRNAseqData](https://www.bioconductor.org/packages/release/data/experiment/vignettes/celldex/inst/doc/userguide.html#2_Mouse_RNA-seq_Data) databases, respectively, both sourced from the `celldex` package. Custom marker gene-based annotation only runs if you supply your own gene sets. See [How-to: use a custom annotation database](#how-to-use-a-custom-annotation-database) for using an alternative reference database with SingleR, and [How-to: use custom marker genes](#how-to-use-custom-marker-genes) for defining your own cell type signatures.
 
 Along with cell-level annotation, cell clusters are labelled with a cell type if that type represents more than 67% of cells in the cluster; otherwise it is marked "Ambiguous". The default 67% threshold can be overridden with the `--cell_type_proportion_threshold` parameter.
 
@@ -211,18 +211,21 @@ results/
 │   │   ├── cohort.annotated.clusters.rds            # Seurat object with cluster_annotation column added to metadata
 │   │   ├── cohort.cluster_cell_type_assignments.csv # Mapping of cluster IDs to consensus cell type labels
 │   │   └── qc_results                               # Cell type proportion dot plots and tables per cluster
-│   └── db
-│       ├── available_annotations.txt                # Lists SingleR annotation fields added (e.g. 'SingleR.hpca_main', 'SingleR.hpca_fine')
-│       ├── cohort.annotated.database.rds            # Seurat object with SingleR cell type annotations added to metadata
-│       └── qc_results                               # UMAP and cell type proportion plots for SingleR annotations
+│   ├── db
+│   │   ├── available_annotations.txt                # Lists SingleR annotation fields added (e.g. 'SingleR.hpca_main', 'SingleR.hpca_fine')
+│   │   ├── cohort.annotated.database.rds            # Seurat object with SingleR cell type annotations added to metadata
+│   │   └── qc_results                               # UMAP and cell type proportion plots for SingleR annotations
+│   └── custom                                       # Only present when --custom_marker_genes is provided
+│       ├── available_annotations.txt                # Lists custom annotation fields added (e.g. 'custom_cell_type')
+│       ├── cohort.annotated.custom.rds              # Seurat object with custom marker gene-based annotations added to metadata
+│       └── qc_results                               # UMAP and cell type proportion plots for custom marker gene annotations
 └── report
-    ├── report                               # UPDATED: Interactive HTML report
-    └── report.tar
+    └── report.cohort.html                           # UPDATED: Interactive HTML report
 ```
 
 Inspect the annotation UMAPs and cell type proportion plots in the report. Verify that cluster assignments look biologically plausible before defining comparison groups for downstream analysis.
 
-### How-to: use a custom annotation database
+##### How-to: use a custom annotation database
 
 By default the pipeline annotates human samples against the [Human Primary Cell Atlas](https://www.bioconductor.org/packages/release/data/experiment/vignettes/celldex/inst/doc/userguide.html#1_Human_Primary_Cell_Atlas) and mouse samples against [MouseRNAseqData](https://www.bioconductor.org/packages/release/data/experiment/vignettes/celldex/inst/doc/userguide.html#2_Mouse_RNA-seq_Data), both sourced from the `celldex` package. You can supply any alternative reference by providing a path to an RDS file via the `--annotation_db` parameter.
 
@@ -277,7 +280,43 @@ nextflow run scrnavigator-nf \
 
 The resulting per-cell annotations will be stored in the `SingleR.annotation` metadata column of the output Seurat object.
 
-### Pseudobulking
+##### How-to: use custom marker genes
+
+If you have a set of marker genes that define cell types or states not well captured by a reference database (e.g. a rare or study-specific population), you can annotate cells directly from those gene sets by providing a CSV via the `--custom_marker_genes` parameter.
+
+**Required format**
+
+The CSV must contain two columns:
+
+- `cell_type` - the name of the cell type or program.
+- `gene_ids` - a semicolon-delimited list of marker genes for that cell type, using the same gene identifier type as your data (Ensembl IDs or gene symbols).
+
+At least two cell types must be defined:
+
+```console
+cell_type,gene_ids
+B-cell,MS4A1;CD79A;CD79B
+T-cell,CD3D;CD3E;CD3G
+NK-cell,NKG7;GNLY;KLRD1
+Monocyte,CD14;LYZ;FCGR3A
+```
+
+**Running the pipeline with custom marker genes**
+
+Pass the CSV path with `--custom_marker_genes`:
+
+```bash
+nextflow run scrnavigator-nf \
+    --input path/to/samplesheet.csv \
+    --outdir results \
+    --species human \
+    --custom_marker_genes path/to/custom_marker_genes.csv \
+    -resume
+```
+
+Each cell is scored against every gene set with Seurat's `AddModuleScore`, and assigned the cell type with the highest score in the `custom_cell_type.max_score` metadata column. If three or more cell types are defined, the pipeline additionally populates a `custom_cell_type` column: a cell keeps its top-scoring cell type only if the top two scores differ by at least `--custom_annotation_mad_threshold` median absolute deviations (default: `1`); otherwise it is labelled "Ambiguous". Increase this threshold to make calls more conservative.
+
+#### Pseudobulking
 
 Pseudobulking aggregates single-cell counts per sample per group, creating sample-level expression profiles suitable for bulk-style DE testing. Groups are defined by combinations of metadata fields (e.g., experimental condition and cell type), and each unique combination becomes one pseudobulk sample. A minimum of 3 samples per group is recommended for reliable DE results.
 
@@ -304,13 +343,12 @@ results/
 │       └── cohort.pseudobulk.rds            # Seurat object with summed counts aggregated per sample per group
 ├── annotation
 └── report
-    ├── report                               # UPDATED: Interactive HTML report
-    └── report.tar
+    └── report.cohort.html                   # UPDATED: Interactive HTML report
 ```
 
 Check `cohort.comparison_groups.txt` to confirm each group contains enough samples (≥ 3 recommended) before proceeding to DE analysis.
 
-### Differential expression analysis
+#### Differential expression analysis
 
 Pairwise DE testing is performed when the `--comparisons` parameter is supplied along with a CSV file defining each comparison to test. A list of possible comparison groups that can be used is printed to the `cohort.comparison_groups.txt` file generated by the pseudobulking stage, and is also available in the interactive HTML report. DE analysis is performed using DESeq2, operating on the pseudobulked samples. Results are combined across all comparisons and a Bonferroni correction is applied across all tests to control for multiple comparisons.
 
@@ -368,7 +406,7 @@ results/
 
 Inspect `cohort.p_val_dist.png` first — a roughly uniform p-value distribution (with a spike near 0) indicates a well-powered test. Strong inflation or deflation suggests a problem with sample size or grouping.
 
-### Functional enrichment analysis
+#### Functional enrichment analysis
 
 Two complementary approaches are implemented in the pipeline to help identify enriched biological pathways from the DE results. **ORA** (Over-Representation Analysis) tests whether significantly DE genes overlap with known gene sets more than expected by chance. **GSEA** ranks all tested genes by expression and evaluates whether pathway members cluster at the top or bottom of the ranking, capturing directional pathway activity even when individual genes fall below significance thresholds. Redundant pathways are collapsed using affinity propagation (AP) clustering, and a BH-corrected FDR is applied across all comparisons.
 
