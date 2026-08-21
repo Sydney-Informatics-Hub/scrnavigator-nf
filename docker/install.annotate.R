@@ -5,6 +5,7 @@ BiocManager::install(
   c(
     "SingleR",
     "EnsDb.Hsapiens.v86",
+    "EnsDb.Mmusculus.v79",
     "celldex",
     "scuttle"
   ),

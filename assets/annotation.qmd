@@ -93,7 +93,9 @@ if (is.null(cohort_id)) {
 cell_type_props <- paste0("annotation_db/", cohort_id, ".cell_type_proportions.singleR_annotation.png")
 
 cell_type_prop_table_hpca_main <- paste0("annotation_db/", cohort_id, ".cell_type_proportions.singleR_annotation.hpca_main.csv")
+cell_type_prop_table_mouse_main <- paste0("annotation_db/", cohort_id, ".cell_type_proportions.singleR_annotation.mouse_main.csv")
 cell_type_prop_table_hpca_fine <- paste0("annotation_db/", cohort_id, ".cell_type_proportions.singleR_annotation.hpca_fine.csv")
+cell_type_prop_table_mouse_fine <- paste0("annotation_db/", cohort_id, ".cell_type_proportions.singleR_annotation.mouse_fine.csv")
 cell_type_prop_table_singler <- paste0("annotation_db/", cohort_id, ".cell_type_proportions.singleR_annotation.csv")
 ```
 
@@ -276,6 +278,38 @@ cat("##### HPCA Fine annotations")
 #| message: false
 #| eval: !expr db_annotated && file.exists(cell_type_prop_table_hpca_fine)
 datatable(read_csv(cell_type_prop_table_hpca_fine))
+```
+
+```{r}
+#| results: asis
+#| echo: false
+#| eval: !expr db_annotated && file.exists(cell_type_prop_table_mouse_main)
+cat("##### Celldex Mouse Main annotations")
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+#| eval: !expr db_annotated && file.exists(cell_type_prop_table_mouse_main)
+datatable(read_csv(cell_type_prop_table_mouse_main))
+```
+
+```{r}
+#| results: asis
+#| echo: false
+#| eval: !expr db_annotated && file.exists(cell_type_prop_table_mouse_fine)
+cat("##### Celldex Mouse Fine annotations")
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+#| eval: !expr db_annotated && file.exists(cell_type_prop_table_mouse_fine)
+datatable(read_csv(cell_type_prop_table_mouse_fine))
 ```
 
 ```{r}

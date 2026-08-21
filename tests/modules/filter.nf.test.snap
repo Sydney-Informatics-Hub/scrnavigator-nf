@@ -1,0 +1,49 @@
+{
+    "Should run without failures": {
+        "content": [
+            {
+                "0": [
+                    [
+                        "sample_1_ctrl",
+                        "sample_1_ctrl.qc_filtered.rds:md5,12e8373d6061485721c688f9dfef6a07"
+                    ]
+                ],
+                "1": [
+                    [
+                        "sample_1_ctrl",
+                        [
+                            "sample_1_ctrl.count_distributions.log.png:md5,248c0661ed6c1bfe810d028bbf9b1627",
+                            "sample_1_ctrl.count_distributions.png:md5,d5a7c9d31d95b0ee854e3b1c24068a32",
+                            "sample_1_ctrl.feature_count_plot.post_filtered.png:md5,86475c7f764bff29a81a32ff1066ea30",
+                            "sample_1_ctrl.feature_count_plot.pre_filtered.png:md5,86475c7f764bff29a81a32ff1066ea30",
+                            "sample_1_ctrl.hard_filter_summary.csv:md5,ab46e5280f4e6240e8897775d4b74f9d"
+                        ]
+                    ]
+                ],
+                "qc_rds": [
+                    [
+                        "sample_1_ctrl",
+                        "sample_1_ctrl.qc_filtered.rds:md5,12e8373d6061485721c688f9dfef6a07"
+                    ]
+                ],
+                "qc_results": [
+                    [
+                        "sample_1_ctrl",
+                        [
+                            "sample_1_ctrl.count_distributions.log.png:md5,248c0661ed6c1bfe810d028bbf9b1627",
+                            "sample_1_ctrl.count_distributions.png:md5,d5a7c9d31d95b0ee854e3b1c24068a32",
+                            "sample_1_ctrl.feature_count_plot.post_filtered.png:md5,86475c7f764bff29a81a32ff1066ea30",
+                            "sample_1_ctrl.feature_count_plot.pre_filtered.png:md5,86475c7f764bff29a81a32ff1066ea30",
+                            "sample_1_ctrl.hard_filter_summary.csv:md5,ab46e5280f4e6240e8897775d4b74f9d"
+                        ]
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.2"
+        },
+        "timestamp": "2026-04-24T14:10:26.068537868"
+    }
+}

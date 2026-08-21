@@ -4,6 +4,7 @@ library(tidyverse)
 library(SingleR)
 library(ggplot2)
 library(ggrepel)
+library(ensembldb)
 
 # Get commandline arguments
 args <- commandArgs(trailingOnly = TRUE)
@@ -50,10 +51,10 @@ if (any(marker_genes_are_ensembl)) {
   all_marker_genes_are_ensembl <- FALSE
 }
 
-ensdb_file <- annotation_params$value[match("ens_db_rds", annotation_params$param)]
+ensdb_file <- annotation_params$value[match("ens_db", annotation_params$param)]
 
-if (!is.na(ensdb_file)) {
-  endsb <- readRDS(ensdb_file)
+if (file.exists(ensdb_file)) {
+  ensdb <- EnsDb(ensdb_file)
 } else if (species == "human") {
   ensdb <- EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86
 } else if (species == "mouse") {

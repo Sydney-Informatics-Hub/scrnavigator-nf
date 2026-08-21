@@ -1,0 +1,72 @@
+{
+    "null ens_db, human: uses built-in EnsDb": {
+        "content": [
+            {
+                "0": [
+                    [
+                        "sample_1_ctrl",
+                        "sample_1_ctrl.preprocessed.rds:md5,999a42a58f457351caba0cdaebb6eff2"
+                    ]
+                ],
+                "1": [
+                    [
+                        "sample_1_ctrl",
+                        "sample_1_ctrl.gene_mapping_stats.csv:md5,2e0ea7cfc1e0fc7b36e34b411e11a03d"
+                    ]
+                ],
+                "gene_mapping_stats": [
+                    [
+                        "sample_1_ctrl",
+                        "sample_1_ctrl.gene_mapping_stats.csv:md5,2e0ea7cfc1e0fc7b36e34b411e11a03d"
+                    ]
+                ],
+                "preprocessed_rds": [
+                    [
+                        "sample_1_ctrl",
+                        "sample_1_ctrl.preprocessed.rds:md5,999a42a58f457351caba0cdaebb6eff2"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.3"
+        },
+        "timestamp": "2026-05-04T16:13:06.420703417"
+    },
+    "sqlite ens_db: loads EnsDb from file": {
+        "content": [
+            {
+                "0": [
+                    [
+                        "sample_1_ctrl",
+                        "sample_1_ctrl.preprocessed.rds:md5,7f6258fa06654837d5ed1d07442b3f55"
+                    ]
+                ],
+                "1": [
+                    [
+                        "sample_1_ctrl",
+                        "sample_1_ctrl.gene_mapping_stats.csv:md5,6d00cdd50aecd768a42186eb0a29a44d"
+                    ]
+                ],
+                "gene_mapping_stats": [
+                    [
+                        "sample_1_ctrl",
+                        "sample_1_ctrl.gene_mapping_stats.csv:md5,6d00cdd50aecd768a42186eb0a29a44d"
+                    ]
+                ],
+                "preprocessed_rds": [
+                    [
+                        "sample_1_ctrl",
+                        "sample_1_ctrl.preprocessed.rds:md5,7f6258fa06654837d5ed1d07442b3f55"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.3"
+        },
+        "timestamp": "2026-05-04T16:14:09.942012825"
+    }
+}

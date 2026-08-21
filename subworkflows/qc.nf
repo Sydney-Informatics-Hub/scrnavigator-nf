@@ -9,23 +9,24 @@ workflow QUALITY_CONTROL {
     all_resolutions
     cluster_method
     species
-    ens_db_rds
+    ens_db
     annotate_mt
     mt_gene_list
+    vars_to_regress
 
     main:
     // Pre-process RDS files
     rds_files = samplesheet
         .map { row -> [ row.sample, row.rds_path, row.meta ] }
         .merge(species)
-        .merge(ens_db_rds)
+        .merge(ens_db)
         .merge(annotate_mt)
         .merge(mt_gene_list)
-        .map { smp, rds, meta, spc, ens, mtann, mtlist -> {
+        .map { smp, rds, meta, spc, ens, mtann, mtlist ->
             def ens_opt = ens == null ? [] : ens
             def mtlist_opt = mtlist == null ? [] : mtlist
             return [ smp, rds, meta, spc, ens_opt, mtann, mtlist_opt ]
-        } }
+        }
 
     // Conduct initial QC
     PREPROCESS_RDS(rds_files)
@@ -45,6 +46,7 @@ workflow QUALITY_CONTROL {
         .merge(cluster_method)
     sct_in = FILTER.out.qc_rds
         .join(cluster_params, by: 0)
+        .merge(vars_to_regress)
     SCTRANSFORM(sct_in)
 
     emit:

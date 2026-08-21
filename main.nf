@@ -1,4 +1,5 @@
 // Load modules
+include { DOWNLOAD_ENSDB } from './modules/download_ensdb'
 include { QUALITY_CONTROL } from './subworkflows/qc'
 include { DETECT_DOUBLETS } from './modules/doublet'
 include { INTEGRATE } from './subworkflows/integrate'
@@ -40,14 +41,12 @@ workflow {
 
     // Check annotation-related parameters are set
     assert params.species : "Error: Must provide species name."
+    def species_lower = params.species.toLowerCase()
     if (!params.no_mt) {
-        assert ['human', 'mouse'].contains(params.species.toLowerCase()) ||
+        assert ['human', 'mouse'].contains(species_lower) ||
             !!params.mt_gene_list :
             "Error: If --species is neither 'human' nor 'mouse', --mt_gene_list must be provided."
     }
-    assert ['human', 'mouse'].contains(params.species.toLowerCase()) ||
-        !!params.ens_db_rds :
-        "Error: If --species is neither 'human' nor 'mouse', --ens_db_rds must be provided."
 
     // Create channels from params
     // Required parameters and parameters with defaults
@@ -55,8 +54,15 @@ workflow {
     cluster_method                  = channel.value(params.cluster_method)
     integrated_resolution           = channel.value(params.integrated_resolution)
     cohort_id                       = channel.value(params.cohort_id)
-    species                         = channel.value(params.species.toLowerCase())
+    species                         = channel.value(species_lower)
     annotate_mt                     = channel.value(!params.no_mt)
+    def _vars_to_regress            = ( ( params.vars_to_regress ?: '' ) + ( params.no_mt ? '' : ',percent.mt' ) )
+                                            .tokenize(',')
+                                            .collect { v -> v.trim() }
+                                            .findAll { v -> !!v }
+                                            .unique( false )
+                                            .join(',')
+    vars_to_regress                 = channel.value(_vars_to_regress)
     min_cells_for_annotation        = channel.value(params.min_cells_for_annotation as Integer)
     custom_annotation_mad_threshold = channel.value(params.custom_annotation_mad_threshold as Float)
     cell_type_proportion_threshold  = channel.value(params.cell_type_proportion_threshold as Float)
@@ -65,7 +71,8 @@ workflow {
     // Optional parameters
     cluster_annotation         = !!params.cluster_annotation         ? channel.value(params.cluster_annotation)                                         : channel.value([null])
     mt_gene_list               = !!params.mt_gene_list               ? channel.fromPath(params.mt_gene_list, checkIfExists: true).first()               : channel.value([null])
-    ens_db_rds                 = !!params.ens_db_rds                 ? channel.fromPath(params.ens_db_rds, checkIfExists: true).first()                 : channel.value([null])
+    ens_db                     = !!params.ens_db                     ? channel.fromPath(params.ens_db, checkIfExists: true).first()                     : channel.value([null])
+    ens_db_version             = !!params.ens_db_version             ? channel.value(params.ens_db_version)                                             : channel.value([null])
     s_genes                    = !!params.s_genes                    ? channel.fromPath(params.s_genes, checkIfExists: true).first()                    : channel.value([null])
     g2m_genes                  = !!params.g2m_genes                  ? channel.fromPath(params.g2m_genes, checkIfExists: true).first()                  : channel.value([null])
     annotation_db              = !!params.annotation_db              ? channel.fromPath(params.annotation_db, checkIfExists: true).first()              : channel.value([null])
@@ -80,7 +87,7 @@ workflow {
     samplesheet_csv = channel.fromPath(params.input, checkIfExists: true)
     samplesheet = samplesheet_csv
         .splitCsv( header: true )
-        .map { row -> {
+        .map { row ->
             def sample = row.sample
             assert !!sample : "Error: Must provide a sample name in the samplesheet."
             def rds_path = file(row.rds, checkIfExists: true)
@@ -112,17 +119,31 @@ workflow {
                 meta:sample_meta,
                 cells_to_remove:cells_to_remove
             ]
-        }}
+        }
 
     // Validate samplesheet: only one entry per sample
     samplesheet
         .map { row -> [ row.sample, row.rds_path ] }
         .groupTuple()
-        .map { sample, rds_paths -> {
+        .map { sample, rds_paths ->
             assert rds_paths.size() != 0 : "Error: Missing RDS file for sample '${sample}'."
             assert rds_paths.size() == 1 : "Error: Duplicate entries found for sample '${sample}'."
             return [ sample, rds_paths ]
-        }}
+        }
+
+    // Download Ensembl DB when no DB file is provided but a DB version is
+    if (!params.ens_db && !!params.ens_db_version) {
+        ens_db = DOWNLOAD_ENSDB(species, ens_db_version)
+    }
+
+    // Check that either:
+    // 1. An Ensembl DB file is provided
+    // 2. An Ensembl DB version is provided
+    // 3. The species is human or mouse (handled automatically)
+    assert !!params.ens_db ||
+        !!params.ens_db_version ||
+        ['human', 'mouse'].contains(species_lower) :
+        "Error: Must provide either an Ensembl database sqlite file, an Ensembl databaser version, or the species must be human or mouse."
 
     // Run initial quality control
     QUALITY_CONTROL(
@@ -130,9 +151,10 @@ workflow {
         all_resolutions,
         cluster_method,
         species,
-        ens_db_rds,
+        ens_db,
         annotate_mt,
-        mt_gene_list
+        mt_gene_list,
+        vars_to_regress
     )
 
     // If only running QC, stop here, otherwise continue on
@@ -144,6 +166,7 @@ workflow {
             .merge(cluster_method)
         doublet_in = QUALITY_CONTROL.out.rds
             .join(doublet_params, by: 0)
+            .merge(vars_to_regress)
         DETECT_DOUBLETS(doublet_in)
 
         // Integration
@@ -155,7 +178,8 @@ workflow {
             cohort_id,
             all_resolutions,
             cluster_method,
-            integrated_resolution
+            integrated_resolution,
+            vars_to_regress
         )
 
         detect_doublets_qc = DETECT_DOUBLETS.out.qc_results
@@ -175,7 +199,7 @@ workflow {
             species,
             s_genes,
             g2m_genes,
-            ens_db_rds,
+            ens_db,
             min_cells_for_annotation,
             annotation_db,
             custom_marker_genes,
@@ -188,20 +212,20 @@ workflow {
         // Pseudobulking
         pseudo_in = ANNOTATE.out.rds
             .merge(pseudo_groups)
-            .filter { _id, _rds, grps -> {
+            .filter { _id, _rds, grps ->
                 grps != null
-            } }
+            }
         PSEUDOBULK(pseudo_in)
 
         // Differential expression
         comparisons = !params.comparisons ? channel.empty() : (
             channel.fromPath(params.comparisons)
                 .splitCsv( header: true )
-                .map { row -> {
+                .map { row ->
                     assert row.ref != null && row.ref != ''
                     assert row.test != null && row.test != ''
                     [ row.ref, row.test ]
-                } }
+                }
         )
         de_in = PSEUDOBULK.out.pseudobulked_rds
             .combine(comparisons)

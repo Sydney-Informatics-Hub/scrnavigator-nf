@@ -28,48 +28,7 @@ This pipeline was designed to work with the filtered output from the [nf-core `s
 
 ## Parameters
 
-Pipeline parameter schema for the scrnavigator-nf Nextflow workflow. Generated using `nf-core pipelines schema docs`.
-
-### Input/output options 
-Parameters that control the pipeline inputs and outputs.                                                                                        
-| Parameter | Description | Type | Default | Required | Hidden |                                                                                
-|-----------|-----------|-----------|-----------|-----------|-----------|                                                                       
-| `input` | Path to the input samplesheet CSV file. | `string` |  | True |  |                                                                   
-| `outdir` | Directory to place output files in. | `string` | results |  |  |                                                                   
-### Run options                                                                                                                                  
-Parameters that control the pipeline execution and flow.                                                                                        
-| Parameter | Description | Type | Default | Required | Hidden |                                                                                
-|-----------|-----------|-----------|-----------|-----------|-----------|                                                                       
-| `qc_only` | Only run QC analysis. | `boolean` | False |  |  |                                                                                 
-| `no_analysis` | Only run up to integration, don't perform pseudobulking, DE, or FEA. | `boolean` | False |  |  |                              
-| `cohort_id` | Name for the integrated cohort. Default: 'cohort'. | `string` | cohort |  |  |                                                  
-| `resolutions` | Comma-separated list of clustering resolutions (floats or integers) to use for QC. Defaults to values from 0.6 to 2.4 in steps of 0.2. | `string` |  |  |  |             
-| `integrated_resolution` | Final clustering resolution (float or integer) for the integrated dataset. | `number` |  |  |  |                    
-| `cluster_method` | Method to use for clustering. Either 'louvain' or 'leiden' (default: 'leiden'). (accepted: `louvain`\|`leiden`) | `string` 
-| `species` | The species that the samples belong to. | `string` |  | True |  |
-| `no_mt` | Specifies that annotation of mitochondrial gene percentages should be skipped.<details><summary>Help</summary><small>Specify `no_mt` when running nuclei samples.</small></details>| `boolean` | False |  |  |
-| `mt_gene_list` | Path to a text file containing known mitochondrial genes in the species. Not required when --species is either 'human' or 'mouse'. | `string` | None |  |  |
-| `ens_db_rds` | Path to an RDS file containing an AnnotationDb object for the Ensembl database (e.g. EnsDb.Hsapiens.v86). Required for species other than 'human' or 'mouse'. | `string` | None |  |  |
-| `s_genes` | Path to a text file containing S gene IDs for cell cycle annotation. Not required when --species is 'human'. | `string` | None |
-| `g2m_genes` | Path to a text file containing G2M gene IDs for cell cycle annotation. Not required when --species is 'human'. | `string` | None |  |  |  
-| `annotation_db` | Path to an RDS file containing a suitable reference dataset for cell type annotation with SingleR. Must contain a field called 'label' with the cell type labels. When --species is 'human', the Human Primary Cell Atlas (HPCA) data from the celldex package will be used by default. As per the SingleR documentaiton, this must be 'a numeric matrix of single-cell expression values where rows are genes and columns are cells. Alternatively, a SummarizedExperiment object containing such a matrix' | `string` | None |  |  |
-| `min_cells_for_annotation` | The minimum number of cells required to keep a cell type annotation. | `integer` | 10 |  |  |
-| `custom_marker_genes` | Path to a CSV file containing custom marker gene sets for annotation of cell types. Must contain two columns: 'cell_type' and 'gene_ids', where 'gene_ids' is a semicolon-delimited list of gene IDs. | `string` | None |  |  |
-| `custom_annotation_mad_threshold` | Median absolute difference (MAD) threshold to use when determining cell type based on custom gene programs. | `number` | 1 |  |  |
-| `cluster_annotation` | The annotation label to use for annotating clusters. If not supplied, defaults to the first of the following that exists: 'custom_cell_type', 'custom_cell_type.max_score', 'SingleR.annotation', 'SingleR.hpca_main', 'SingleR.hpca_fine', 'Phase'. | `string` | None |  |  |
-| `cell_type_proportion_threshold` | Proportion of cells in a cluster that must be of the same cell type before calling the cell type for the cluster. | `number` | 0.67 |  |  |
-| `manual_cluster_annotations` | Path to a CSV file to manually set cluster annotations. Must have two columns: 'cluster' and 'cell_type'. | `string` | None |  |  |
-| `pseudo_groups` | A comma-separated list of metadata variables to be used for grouping cells for pseudobulking and differential experession analysis. Defaults to the 'cluster_annotation' field created by the cluster annotation module. | `string` | cluster_annotation |  |  |
-| `comparisons` | A path to a CSV file containing comparisons to be used for differential expression analysis. | `string` | None |  |  |
-| `p_value_threshold` | P-value threshold for differential expression analysis. Default is 0.05 | `number` | 0.05 |  |  |
-| `fc_threshold` | Fold-change threshold for differential expression analysis. No threshold is applied by default. | `number` | None |  |  |
-| `ora_db` | Path to a .gmt file containing an enrichment database for use with over representation analysis with WebGestaltR. Must contain three tab-delimited columns: category ID, external link, and gene ID. | `string` | None |  |  |
-| `gsea_db` | Path to a .gmt file containing an enrichment database for use with gene set enrichment analysis with WebGestaltR. Must contain three tab-delimited columns: category ID, external link, and gene ID. | `string` | None |  |  |
-
-### Miscellaneous parameters                                                                                                                     
-| Parameter | Description | Type | Default | Required | Hidden |
-|-----------|-----------|-----------|-----------|-----------|-----------|                                                                       
-| `help` | Prints the pipeline help message. | `boolean` |  |  | True |
+See [docs/params.md](docs/params.md) for the full parameter reference.
 
 ## Usage
 
@@ -224,9 +183,9 @@ Inspect the integration UMAPs in the report to confirm that samples mix well aft
 
 ### Cell annotation
 
-Cell annotation assigns biological identity to each cluster using three complementary approaches run in parallel: database-driven annotation (SingleR), cell cycle phase scoring, and cluster-level consensus assignment. By default, human samples are annotated against the Human Primary Cell Atlas (HPCA). A cluster is labelled with a cell type if that type represents more than 67% of cells in the cluster; otherwise it is marked "Ambiguous".
+Cell annotation assigns biological identity to each cell using three complementary approaches: database-driven annotation (SingleR), cell cycle phase scoring, and custom marker gene-based annotation. Cell cycle scoring is performed automatically for human samples; database-driven annotation is also performed automatically for both human and mouse samples, using the [Human Primary Cell Atlas (HPCA)](https://www.bioconductor.org/packages/release/data/experiment/vignettes/celldex/inst/doc/userguide.html#1_Human_Primary_Cell_Atlas) and [MouseRNAseqData](https://www.bioconductor.org/packages/release/data/experiment/vignettes/celldex/inst/doc/userguide.html#2_Mouse_RNA-seq_Data) databases, respectively, both sourced from the `celldex` package. See [How-to: use a custom annotation database](#how-to-use-a-custom-annotation-database) for using an alternative reference database with SingleR.
 
-See [How-to customise annotation]() for using custom marker gene lists or alternative reference databases.
+Along with cell-level annotation, cell clusters are labelled with a cell type if that type represents more than 67% of cells in the cluster; otherwise it is marked "Ambiguous". The default 67% threshold can be overridden with the `--cell_type_proportion_threshold` parameter.
 
 Drop `--no_analysis` to run annotation (and pseudobulking, described below) for the first time:
 
@@ -261,6 +220,61 @@ results/
 ```
 
 Inspect the annotation UMAPs and cell type proportion plots in the report. Verify that cluster assignments look biologically plausible before defining comparison groups for downstream analysis.
+
+### How-to: use a custom annotation database
+
+By default the pipeline annotates human samples against the [Human Primary Cell Atlas](https://www.bioconductor.org/packages/release/data/experiment/vignettes/celldex/inst/doc/userguide.html#1_Human_Primary_Cell_Atlas) and mouse samples against [MouseRNAseqData](https://www.bioconductor.org/packages/release/data/experiment/vignettes/celldex/inst/doc/userguide.html#2_Mouse_RNA-seq_Data), both sourced from the `celldex` package. You can supply any alternative reference by providing a path to an RDS file via the `--annotation_db` parameter.
+
+**Required format**
+
+The database must be a [`SummarizedExperiment`](https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html) object with:
+
+- A `logcounts` assay containing log-normalised expression values, with genes as rows and reference cells/samples as columns.
+- A `label` column in `colData` containing the cell type label for each reference cell/sample.
+
+Row names must use the same gene identifier type as your data (Ensembl IDs or gene symbols).
+
+**Building a custom database**
+
+The example below constructs a minimal compliant object from a raw counts matrix and a vector of cell type labels:
+
+```r
+library(SummarizedExperiment)
+library(scuttle)
+
+# counts_matrix: genes x cells, raw counts
+# cell_labels:   character vector, one label per cell
+
+sce <- SummarizedExperiment(
+  assays = list(counts = counts_matrix),
+  colData = DataFrame(label = cell_labels)
+)
+sce <- logNormCounts(sce)   # adds the required 'logcounts' assay
+
+saveRDS(sce, "my_annotation_db.rds")
+```
+
+Any `celldex` reference is already in this format and can be saved and reused directly:
+
+```r
+db <- celldex::HumanPrimaryCellAtlasData()
+saveRDS(db, "hpca.rds")
+```
+
+**Running the pipeline with a custom database**
+
+Pass the RDS path with `--annotation_db`. The `--species` parameter is still required for other steps in the pipeline but does not affect which database is used when `--annotation_db` is provided:
+
+```bash
+nextflow run scrnavigator-nf \
+    --input path/to/samplesheet.csv \
+    --outdir results \
+    --species human \
+    --annotation_db path/to/my_annotation_db.rds \
+    -resume
+```
+
+The resulting per-cell annotations will be stored in the `SingleR.annotation` metadata column of the output Seurat object.
 
 ### Pseudobulking
 
@@ -379,6 +393,12 @@ results/
 ├── report                                   # UPDATED: Interactive HTML report
 └── run_info
 ```
+
+## Developer docs
+
+For help with testing, interactive development with Singularity containers, and instructions for keeping the schema and this README in sync when parameters change:
+
+→ [docs/developer-instructions.md](docs/developer-instructions.md)
 
 ## Component tools
 

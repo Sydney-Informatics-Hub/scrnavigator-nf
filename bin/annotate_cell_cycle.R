@@ -2,6 +2,7 @@
 library(Seurat)
 library(tidyverse)
 library(ggplot2)
+library(ensembldb)
 
 # Get commandline arguments
 args <- commandArgs(trailingOnly = TRUE)
@@ -24,9 +25,9 @@ species <- annotation_params$value[match("species", annotation_params$param)]
 s_genes_file <- annotation_params$value[match("s_genes", annotation_params$param)]
 g2m_genes_file <- annotation_params$value[match("g2m_genes", annotation_params$param)]
 
-if (!is.na(s_genes_file) && !is.na(g2m_genes_file)) {
+if (file.exists(s_genes_file) && file.exists(g2m_genes_file)) {
   s_genes <- scan(s_genes_file, character())
-  g2m_genes_file <- scan(g2m_genes_file, character())
+  g2m_genes <- scan(g2m_genes_file, character())
 } else if (species == "human") {
   s_genes <- cc.genes$s.genes
   g2m_genes <- cc.genes$g2m.genes
@@ -35,10 +36,10 @@ if (!is.na(s_genes_file) && !is.na(g2m_genes_file)) {
 }
 
 # Convert cell cycle genes between symbols and Ensembl IDs where necessary
-ensdb_file <- annotation_params$value[match("ens_db_rds", annotation_params$param)]
+ensdb_file <- annotation_params$value[match("ens_db", annotation_params$param)]
 
-if (!is.na(ensdb_file)) {
-  endsb <- readRDS(ensdb_file)
+if (file.exists(ensdb_file)) {
+  ensdb <- EnsDb(ensdb_file)
 } else if (species == "human") {
   ensdb <- EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86
 } else if (species == "mouse") {

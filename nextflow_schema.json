@@ -71,13 +71,14 @@
           "description": "Specifies that annotation of mitochondrial gene percentages should be skipped.",
           "help_text": "Specify `no_mt` when running nuclei samples."
         },
+        "vars_to_regress": {
+          "type": "string",
+          "description": "Comma-separated list of variables to regress out during SCTransform normalisation. When `--no_mt` is not set, `percent.mt` is always included automatically.",
+          "help_text": "Values must correspond to columns present in the Seurat object metadata; any additional metadata fields provided in the samplesheet will be added to the Seurat object metadata and will be available for use with --vars_to_regress."
+        },
         "mt_gene_list": {
           "type": "string",
           "description": "Path to a text file containing known mitochondrial genes in the species. Not required when --species is either 'human' or 'mouse'."
-        },
-        "ens_db_rds": {
-          "type": "string",
-          "description": "Path to an RDS file containing an AnnotationDb object for the Ensembl database (e.g. EnsDb.Hsapiens.v86). Required for species other than 'human' or 'mouse'."
         },
         "s_genes": {
           "type": "string",
@@ -111,7 +112,7 @@
         },
         "cluster_annotation": {
           "type": "string",
-          "description": "The annotation label to use for annotating clusters. If not supplied, defaults to the first of the following that exists: 'custom_cell_type', 'custom_cell_type.max_score', 'SingleR.annotation', 'SingleR.hpca_main', 'SingleR.hpca_fine', 'Phase'."
+          "description": "The annotation label to use for annotating clusters. If not supplied, defaults to the first of the following that exists: 'custom_cell_type', 'custom_cell_type.max_score', 'SingleR.annotation', 'SingleR.hpca_main', 'SingleR.mouse_main', 'SingleR.hpca_fine', 'SingleR.mouse_fine', 'Phase'."
         },
         "cell_type_proportion_threshold": {
           "type": "number",
@@ -152,6 +153,17 @@
         "gsea_db": {
           "type": "string",
           "description": "Path to a .gmt file containing an enrichment database for use with gene set enrichment analysis with WebGestaltR. Must contain three tab-delimited columns: category ID, external link, and gene ID."
+        },
+        "ens_db": {
+          "type": "string",
+          "description": "Path to an sqlite ensembldb for the species.",
+          "help_text": "Leave empty to use the built in ensembld e.g. humans: `EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86`; mice: `EnsDb.Mmusculus.v79::EnsDb.Mmusculus.v79`"
+        },
+        "ens_db_version": {
+          "type": "string",
+          "default": "v113",
+          "description": "Version of the ensembldb",
+          "help_text": "Used to download the specified version in DOWNLOAD_ENSDB. The default is v113 for the most recent available version for human."
         }
       },
       "required": ["species"]
@@ -165,6 +177,11 @@
           "type": "boolean",
           "description": "Prints the pipeline help message.",
           "hidden": true
+        },
+        "timestamp": {
+          "type": "string",
+          "hidden": true,
+          "description": "Timestamp of pipeline launch for reporting."
         }
       }
     }
@@ -174,10 +191,10 @@
       "$ref": "#/$defs/input_output_options"
     },
     {
-      "$ref": "#/$defs/misc"
+      "$ref": "#/$defs/run_options"
     },
     {
-      "$ref": "#/$defs/run_options"
+      "$ref": "#/$defs/misc"
     }
   ]
 }

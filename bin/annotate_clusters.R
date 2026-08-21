@@ -38,7 +38,9 @@ if (!is.na(manual_annotations_file)) {
       "custom_cell_type.max_score",
       "SingleR.annotation",
       "SingleR.hpca_main",
+      "SingleR.mouse_main",
       "SingleR.hpca_fine",
+      "SingleR.mouse_fine",
       "Phase"
     )
     cluster_annotation <- annotation_priority[which(annotation_priority %in% colnames(integrated@meta.data))[1]]
