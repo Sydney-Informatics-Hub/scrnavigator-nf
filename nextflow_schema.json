@@ -90,7 +90,7 @@
         },
         "annotation_db": {
           "type": "string",
-          "description": "Path to an RDS file containing a suitable reference dataset for cell type annotation with SingleR. Must contain a field called 'label' with the cell type labels. When --species is 'human', the Human Primary Cell Atlas (HPCA) data from the celldex package will be used by default. As per the SingleR documentaiton, this must be 'a numeric matrix of single-cell expression values where rows are genes and columns are cells. Alternatively, a SummarizedExperiment object containing such a matrix'"
+          "description": "Path to an RDS file containing a suitable reference dataset for cell type annotation with SingleR. Must contain a field called 'label' with the cell type labels. When --species is 'human', the Human Primary Cell Atlas (HPCA) data from the celldex package will be used by default. As per the SingleR documentation, this must be 'a numeric matrix of single-cell expression values where rows are genes and columns are cells. Alternatively, a SummarizedExperiment object containing such a matrix'"
         },
         "min_cells_for_annotation": {
           "type": "integer",
@@ -125,7 +125,7 @@
         },
         "pseudo_groups": {
           "type": "string",
-          "description": "A comma-separated list of metadata variables to be used for grouping cells for pseudobulking and differential experession analysis. Defaults to the 'cluster_annotation' field created by the cluster annotation module.",
+          "description": "A comma-separated list of metadata variables to be used for grouping cells for pseudobulking and differential expression analysis. Defaults to the 'cluster_annotation' field created by the cluster annotation module.",
           "default": "cluster_annotation"
         },
         "comparisons": {
@@ -161,9 +161,8 @@
         },
         "ens_db_version": {
           "type": "string",
-          "default": "v113",
           "description": "Version of the ensembldb",
-          "help_text": "Used to download the specified version in DOWNLOAD_ENSDB. The default is v113 for the most recent available version for human."
+          "help_text": "Used to download the specified version in DOWNLOAD_ENSDB. If not provided, and no --ens_db file is given either, the pipeline falls back to the built-in EnsDb for human/mouse species."
         }
       },
       "required": ["species"]

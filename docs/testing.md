@@ -29,7 +29,7 @@ module load nextflow singularity
 
 The pipeline caches Singularity images under your Nextflow singularity cache directory. By default, this is located at `<NXF_LAUNCH_DIR>/work/singularity`, where `<NXF_LAUNCH_DIR>` is the launch directory where Nextflow is run from. It is recommended that you set this to a different directory of your choosing, especially if you are running Nextflow on a shared system like an HPC. You can set the Nextflow singularity cache directory by exporting the environment variable `NXF_SINGULARITY_CACHEDIR`.
 
-Generating the test fixures requires the `sydneyinformaticshub/scrnavigator-nf-annotate` image. Check whether the annotate image has been pulled already (e.g. if you have previously run the pipeline):
+Generating the test fixtures requires the `sydneyinformaticshub/scrnavigator-nf-annotate` image. Check whether the annotate image has been pulled already (e.g. if you have previously run the pipeline):
 
 ```bash
 SIF=${NXF_SINGULARITY_CACHEDIR}/sydneyinformaticshub-scrnavigator-nf-annotate.img
@@ -83,7 +83,7 @@ The next step will be to run the initial stages of the pipeline, so to prevent c
 cd ..
 ```
 
-Run the pipeline through integration using the samplesheet provided in `tests/data/samplesheet.generate_fixtures.csv`. **Note**, if you have made significant changes to the exepcted structure of the samplesheet, you may need to update this file accordingly.
+Run the pipeline through integration using the samplesheet provided in `tests/data/samplesheet.generate_fixtures.csv`. **Note**, if you have made significant changes to the expected structure of the samplesheet, you may need to update this file accordingly.
 
 ```bash
 # Assuming running from the project directory's parent
@@ -102,12 +102,12 @@ RDS=${PWD}/results/integration/cohort.integrated.rds
 cd scrnavigator-nf
 ```
 
-Pass the integrated RDS output path  to `subset_integrated.R` — it saves the fixture to `tests/data/rds/` automatically.
+Pass the integrated RDS output path to `subset_integrated.R` — it saves the fixture to `tests/data/rds/` automatically.
 
 ```bash
 singularity exec \
   $SIF \
-  Rscript --vanilla tests/data/subset_integrated.R
+  Rscript --vanilla tests/data/subset_integrated.R \
   ${RDS}
 ```
 
