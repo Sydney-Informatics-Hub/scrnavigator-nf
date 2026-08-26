@@ -6,9 +6,10 @@
 #   Samples 1, 3, 5  →  WT uninjected  (ctrl)
 #   Samples 2, 4, 6  →  tdTomato       (stim)
 #
-# Outputs written to tests/data/rds/:
-#   mouse_ctrl1.rds, mouse_ctrl2.rds, mouse_ctrl3.rds
-#   mouse_stim1.rds, mouse_stim2.rds, mouse_stim3.rds
+# Outputs written to tests/data/rds/, each as a v3-Assay/v5-Assay5 pair:
+#   mouse_ctrl1_v3.rds, mouse_ctrl1_v5.rds, mouse_ctrl2_v3.rds, mouse_ctrl2_v5.rds,
+#   mouse_ctrl3_v3.rds, mouse_ctrl3_v5.rds, mouse_stim1_v3.rds, mouse_stim1_v5.rds,
+#   mouse_stim2_v3.rds, mouse_stim2_v5.rds, mouse_stim3_v3.rds, mouse_stim3_v5.rds
 #
 # REQUIRES: MouseGastrulationData, Seurat (>= 5), SingleCellExperiment, Matrix
 # This script is NOT run inside the scrnavigator-nf-annotate container.
@@ -30,17 +31,19 @@ CELLS_PER_SAMPLE <- 500 # Gets you 1.9~2MB per sample
 TOP_N_GENES      <- 2000
 MIN_CELLS        <- 3
 
-# WTChimeraData sample ID → (output file, condition)
+# WTChimeraData sample ID → (output basename, condition)
 sample_map <- list(
-  "1" = list(file = "mouse_ctrl1.rds", condition = "ctrl"),
-  "3" = list(file = "mouse_ctrl2.rds", condition = "ctrl"),
-  "5" = list(file = "mouse_ctrl3.rds", condition = "ctrl"),
-  "2" = list(file = "mouse_stim1.rds", condition = "stim"),
-  "4" = list(file = "mouse_stim2.rds", condition = "stim"),
-  "6" = list(file = "mouse_stim3.rds", condition = "stim")
+  "1" = list(base = "mouse_ctrl1", condition = "ctrl"),
+  "3" = list(base = "mouse_ctrl2", condition = "ctrl"),
+  "5" = list(base = "mouse_ctrl3", condition = "ctrl"),
+  "2" = list(base = "mouse_stim1", condition = "stim"),
+  "4" = list(base = "mouse_stim2", condition = "stim"),
+  "6" = list(base = "mouse_stim3", condition = "stim")
 )
 
-expected <- file.path(OUT_DIR, vapply(sample_map, `[[`, character(1), "file"))
+expected <- file.path(OUT_DIR, paste0(
+  rep(vapply(sample_map, `[[`, character(1), "base"), each = 2), c("_v3.rds", "_v5.rds")
+))
 if (all(file.exists(expected))) {
   message("All mouse sample fixtures already exist, skipping.")
   quit(save = "no")
@@ -73,12 +76,13 @@ message(sprintf("Gene universe: %d genes (top %d by UMI, min %d cells)",
 # 3. Per-sample: stratified subsample → filter genes → coerce → save
 # ---------------------------------------------------------------------------
 for (sid in names(sample_map)) {
-  dest      <- file.path(OUT_DIR, sample_map[[sid]]$file)
+  sample_id <- sample_map[[sid]]$base
   condition <- sample_map[[sid]]$condition
-  sample_id <- tools::file_path_sans_ext(basename(dest))
+  dest_v3   <- file.path(OUT_DIR, paste0(sample_id, "_v3.rds"))
+  dest_v5   <- file.path(OUT_DIR, paste0(sample_id, "_v5.rds"))
 
-  if (file.exists(dest)) {
-    message("Already exists, skipping: ", dest)
+  if (file.exists(dest_v3) && file.exists(dest_v5)) {
+    message("Already exists, skipping: ", sample_id)
     next
   }
 
@@ -106,7 +110,8 @@ for (sid in names(sample_map)) {
 
   sce_sub <- sce_s[top_genes, keep_idx]
 
-  # Coerce to Seurat v5
+  # as.Seurat() on a SingleCellExperiment constructs a v3-style Assay,
+  # not Assay5, regardless of Seurat version.
   so <- as.Seurat(sce_sub, counts = "counts", data = NULL)
   so <- RenameAssays(so, originalexp = "RNA")
   DefaultAssay(so) <- "RNA"
@@ -115,9 +120,14 @@ for (sid in names(sample_map)) {
   so$condition  <- condition
   so$orig.ident <- sample_id
 
-  saveRDS(so, dest)
+  saveRDS(so, dest_v3)
   message(sprintf("Saved %s — %d cells x %d genes (%.1f MB)",
-                  dest, ncol(so), nrow(so), file.info(dest)$size / 1e6))
+                  dest_v3, ncol(so), nrow(so), file.info(dest_v3)$size / 1e6))
+
+  so[["RNA"]] <- as(so[["RNA"]], "Assay5")
+  saveRDS(so, dest_v5)
+  message(sprintf("Saved %s — %d cells x %d genes (%.1f MB)",
+                  dest_v5, ncol(so), nrow(so), file.info(dest_v5)$size / 1e6))
 }
 
 # Sample 1 (ctrl): 2882 cells available

@@ -32,7 +32,9 @@ annotation_priority <- c(
   "custom_cell_type.max_score",
   "SingleR.annotation",
   "SingleR.hpca_main",
+  "SingleR.mouse_main",
   "SingleR.hpca_fine",
+  "SingleR.mouse_fine",
   "Phase"
 )
 annotation_priority <- annotation_priority[annotation_priority %in% available_annotations]
@@ -91,7 +93,9 @@ if (is.null(cohort_id)) {
 cell_type_props <- paste0("annotation_db/", cohort_id, ".cell_type_proportions.singleR_annotation.png")
 
 cell_type_prop_table_hpca_main <- paste0("annotation_db/", cohort_id, ".cell_type_proportions.singleR_annotation.hpca_main.csv")
+cell_type_prop_table_mouse_main <- paste0("annotation_db/", cohort_id, ".cell_type_proportions.singleR_annotation.mouse_main.csv")
 cell_type_prop_table_hpca_fine <- paste0("annotation_db/", cohort_id, ".cell_type_proportions.singleR_annotation.hpca_fine.csv")
+cell_type_prop_table_mouse_fine <- paste0("annotation_db/", cohort_id, ".cell_type_proportions.singleR_annotation.mouse_fine.csv")
 cell_type_prop_table_singler <- paste0("annotation_db/", cohort_id, ".cell_type_proportions.singleR_annotation.csv")
 ```
 
@@ -183,7 +187,9 @@ annotation_descriptions <- list(
   custom_cell_type.max_score = "Custom marker gene-based cell type annotation (highest score only)",
   SingleR.annotation = "SingleR annotation with custom cell annotation database",
   SingleR.hpca_main = "SingleR annotation with HPCA database ('main' cell type category)",
+  SingleR.mouse_main = "SingleR annotation with celldex mouse database ('main' cell type category)",
   SingleR.hpca_fine = "SingleR annotation with HPCA database ('fine' cell type category)",
+  SingleR.mouse_fine = "SingleR annotation with celldex mouse database ('fine' cell type category)",
   Phase = "Cell cycle phase"
 )
 for (ann in annotation_priority) {
@@ -272,6 +278,38 @@ cat("##### HPCA Fine annotations")
 #| message: false
 #| eval: !expr db_annotated && file.exists(cell_type_prop_table_hpca_fine)
 datatable(read_csv(cell_type_prop_table_hpca_fine))
+```
+
+```{r}
+#| results: asis
+#| echo: false
+#| eval: !expr db_annotated && file.exists(cell_type_prop_table_mouse_main)
+cat("##### Celldex Mouse Main annotations")
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+#| eval: !expr db_annotated && file.exists(cell_type_prop_table_mouse_main)
+datatable(read_csv(cell_type_prop_table_mouse_main))
+```
+
+```{r}
+#| results: asis
+#| echo: false
+#| eval: !expr db_annotated && file.exists(cell_type_prop_table_mouse_fine)
+cat("##### Celldex Mouse Fine annotations")
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+#| eval: !expr db_annotated && file.exists(cell_type_prop_table_mouse_fine)
+datatable(read_csv(cell_type_prop_table_mouse_fine))
 ```
 
 ```{r}
