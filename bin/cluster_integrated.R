@@ -58,9 +58,6 @@ integrated <- FindClusters(
   verbose = 0
 )
 
-# Additionally correct the SCT counts after integration
-integrated <- PrepSCTFindMarkers(integrated)
-
 # Run clustree
 clustree_plot <- clustree::clustree(integrated, prefix = "SCT_snn_res.") +
   ggtitle(cohort_id) +

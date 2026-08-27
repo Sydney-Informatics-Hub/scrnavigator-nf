@@ -52,7 +52,8 @@ if (!is.na(annotation_db_file)) {
   stop("Error: For species other than human and mouse, valid external annotation database RDS file must be provided.")
 }
 
-sce <- as.SingleCellExperiment(integrated, assay = "RNA")
+intj <- JoinLayers(integrated, assay = "RNA")  # as.SingleCellExperiment can't handle multiple layers
+sce <- as.SingleCellExperiment(intj, assay = "RNA")
 sceM <- logNormCounts(sce)
 
 if (use_hpca || use_mouse) {
