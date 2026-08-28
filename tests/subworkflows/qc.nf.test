@@ -4,7 +4,7 @@ nextflow_workflow {
     script "subworkflows/qc.nf"
     workflow "QUALITY_CONTROL"
 
-    test("Should run without failures") {
+    test("Test QC subworkflow") {
 
         when {
             params {
@@ -46,11 +46,12 @@ nextflow_workflow {
                     ],
                 )
                 all_resolutions = channel.value('0.8,1,1.2')
-                cluster_method = channel.value('louvain')
+                cluster_method = channel.value('leiden')
                 species = channel.value('human')
                 ens_db_rds = channel.value([null])
                 annotate_mt = channel.value(true)
                 mt_gene_list = channel.value([null])
+                vars_to_regress = channel.value('percent.mt')
                 input[0] = samplesheet
                 input[1] = all_resolutions
                 input[2] = cluster_method
@@ -58,6 +59,7 @@ nextflow_workflow {
                 input[4] = ens_db_rds
                 input[5] = annotate_mt
                 input[6] = mt_gene_list
+                input[7] = vars_to_regress
                 """
             }
         }

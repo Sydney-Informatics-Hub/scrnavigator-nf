@@ -1,0 +1,70 @@
+nextflow_workflow {
+
+    name "Test Workflow INTEGRATE"
+    script "subworkflows/integrate.nf"
+    workflow "INTEGRATE"
+
+    test("Should run without failures") {
+
+        setup {
+            run("DETECT_DOUBLETS") {
+                script "modules/doublet.nf"
+                process {
+                    """
+                    input[0] = channel.of(
+                        [
+                            "sample_1_ctrl",
+                            file("${projectDir}/tests/data/rds/sample_1_ctrl.sct_clustered.rds", checkIfExists: true),
+                            "",
+                            "0.8",
+                            "0.8,1.0,1.2,1.4",
+                            "leiden",
+                            "percent.mt"
+                        ],
+                        [
+                            "sample_4_stim",
+                            file("${projectDir}/tests/data/rds/sample_4_stim.sct_clustered.rds", checkIfExists: true),
+                            "",
+                            "1.4",
+                            "0.8,1.0,1.2,1.4",
+                            "leiden",
+                            "percent.mt"
+                        ]
+                    )
+                    """
+                }
+            }
+        }
+
+        when {
+            params {
+                // define parameters here. Example:
+                // outdir = "tests/results"
+            }
+            workflow {
+                """
+                all_rds_to_integrate = DETECT_DOUBLETS.out.doublets_removed_rds
+                    .map { _sample, rds -> rds }
+                    .collect()
+                cohort_id = channel.value('our_cohort')
+                all_resolutions = channel.value('0.8,1,1.2')
+                cluster_method = channel.value('leiden')
+                integrated_resolution = channel.value(1.2)
+                vars_to_regress = channel.value('percent.mt')
+                input[0] = all_rds_to_integrate
+                input[1] = cohort_id
+                input[2] = all_resolutions
+                input[3] = cluster_method
+                input[4] = integrated_resolution
+                input[5] = vars_to_regress
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+        }
+
+    }
+
+}

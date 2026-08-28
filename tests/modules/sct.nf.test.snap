@@ -1,0 +1,71 @@
+{
+    "Should run without failures": {
+        "content": [
+            [
+                [
+                    "sample_1_ctrl",
+                    [
+                        [
+                            [
+                                "1.txt:md5,0009ccff64a4ea66a3df94d277d807c0",
+                                "2.txt:md5,c8532bfc689ef0c5cfd8ace71eeb1987",
+                                "3.txt:md5,9b5ca406e20eecb353c75976f019c6f0",
+                                "4.txt:md5,806f1304b69d5d68e6c4bf3d401c1016",
+                                "5.txt:md5,d6c124161fe3a142a76059062fc11f48",
+                                "6.txt:md5,aeae9e7ac56a728696c59fe2ed95bdeb",
+                                "7.txt:md5,d2e0f46987f25a052cf628e997584298",
+                                "8.txt:md5,2f13f72f13870f143ff00caa965121ef",
+                                "9.txt:md5,a8d6a4b95cbdc4d6f36e5c8d8767bd2e"
+                            ],
+                            [
+                                "1.txt:md5,0009ccff64a4ea66a3df94d277d807c0",
+                                "2.txt:md5,394a8e9778932daf56a0c12db3791743",
+                                "3.txt:md5,60b8a13c0e5584f5d2e8c9a7100f3779",
+                                "4.txt:md5,eea258f522776b16429701f5b9dd2194",
+                                "5.txt:md5,d6c124161fe3a142a76059062fc11f48",
+                                "6.txt:md5,bf36920e68f5e37caa5e24cea59d1b77",
+                                "7.txt:md5,2e7f54f006ee8ea6581fc7657e657802",
+                                "8.txt:md5,2f13f72f13870f143ff00caa965121ef",
+                                "9.txt:md5,dc5e05a8bbd0a36ba3c0c6254c565d30"
+                            ],
+                            [
+                                "1.txt:md5,5dfc520418bef4032a93ccb04e017946",
+                                "10.txt:md5,dc5e05a8bbd0a36ba3c0c6254c565d30",
+                                "2.txt:md5,6312443bbb3574cb3148f2294cc80158",
+                                "3.txt:md5,4898ede75fdb4c2a6aab7f39033e9c73",
+                                "4.txt:md5,3eac10b03a1fa5b9ba1c4c29734ca4c0",
+                                "5.txt:md5,1dead8d42d01d4d3939c5e299cd2d5f7",
+                                "6.txt:md5,d6c124161fe3a142a76059062fc11f48",
+                                "7.txt:md5,961dfcdd5f6d28d45f85a802056242f1",
+                                "8.txt:md5,2e7f54f006ee8ea6581fc7657e657802",
+                                "9.txt:md5,0a57786fdad94f5e340aff1f3533c40f"
+                            ],
+                            [
+                                "1.txt:md5,a0c7b9a41dea76caa972354db063176b",
+                                "10.txt:md5,b27084e0b151509614c3c58ccb4ce067",
+                                "2.txt:md5,1136ed9a5cb9f2080afcf2051afbf2b0",
+                                "3.txt:md5,4b46bb2eee0bbf448ba354bd65ac4f78",
+                                "4.txt:md5,3eac10b03a1fa5b9ba1c4c29734ca4c0",
+                                "5.txt:md5,ef88f7d25db039af1d9041419fade1ac",
+                                "6.txt:md5,d6c124161fe3a142a76059062fc11f48",
+                                "7.txt:md5,961dfcdd5f6d28d45f85a802056242f1",
+                                "8.txt:md5,2e7f54f006ee8ea6581fc7657e657802",
+                                "9.txt:md5,220d1a558bc934afe7a7deeb823e49bc"
+                            ]
+                        ],
+                        "sample_1_ctrl.clustree.png:md5,ce4eef331cd2f7dfc37a403845ed6557",
+                        "sample_1_ctrl.feature_count_plot.cluster.0.8.png:md5,22092648043c0912be41fae4b11902b6",
+                        "sample_1_ctrl.feature_count_plot.cluster.1.2.png:md5,f05d2542695e402071d90fd3a171e674",
+                        "sample_1_ctrl.feature_count_plot.cluster.1.4.png:md5,e6d4e75ded344e8210f37b20c624b3c0",
+                        "sample_1_ctrl.feature_count_plot.cluster.1.png:md5,0b36602b98c96a73f59e45b7380c2b26"
+                    ]
+                ]
+            ]
+        ],
+        "timestamp": "2026-05-29T15:22:14.131547711",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
+        }
+    }
+}
