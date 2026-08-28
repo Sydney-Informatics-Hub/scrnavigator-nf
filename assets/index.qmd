@@ -1,0 +1,660 @@
+---
+title: "scRNAvigator Report"
+format:
+  html:
+    embed-resources: true
+---
+
+Thank you for using scRNAvigator!
+
+This report contains a summary of your analysis. Depending on what sections of the pipeline were ran, it will include one or more of the following:
+
+- Quality control metrics and plots
+- Doublet detection and filtering results
+- Dataset integration results
+- Cell annotation results
+- Pseudobulking and differential expression results
+- Functional enrichment analysis results
+
+```{r}
+#| echo: false
+#| results: hide
+#| warning: false
+#| error: false
+#| message: false
+library(tidyverse)
+library(DT)
+
+# Get cohort name
+cohort_name <- scan("cohort_name.txt", character())[1]
+
+# Get parameters TSV file
+params_tsv <- "parameters.tsv"
+params_df <- read_tsv(params_tsv)
+
+# Read sample sheet
+samplesheet <- read_csv("samplesheets/samplesheet.csv")
+
+# Get samplesheet column names
+samplesheet_cols <- list(
+  sample = "Sample name",
+  rds = "File path",
+  min_ncount = "Min. UMI count",
+  max_ncount = "Max. UMI count",
+  min_nfeature = "Min. gene count",
+  max_nfeature = "Max. gene count",
+  min_mt_pct = "Min. MT gene proportion (%)",
+  max_mt_pct = "Max. MT gene proportion (%)",
+  cells_to_remove = "Cells to remove file path",
+  res = "Sample clustering resolution",
+  multiplet_rate = "Expected multiplet rate"
+)
+
+samplesheet_cols_show <- list(
+  sample = FALSE,
+  rds = FALSE,
+  min_ncount = FALSE,
+  max_ncount = FALSE,
+  min_nfeature = FALSE,
+  max_nfeature = FALSE,
+  min_mt_pct = FALSE,
+  max_mt_pct = FALSE,
+  cells_to_remove = FALSE,
+  res = FALSE,
+  multiplet_rate = FALSE
+)
+
+for (col in colnames(samplesheet)) {
+  samplesheet_cols_show[[col]] <- TRUE
+
+  if (!(col %in% names(samplesheet_cols))) {
+    samplesheet_cols[[col]] <- col
+  }
+}
+
+samplesheet_cols_show$rds <- FALSE
+samplesheet_cols_show$cells_to_remove <- FALSE
+samplesheet_cols_final <- samplesheet_cols[unlist(samplesheet_cols_show)]
+
+samplesheet_show <- samplesheet %>%
+  select(all_of(names(samplesheet_cols_final)))
+
+# Read custom marker genes if present
+custom_marker_genes <- NA
+custom_marker_genes_file <- "samplesheets/custom_marker_genes.csv"
+if (file.exists(custom_marker_genes_file)) {
+  custom_marker_genes <- read_csv(custom_marker_genes_file)
+}
+
+# Read comparisons if present
+comparisons <- NA
+comparisons_file <- "samplesheets/comparisons.csv"
+if (file.exists(comparisons_file)) {
+  comparisons <- read_csv(comparisons_file)
+}
+
+# Get list of pipeline sections that were run
+modules_run <- list(
+  qc_filter = TRUE,
+  doublets = dir.exists("qc_doublets"),
+  integration = dir.exists("integration_qc"),
+  annotation_cc = dir.exists("annotation_cc"),
+  annotation_db = dir.exists("annotation_db"),
+  annotation_custom = dir.exists("annotation_custom"),
+  annotation_cluster = dir.exists("annotation_clusters"),
+  pseudobulk = dir.exists("analysis_pseudo"),
+  de = dir.exists("analysis_de"),
+  gsea = dir.exists("analysis_gsea"),
+  ora = dir.exists("analysis_ora")
+)
+
+module_names <- list(
+  qc_filter = "Quality control and filtering",
+  doublets = "Doublet detection and filtering",
+  integration = "Dataset integration",
+  annotation_cc = "Cell cycle annotation",
+  annotation_db = "Automatic cell type annotation",
+  annotation_custom = "Custom cell type annotation",
+  annotation_cluster = "Cluster annotation",
+  pseudobulk = "Pseudobulking",
+  de = "Differential expression",
+  gsea = "Gene set enrichment analysis",
+  ora = "Over-representation analysis"
+)
+
+modules_run_names <- unlist(module_names[unlist(modules_run)])
+modules_run_names_str <- paste("- ", modules_run_names, collapse = "\n")
+modules_run_names_str <- paste0(modules_run_names_str, "\n")
+
+# Get executive summary info
+n_samples <- c(metric = "# Samples", value = nrow(samplesheet_show))
+n_cells_filtered <- NULL
+n_cells_per_sample <- NULL
+n_clusters <- NULL
+cluster_annotations <- NULL
+n_de_comparisons <- NULL
+n_de_genes <- NULL
+
+if (file.exists("qc_doublets.qmd")) {
+  doublet_summary_files <- dir(
+    "qc_doublets",
+    pattern = ".*\\.doublet_summary\\.csv$",
+    recursive = TRUE,
+    full.names = TRUE
+  )
+  doublet_summaries <- lapply(doublet_summary_files, function(f) {
+    read_csv(f)
+  })
+  doublet_summary <- bind_rows(doublet_summaries)
+  n_cells_filtered <- c(metric = "# Cells (filtered)", value = sum(doublet_summary$n_singlets))
+} else if (file.exists("qc_filter.qmd")) {
+  filter_summary_files <- dir(
+    "qc_filter",
+    pattern = ".*\\.hard_filter_summary\\.csv$",
+    recursive = TRUE,
+    full.names = TRUE
+  )
+  filter_summaries <- lapply(filter_summary_files, function(f) {
+    read_csv(f)
+  })
+  filter_summary <- bind_rows(filter_summaries)
+  n_cells_filtered <- c(metric = "# Cells (filtered)", value = sum(filter_summary$n_cells_post_filtered))
+}
+
+if (!is.null(n_cells_filtered)) {
+  n_cells_per_sample <- c(metric = "Avg. cells per sample", value = round(as.integer(n_cells_filtered[["value"]]) / as.integer(n_samples[["value"]]), digits = 2))
+}
+
+if (file.exists("integration_cluster.qmd")) {
+  n_clusters_df <- read_csv(paste0("integration_cluster/", cohort_name, ".integrated.clusters.csv"))
+  n_clusters <- c(metric = "# Clusters", value = nrow(n_clusters_df))
+}
+
+if (file.exists("annotation.qmd")) {
+  cluster_annotations <- read_csv(paste0("annotation_clusters/", cohort_name, ".cluster_cell_type_assignments.csv")) %>%
+    group_by(cell_type) %>%
+    summarise(n_clusters = n())
+}
+
+if (file.exists("analysis_de.qmd")) {
+  comparisons_csv <- "samplesheets/comparisons.csv"
+  comparisons_df <- read_csv(comparisons_csv)
+  n_de_comparisons <- c(metric = "# DE comparisons", value = nrow(comparisons_df))
+
+  sig_de_table <- read_csv(paste0("analysis_de/", cohort_name, ".de.full.csv")) %>%
+    filter(sig == "sig")
+
+  n_de_genes <- c(metric = "# DE genes", value = length(unique(sig_de_table$Gene.Symbol)))
+}
+
+exec_summary <- bind_rows(n_samples, n_cells_filtered, n_cells_per_sample, n_clusters, n_de_comparisons, n_de_genes)
+
+# Get information for methods section
+# TODO: Get values from environment
+pipeline_version <- scan("version.txt", character())[1]
+nextflow_version <- scan("nextflow.txt", character())[1]
+nextflow_command <- scan("cmd.sh", character(), sep = "\n")
+nextflow_command <- paste(nextflow_command, collapse = "\n")
+nextflow_command <- paste("```bash", nextflow_command, "```", sep = "\n")
+software_versions <- read_csv("software.csv")
+r_version <- paste(version$major, version$minor, sep = ".")
+seurat_version <- as.character(packageVersion("Seurat"))
+tidyverse_ersion <- as.character(packageVersion("tidyverse"))
+clustree_version <- software_versions$version[match("clustree", software_versions$tool)]
+doubletfinder_version <- software_versions$version[match("DoubletFinder", software_versions$tool)]
+singler_version <- software_versions$version[match("SingleR", software_versions$tool)]
+deseq_version <- software_versions$version[match("DESeq2", software_versions$tool)]
+webgestaltr_version <- software_versions$version[match("WebGestaltR", software_versions$tool)]
+celldex_version <- software_versions$version[match("celldex", software_versions$tool)]
+hard_filter_cols <- c("min_ncount", "max_ncount", "min_nfeature", "max_nfeature")
+hard_filter_cols <- hard_filter_cols[hard_filter_cols %in% samplesheet]
+hard_filtered <- any(!is.na(samplesheet[hard_filter_cols]))
+mt_qc <- !as.logical(params_df$value[match("no_mt", params_df$parameter)])
+mt_filter_cols <- c("min_mt_pct", "max_mt_pct")
+mt_filter_cols <- mt_filter_cols[mt_filter_cols %in% samplesheet]
+mt_filtered <- any(!is.na(samplesheet[mt_filter_cols]))
+cluster_algorithm <- str_to_sentence(params_df$value[match("cluster_method", params_df$parameter)])
+integration_resolution <- params_df$value[match("integrated_resolution", params_df$parameter)]
+annotation_species <- params_df$value[match("species", params_df$parameter)]
+annotation_db_param <- params_df$value[match("annotation_db", params_df$parameter)]
+if (is.null(annotation_db_param) || is.na(annotation_db_param) || annotation_db_param == "null" || annotation_db_param == "") {
+  annotation_db_source <- paste0("the Human Primary Cell Atlas (HPCA) via the R package `celldex` (version ", celldex_version, ")")
+} else {
+  annotation_db_source <- "a pre-built annotation database"
+  annotation_db_source <- paste0(annotation_db_param)
+}
+annotation_custom_mad_threshold <- params_df$value[match("custom_annotation_mad_threshold", params_df$parameter)]
+available_annotation_files <- dir(
+  "available_annotations",
+  pattern = "\\.txt$",
+  recursive = TRUE,
+  full.names = TRUE
+)
+available_annotations <- unlist(sapply(available_annotation_files, scan, character()))
+annotation_priority <- c(
+  "custom_cell_type",
+  "custom_cell_type.max_score",
+  "SingleR.annotation",
+  "SingleR.hpca_main",
+  "SingleR.mouse_main",
+  "SingleR.hpca_fine",
+  "SingleR.mouse_fine",
+  "Phase"
+)
+annotation_priority <- annotation_priority[annotation_priority %in% available_annotations]
+cluster_annotation_param <- params_df$value[match("cluster_annotation", params_df$parameter)]
+if (is.null(cluster_annotation_param) || is.na(cluster_annotation_param) || cluster_annotation_param == "null" || cluster_annotation_param == "") {
+  cluster_annotation_param <- annotation_priority[1]
+}
+cluster_annotation_descriptions <- list(
+  custom_cell_type = "custom marker gene cell type",
+  custom_cell_type.max_score = "custom marker gene cell type",
+  SingleR.annotation = "cell type from the SingleR annotation",
+  SingleR.hpca_main = "cell type from the SingleR annotation",
+  SingleR.mouse_main = "cell type from the SingleR annotation",
+  SingleR.hpca_fine = "cell type from the SingleR annotation",
+  SingleR.mouse_fine = "cell type from the SingleR annotation",
+  Phase = "cell cycle phase"
+)
+cluster_annotation <- cluster_annotation_descriptions[[cluster_annotation_param]]
+cluster_annotation_threshold <- params_df$value[match("cell_type_proportion_threshold", params_df$parameter)]
+```
+
+## Analysis summary: `r cohort_name`
+
+The following table summarises the major findings from this analysis:
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+
+datatable(
+  exec_summary,
+  colnames = "",
+  rownames = FALSE
+)
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("annotation.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("The following annotations were assigned to clusters:\n\n")
+```
+
+```{r}
+#| echo: false
+#| eval: !expr (!is.null(cluster_annotations))
+#| warning: false
+#| error: false
+#| message: false
+
+datatable(
+  cluster_annotations,
+  colnames = c("Cell type", "# Clusters"),
+  rownames = FALSE
+)
+```
+
+### Sample sheet
+
+The following sample sheet table summarises the metadata and potential filtering thresholds for each sample in the dataset:
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+
+datatable(
+  samplesheet_show,
+  colnames = unname(unlist(samplesheet_cols_final))
+)
+```
+
+The following modules were run for this analysis:
+
+```{r}
+#| echo: false
+#| results: asis
+#| warning: false
+#| error: false
+#| message: false
+
+cat(modules_run_names_str)
+```
+
+### Parameters
+
+The following parameters were set during the pipeline run:
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+
+datatable(
+  params_df,
+  colnames = c("Parameter", "Value")
+)
+```
+
+### Methods
+
+You can use the following text within your methods sections of any manuscripts using the results of this analysis:
+
+::: {.callout-note appearance="minimal"}
+
+#### Bioinformatics and data analysis
+
+Data was processed using scrnavigator-nf `r pipeline_version` (https://github.com/Sydney-Informatics-Hub/scrnavigator-nf), a Nextflow pipeline developed by the Sydney Informatics Hub for analysing single cell RNA sequencing data. The pipeline was executed using version `r nextflow_version` of Nextflow (Di Tommaso, et al., 2017; doi: [10.1038/nbt.3820](http://www.nature.com/nbt/journal/v35/n4/full/nbt.3820.html)) with the following command:
+
+```{r}
+#| echo: false
+#| results: asis
+#| warning: false
+#| error: false
+#| message: false
+cat(nextflow_command)
+```
+
+The pipeline is built around the `Seurat` framework (version `r seurat_version`; Satija et al., 2015; doi: [10.1038/nbt.3192](https://doi.org/10.1038/nbt.3192)) and the `R` programming language (version `r r_version`).
+```{r}
+#| echo: false
+#| results: asis
+#| warning: false
+#| error: false
+#| message: false
+if (file.exists("qc_filter.qmd") && hard_filtered) {
+  cat("Distributions of UMI and gene counts were inspected to select hard filtering thresholds for removal of low-quality cells.\n")
+  if (mt_qc && mt_filtered) {
+    cat("Mitochondrial gene fractions per cell were also inspected to select hard filtering thresholds for removal of potentailly dying cells.\n")
+  }
+}
+if (file.exists("qc_cluster.qmd")) {
+  cat(paste0("Cells were clustered using the ", cluster_algorithm, " algorithm, with clustering resolutions selected using the R package `clustree` (version ", clustree_version, "; Zappia and Oshlack, 2018; doi: [10.1093/gigascience/giy083](https://doi.org/10.1093/gigascience/giy083)).\n"))
+}
+
+if (file.exists("qc_doublets.qmd")) {
+  cat(paste0("Doublets were detected and removed using the R package `DoubletFinder` (version ", doubletfinder_version, "; McGinnis et al., 2019; doi: [10.1016/j.cels.2019.03.003](https://doi.org/10.1016/j.cels.2019.03.003)).\n"))
+}
+
+if (file.exists("integration_qc.qmd")) {
+  cat("Samples were merged into a single dataset and integrated to correct for batch effects with the `Seurat` Canonical Correlation Analysis (CCA) algorithm.\n")
+}
+
+if (file.exists("integration_cluster.qmd")) {
+  cat(paste0("The integrated dataset was re-clustered using the ", cluster_algorithm, " algorithm, with a clustering resolution of ", integration_resolution, " selected using Clustree.\n"))
+}
+
+if (file.exists("annotation.qmd")) {
+  cat("\nCells were annotated as follows.\n")
+  if (dir.exists("annotation_cc")) {
+    cat("Cell cycle states were annotated using the `Seurat` built-in function `CellCycleScoring`.\n")
+  }
+
+  if (dir.exists("annotation_db")) {
+    cat(paste0("Cell types were annotated using the `SingleR` R package (version ", singler_version, "; Aran et al., 2019; doi: [10.1038/s41590-018-0276-y](https://doi.org/10.1038/s41590-018-0276-y)) and ", annotation_db_source, ".\n"))
+  }
+
+  if (dir.exists("annotation_custom")) {
+    cat("Cells types were annotated using custom marker gene sets and the `Seurat` built-in function `AddModuleScore`.\n")
+    if (cluster_annotation_param == "custom_cell_type.max_score") {
+      cat(paste0("The cell type with the highest ranking module score was used.\n"))
+    } else {
+      cat(paste0("The cell type with the highest ranking module score was used if the difference between the top two module scores was greater than ", annotation_custom_mad_threshold, " median absolute deviation (MAD) of all scores.\n"))
+      cat("Cells that did not meet this criteria were labelled 'Ambiguous'.\n")
+    }
+  }
+
+  if (dir.exists("annotation_clusters")) {
+    cat(paste0("Clusters were annotated with the most prevalent ", cluster_annotation, " present within them, if that prevalence exceeded ", cluster_annotation_threshold, ".\n"))
+    cat("Clusters not meeting this criteria were labelled 'Ambiguous'.\n")
+  }
+}
+
+if (dir.exists("analysis_pseudo")) {
+  cat("\nPseudobulking was performed to aggregate expression values from cells within each sample using `Seurat`'s built-in function `AggregateExpression`.\n")
+}
+
+if (dir.exists("analysis_de")) {
+  cat(paste0("Differential expression analysis was performed on pseudobulked data using `Seurat`'s built-in function `FindMarkers` and the `DESeq2` R package (version ", deseq_version, "; Love et al., 2014; doi: [10.1186/s13059-014-0550-8](http://dx.doi.org/10.1186/s13059-014-0550-8)).\n"))
+}
+
+if (dir.exists("analysis_gsea") || dir.exists("analysis_ora")) {
+  cat(paste0("Functional enrichment analysis (FEA) was performed with the `WebGestaltR` R package (version ", webgestaltr_version, "; Elizarraras et al., 2024; doi: [10.1093/nar/gkae456](https://doi.org/10.1093/nar/gkae456)). The following FEA methods were used:\n"))
+  if (dir.exists("analysis_gsea")) {
+    cat("Gene Set Enrichment Analysis (GSEA).\n")
+  }
+
+  if (dir.exists("analysis_ora")) {
+    cat("Over-Representation Analysis (ORA).\n")
+  }
+
+}
+```
+
+:::
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("qc_filter.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("## Quality control\n\n")
+cat("### Initial filtering\n\n")
+```
+
+```{r}
+#| child: "qc_filter.qmd"
+#| eval: !expr file.exists("qc_filter.qmd")
+#| warning: false
+#| error: false
+#| message: false
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("qc_cluster.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("### Sample clustering\n\n")
+```
+
+```{r}
+#| child: "qc_cluster.qmd"
+#| eval: !expr file.exists("qc_cluster.qmd")
+#| warning: false
+#| error: false
+#| message: false
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("qc_doublets.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("### Doublet detection and filtering\n\n")
+```
+
+```{r}
+#| child: "qc_doublets.qmd"
+#| eval: !expr file.exists("qc_doublets.qmd")
+#| warning: false
+#| error: false
+#| message: false
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("integration_qc.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("## Integration\n\n")
+cat("### Initial quality control\n\n")
+```
+
+```{r}
+#| child: "integration_qc.qmd"
+#| eval: !expr file.exists("integration_qc.qmd")
+#| warning: false
+#| error: false
+#| message: false
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("integration_cluster.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("### Clustering\n\n")
+```
+
+```{r}
+#| child: "integration_cluster.qmd"
+#| eval: !expr file.exists("integration_cluster.qmd")
+#| warning: false
+#| error: false
+#| message: false
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("annotation.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("## Annotation\n\n")
+```
+
+```{r}
+#| child: "annotation.qmd"
+#| eval: !expr file.exists("annotation.qmd")
+#| warning: false
+#| error: false
+#| message: false
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("analysis_pseudo.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("## Analysis\n\n")
+cat("### Pseudobulking\n\n")
+```
+
+```{r}
+#| child: "analysis_pseudo.qmd"
+#| eval: !expr file.exists("analysis_pseudo.qmd")
+#| warning: false
+#| error: false
+#| message: false
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("analysis_de.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("### Differential expression analysis\n\n")
+```
+
+```{r}
+#| child: "analysis_de.qmd"
+#| eval: !expr file.exists("analysis_de.qmd")
+#| warning: false
+#| error: false
+#| message: false
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr (file.exists("analysis_gsea.qmd") || file.exists("analysis_ora.qmd"))
+#| warning: false
+#| error: false
+#| message: false
+
+cat("### Functional enrichment analysis (FEA)\n\n")
+
+cat("Differential expression analyses can generate lots of results that can be quite difficult to interpret by themselves.\n")
+cat("Functional enrichment analyses are a set of methods designed to take the raw differential expression results and identify patterns of expression that point to altered **biological function**.\n")
+cat("There are several such approaches, but the two we apply in this pipeline are **Gene Set Enrichment Analysis** (GSEA) and **Over-Representation Analysis** (ORA).\n\n")
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("analysis_gsea.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("#### Gene Set Enrichment Analysis (GSEA)\n\n")
+```
+
+```{r}
+#| child: "analysis_gsea.qmd"
+#| eval: !expr file.exists("analysis_gsea.qmd")
+#| warning: false
+#| error: false
+#| message: false
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| eval: !expr file.exists("analysis_ora.qmd")
+#| warning: false
+#| error: false
+#| message: false
+cat("#### Over-Representation Analysis (ORA)\n\n")
+```
+
+```{r}
+#| child: "analysis_ora.qmd"
+#| eval: !expr file.exists("analysis_ora.qmd")
+#| warning: false
+#| error: false
+#| message: false
+```
+
+## Software versions
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+
+tibble(
+  tool = c("R", "Seurat"),
+  version = c(r_version, seurat_version)
+) %>%
+  bind_rows(software_versions) %>%
+  datatable(
+    colnames = c("Tool", "Version"),
+    rownames = FALSE
+  )
+```

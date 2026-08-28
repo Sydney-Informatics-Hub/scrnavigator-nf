@@ -1,0 +1,24 @@
+nextflow_pipeline {
+
+    name "Test Workflow main.nf"
+    script "main.nf"
+
+    test("Test QC-only workflow") {
+
+        when {
+            params {
+                input = "${projectDir}/tests/data/samplesheet.qc_only.csv"
+                qc_only = true
+                no_analysis = true
+                cluster_method = 'louvain'
+                species = 'human'
+            }
+        }
+
+        then {
+            assert workflow.success
+        }
+
+    }
+
+}

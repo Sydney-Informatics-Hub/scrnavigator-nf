@@ -1,0 +1,38 @@
+{
+    "human: null ens_db": {
+        "content": [
+            [
+                [
+                    "cohort",
+                    "available_annotations.txt:md5,4d945476aac3a0f64c4aaa9f6f9c1bda"
+                ]
+            ],
+            [
+                "cohort"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-05-13T12:02:00.608261038"
+    },
+    "human: ens_db provided and used": {
+        "content": [
+            [
+                [
+                    "cohort",
+                    "available_annotations.txt:md5,4d945476aac3a0f64c4aaa9f6f9c1bda"
+                ]
+            ],
+            [
+                "cohort"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-05-13T12:02:29.613281109"
+    }
+}

@@ -1,0 +1,68 @@
+---
+title: "Analysis: Pseudobulking"
+format: html
+---
+
+```{r}
+#| echo: false
+#| results: hide
+#| warning: false
+#| error: false
+#| message: false
+library(tidyverse)
+library(DT)
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+# Pseudobulking results
+# Get table of groups available for comparison
+comparison_groups_file <- dir(
+  "analysis_pseudo",
+  pattern = "^.*\\.comparison_groups.txt$",
+  recursive = TRUE,
+  full.names = TRUE
+)[1]
+
+# Get cohort ID
+cohort_id <- gsub("^analysis_pseudo\\/(.*)\\.comparison_groups.txt$", "\\1", comparison_groups_file)
+
+comparison_groups_table <- read_csv(comparison_groups_file)
+
+# Get pseudobulking groups
+pseudo_groups_file <- "pseudo_groups.txt"
+pseudo_groups <- scan(pseudo_groups_file, character())
+```
+
+With the dataset filtered, integrated, and annotated, the next step is to perform pseudobulking. This is the process of aggregating the RNA counts across many cells within a sample into a single data point. For example, we may have a sample with 5000 B cells and 4000 T cells. During pseudobulking, we would aggregate (i.e. sum together) the expression profiles of all B cells and all T cells, leaving us with one pseudobulked B cell expression profile and one pseudobulked T cell expression profile for that sample. We would then repeat this procedure for every sample.
+
+The process of pseudobulking effectively performs a bulk RNA-seq experiment for each cell type - hence the name "pseudobulk". But, instead of relying on cell sorting methods to isolate each cell type from one another, we can use our single cell resolution data and cell annotations. The main advantage of pseudobulking is that we can use well-established statistical techniques for assessing differentially expressed genes that were developed for bulk RNA-seq and are more robust than newer, more complex scRNA-seq techniques. See the [single-cell best practices guide](https://www.sc-best-practices.org/conditions/differential_gene_expression.html) for more information on the benefits of pseudobulking.
+
+#### Fields used for pseudobulking
+
+The following [metadata fields](#all-annotation-fields-available-for-downstream-analysis) were used for aggregation of cells:
+
+```{r}
+#| echo: false
+#| results: asis
+for (g in pseudo_groups) {
+  cat("- ")
+  cat(g)
+  cat("\n")
+}
+```
+
+### Pseudobulked groups availablle for comparison
+
+Below is a table summarising all of your final pseudobulk groups and the number of samples in your dataset that are represented in each group. These pseudobulk group names are now available for comparison during differential expression analysis. **Note** that for differential expression analysis, you will ideally have *at least three* samples for each of your case and control groups, if not more.
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+datatable(comparison_groups_table, colnames = c("Group", "# Samples"))
+```

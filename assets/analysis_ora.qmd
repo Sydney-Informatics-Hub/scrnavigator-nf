@@ -1,0 +1,110 @@
+---
+title: "Analysis: Over-Representation Analysis"
+format: html
+---
+
+```{r}
+#| echo: false
+#| results: hide
+#| warning: false
+#| error: false
+#| message: false
+library(tidyverse)
+library(DT)
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+# ORA
+# Get full ORA table
+ora_table_file <- dir(
+  "analysis_ora",
+  pattern = "^.*\\.ora\\.full\\.csv$",
+  recursive = TRUE,
+  full.names = TRUE
+)[1]
+ora_table <- read_csv(ora_table_file)
+
+# Get cohort ID
+cohort_id <- gsub("^analysis_ora\\/(.*)\\.ora\\.full\\.csv$", "\\1", ora_table_file)
+
+# Get reduced GSEA table
+ora_reduced_table_file <- paste0("analysis_ora/", cohort_id, ".ora.full.reduced.csv")
+ora_reduced_table <- read_csv(ora_reduced_table_file)
+
+# Remove unnecessary columns
+retain_cols <- c(
+  "geneSet",
+  "description",
+  "test_group",
+  "ref_group",
+  "enrichmentRatio",
+  "size",
+  "overlap",
+  "pValue",
+  "FDR"
+)
+retain_cols_names <- c(
+  "Gene Set ID",
+  "Gene Set Description",
+  "Test Group",
+  "Reference Group",
+  "Enrichment Ratio",
+  "Gene Set Size",
+  "# Input Genes in Set",
+  "p-value",
+  "FDR-Adjusted p-value"
+)
+
+ora_table <- ora_table %>%
+  select(all_of(retain_cols)) %>%
+  mutate(across(where(is.numeric), ~ round(.x, 4)))
+ora_reduced_table <- ora_reduced_table %>%
+  select(all_of(retain_cols)) %>%
+  mutate(across(where(is.numeric), ~ round(.x, 4)))
+
+# Get all comparisons
+unique_comparisons <- ora_table %>%
+  select(test_group, ref_group) %>%
+  unique()
+all_comparisons <- unique_comparisons %>%
+  unite(comparison, test_group, ref_group, sep = " vs. ") %>%
+  .$comparison
+all_comparisons_str <- unique_comparisons %>%
+  unite(comparison, test_group, ref_group, sep = "_vs_") %>%
+  .$comparison
+names(all_comparisons_str) <- all_comparisons
+
+# Get comparisons CSV
+comparisons_csv <- "samplesheets/comparisons.csv"
+comparisons_df <- read_csv(comparisons_csv)
+
+# Get ORA plots
+ora_plots <- sapply(all_comparisons_str, function(cmp) {
+  paste0("analysis_ora/plots/", cohort_id, ".ora.", cmp, ".png")
+})
+```
+
+This section presents the results from the ORA analysis conducted on your dataset. ORA works by taking the set of your **significantly differentially expressed** genes and comparing that against each set of genes mapped to **biological pathways** in a curated database. For each pathway, ORA looks at the proportion of those genes that appear in your list of significant genes. If that proportion is higher than what would be expected by chance, the gene set is considered **over-represented** or **enriched** in your dataset. In contrast, some pathways may have very low representation in your dataset, in which case they can be considered **under-represented** or **depleted**. The ORA method generates a list of **enrichment ratios** for each pathway.
+
+One ORA analysis was conducted for [each differential expression comparison](#differential-expression-analysis) that was made. Below, you will find plots showing the log2-transformed *enrichment ratio* for each **significant** pathway from the analysis: more enriched pathways have bars pointing to the right and are highlighted in orange, while depleted or under-represented pathways point to the left and are highlighted in blue.
+
+:::panel-tabset
+
+```{r}
+#| results: asis
+purrr::walk(
+  sort(all_comparisons),
+  function(n) {
+    p <- ora_plots[[n]]
+    cat(paste("#####", n, "\n\n"))
+    cat(paste("######", "Over-Representation Analysis Results:", n))
+    cat(paste0('<img src="', p, '" alt="ora results: ', n, '" width="100%">\n\n'))
+  }
+)
+```
+
+:::

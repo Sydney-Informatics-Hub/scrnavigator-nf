@@ -1,0 +1,9 @@
+sample,rds,condition,res
+sample_1_ctrl,../../../tests/data/rds/sample_1.ctrl.Rds,ctrl,1
+sample_2_ctrl,../../../tests/data/rds/sample_2.ctrl.Rds,ctrl,1
+sample_3_ctrl,../../../tests/data/rds/sample_3.ctrl.Rds,ctrl,1
+sample_4_ctrl,../../../tests/data/rds/sample_4.ctrl.Rds,ctrl,1
+sample_1_stim,../../../tests/data/rds/sample_1.stim.Rds,stim,1
+sample_2_stim,../../../tests/data/rds/sample_2.stim.Rds,stim,1
+sample_3_stim,../../../tests/data/rds/sample_3.stim.Rds,stim,1
+sample_4_stim,../../../tests/data/rds/sample_4.stim.Rds,stim,1

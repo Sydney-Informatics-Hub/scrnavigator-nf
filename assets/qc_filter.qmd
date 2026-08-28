@@ -1,0 +1,165 @@
+---
+title: "Quality Control: Initial Filtering"
+format: html
+---
+
+```{r}
+#| echo: false
+#| results: hide
+#| warning: false
+#| error: false
+#| message: false
+library(tidyverse)
+library(DT)
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+# QC filter
+# Get filter summaries
+filter_summary_files <- dir(
+  "qc_filter",
+  pattern = ".*\\.hard_filter_summary\\.csv$",
+  recursive = TRUE,
+  full.names = TRUE
+)
+filter_summaries <- lapply(filter_summary_files, function(f) {
+  read_csv(f)
+})
+filter_summary <- bind_rows(filter_summaries) %>%
+  mutate(prop_filtered = prop_filtered * 100) %>%
+  mutate(across(where(is.numeric), ~ round(.x, 4)))
+
+# Get sample names and map them to directory names
+samples <- sapply(filter_summary_files, function(s) {
+  gsub("^qc_filter\\/.*\\/(.*)\\.hard_filter_summary\\.csv$", "\\1", s)
+})
+names(samples) <- sapply(names(samples), function(s) {
+  gsub("^qc_filter\\/(.*)\\/.*$", "\\1", s)
+})
+sample_map <- setNames(names(samples), samples)
+
+# Get count distribution graphs
+cdist_log_graph_files <- sapply(sample_map, function(i) {
+  s <- samples[[i]]
+  paste("qc_filter", i, paste(s, "count_distributions.log.png", sep = "."), sep = "/")
+})
+cdist_graph_files <- sapply(sample_map, function(i) {
+  s <- samples[[i]]
+  paste("qc_filter", i, paste(s, "count_distributions.png", sep = "."), sep = "/")
+})
+
+# Get pre- and post-filtering plots
+pre_filter_plots <- sapply(sample_map, function(i) {
+  s <- samples[[i]]
+  paste("qc_filter", i, paste(s, "feature_count_plot.pre_filtered.png", sep = "."), sep = "/")
+})
+post_filter_plots <- sapply(sample_map, function(i) {
+  s <- samples[[i]]
+  paste("qc_filter", i, paste(s, "feature_count_plot.post_filtered.png", sep = "."), sep = "/")
+})
+
+# Read sample sheet
+samplesheet <- read_csv("samplesheets/samplesheet.csv")
+
+filtering_params <- samplesheet %>%
+  select(any_of(c(
+    "sample",
+    "min_ncount",
+    "max_ncount",
+    "min_nfeature",
+    "max_nfeature",
+    "min_mt_pct",
+    "max_mt_pct",
+    "cells_to_remove"
+  )))
+
+is_filtered <- !all(is.na(filtering_params) | filtering_params == "")
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+#| results: asis
+#| eval: !expr is_filtered
+
+markdown_text <- "#### Filtering thresholds
+
+The samples in the dataset were filtered according to the following thresholds:
+
+"
+
+cat(markdown_text)
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+#| eval: !expr is_filtered
+
+filtering_params_cols <- c(
+  sample = "Sample name",
+  min_ncount = "Min. UMI count",
+  max_ncount = "Max. UMI count",
+  min_nfeature = "Min. gene count",
+  max_nfeature = "Max. gene count",
+  min_mt_pct = "Min. MT gene proportion (%)",
+  max_mt_pct = "Max. MT gene proportion (%)",
+  cells_to_remove = "Cells to remove file path"
+)
+
+filtering_params_non_null <- filtering_params %>%
+  select(where(~ !all(is.na(.x) | .x == ""))) %>%
+  filter(!if_all(everything(), ~ is.na(.x) | .x == ""))
+
+filtering_params_non_null_cols <- filtering_params_cols[colnames(filtering_params_non_null)]
+
+datatable(filtering_params_non_null, colnames = unname(filtering_params_non_null_cols))
+```
+
+The following violin plots show the distributions of UMI counts (called `nCount_RNA`) and unique gene counts (called `nFeature_RNA`) per cell, as well as the mitochondiral gene percentages (`percent.mt`) per cell. These three values are plotted against each other in the "Features vs counts" scatter plots further down. These plots can be used together to identify hard-filtering thresholds for removing poor quality cells. Ideally, you want to see a roughly linear relationship between these values, up to a plateau point where greater sequencing depth no longer captures additional genes. Poor quality or dying cells may appear as additional clusters of cells towards the bottom-right corners of the plots. Additionally, high mitochondrial gene percentages may be indicative of dying cells, although be aware that some cell types may show high mitochondrial gene percentages even when healthy.
+
+:::panel-tabset
+
+```{r}
+#| results: asis
+# Display count distribution plots
+purrr::walk(
+  sort(samples),
+  function(n) {
+    p <- cdist_graph_files[[n]]
+    p_log <- cdist_log_graph_files[[n]]
+    f_pre <- pre_filter_plots[[n]]
+    f_post <- post_filter_plots[[n]]
+    cat(paste("####", n, "\n\n"))
+    cat(paste("#####", "Count distributions", "\n\n"))
+    cat(paste0('<img src="', p, '" alt="count distribution plot: ', n, '" width="100%">\n\n'))
+    cat(paste0('<img src="', p_log, '" alt="log-count distribution plot: ', n, '" width="100%">\n\n'))
+    cat(paste("#####", "Features vs counts - pre-filter", "\n\n"))
+    cat(paste0('<img src="', f_pre, '" alt="pre-filter plot: ', n, '" width="100%">\n\n'))
+    cat(paste("#####", "Features vs counts - post-filter", "\n\n"))
+    cat(paste0('<img src="', f_post, '" alt="post-filter plot: ', n, '" width="100%">\n\n'))
+  }
+)
+```
+
+:::
+
+#### Filtering summary
+
+The following table summarises the number of cells in each sample and the number of cells retained after filtering.
+
+```{r}
+#| echo: false
+datatable(
+  filter_summary,
+  colnames = c("Sample", "# Cells Pre-Filtering", "# Cells Post-Filtering", "% Filtered")
+)
+```

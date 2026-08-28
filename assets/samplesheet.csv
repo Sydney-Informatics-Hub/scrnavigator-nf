@@ -1,0 +1,3 @@
+sample,rds,min_ncount,max_ncount,min_nfeature,max_nfeature,min_mt_pct,max_mt_pct,cells_to_remove,metadata_field_1,metadata_field_2
+Sample_X,/path/to/nf-core/scrnaseq/results/cellranger/mtx_conversions/Sample_X/Sample_X_filtered_matrix.seurat.rds,300,,,,10,,,neg,value1
+Sample_Y,/path/to/nf-core/scrnaseq/results/cellranger/mtx_conversions/Sample_Y/Sample_Y_filtered_matrix.seurat.rds,300,,,,10,,,pos,value2

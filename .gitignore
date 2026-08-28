@@ -8,3 +8,7 @@ work/
 test/vep/
 bin/*.o
 bin/*.e
+.nf-test*
+*.sqlite
+.*.swp
+.*.swo

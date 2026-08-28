@@ -1,0 +1,110 @@
+---
+title: "Analysis: Gene Set Enrichment Analysis"
+format: html
+---
+
+```{r}
+#| echo: false
+#| results: hide
+#| warning: false
+#| error: false
+#| message: false
+library(tidyverse)
+library(DT)
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| message: false
+# GSEA
+# Get full GSEA table
+gsea_table_file <- dir(
+  "analysis_gsea",
+  pattern = "^.*\\.gsea\\.full\\.csv$",
+  recursive = TRUE,
+  full.names = TRUE
+)[1]
+gsea_table <- read_csv(gsea_table_file)
+
+# Get cohort ID
+cohort_id <- gsub("^analysis_gsea\\/(.*)\\.gsea\\.full\\.csv$", "\\1", gsea_table_file)
+
+# Get reduced GSEA table
+gsea_reduced_table_file <- paste0("analysis_gsea/", cohort_id, ".gsea.full.reduced.csv")
+gsea_reduced_table <- read_csv(gsea_reduced_table_file)
+
+# Remove unnecessary columns
+retain_cols <- c(
+  "geneSet",
+  "description",
+  "test_group",
+  "ref_group",
+  "enrichmentScore",
+  "normalizedEnrichmentScore",
+  "size",
+  "pValue",
+  "FDR"
+)
+retain_cols_names <- c(
+  "Gene Set ID",
+  "Gene Set Description",
+  "Test Group",
+  "Reference Group",
+  "Raw Enrichment Score",
+  "Normalised Enrichment Score",
+  "Gene Set Size",
+  "p-value",
+  "FDR-Adjusted p-value"
+)
+
+gsea_table <- gsea_table %>%
+  select(all_of(retain_cols)) %>%
+  mutate(across(where(is.numeric), ~ round(.x, 4)))
+gsea_reduced_table <- gsea_reduced_table %>%
+  select(all_of(retain_cols)) %>%
+  mutate(across(where(is.numeric), ~ round(.x, 4)))
+
+# Get all comparisons
+unique_comparisons <- gsea_table %>%
+  select(test_group, ref_group) %>%
+  unique()
+all_comparisons <- unique_comparisons %>%
+  unite(comparison, test_group, ref_group, sep = " vs. ") %>%
+  .$comparison
+all_comparisons_str <- unique_comparisons %>%
+  unite(comparison, test_group, ref_group, sep = "_vs_") %>%
+  .$comparison
+names(all_comparisons_str) <- all_comparisons
+
+# Get comparisons CSV
+comparisons_csv <- "samplesheets/comparisons.csv"
+comparisons_df <- read_csv(comparisons_csv)
+
+# Get GSEA plots
+gsea_plots <- sapply(all_comparisons_str, function(cmp) {
+  paste0("analysis_gsea/plots/", cohort_id, ".gsea.", cmp, ".png")
+})
+```
+
+This section presents the results from the GSEA analysis conducted on your dataset. GSEA works by first ranking the entire set of differential expression results by their fold-change values; this includes **both** significant **and** non-significant genes. The method then looks at a database of **biological pathways** and the **gene sets** associated with each. For each gene set, GSEA assesses whether these genes appear clustered together within your ranked dataset, more so than would be expected by chance. The degree of clustering towards the upregulated or downregulated ends of your dataset is used to calculate an **enrichment score** for that gene set.
+
+One GSEA analysis was conducted for [each differential expression comparison](#differential-expression-analysis) that was made. Below, you will find plots showing the enrichment score for each **significant** pathway from each analysis: more upregulated pathways have bars pointing to the right and are highlighted in orange, while downregulated pathways point to the left and are highlighted in blue.
+
+:::panel-tabset
+
+```{r}
+#| results: asis
+purrr::walk(
+  sort(all_comparisons),
+  function(n) {
+    p <- gsea_plots[[n]]
+    cat(paste("#####", n, "\n\n"))
+    cat(paste("######", "Gene Set Enrichment Analysis Results:", n))
+    cat(paste0('<img src="', p, '" alt="gsea results: ', n, '" width="100%">\n\n'))
+  }
+)
+```
+
+:::

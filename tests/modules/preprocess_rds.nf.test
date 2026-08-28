@@ -1,0 +1,63 @@
+nextflow_process {
+
+    name "Test Process PREPROCESS_RDS"
+    script "modules/preprocess_rds.nf"
+    process "PREPROCESS_RDS"
+
+    test("null ens_db, human: uses built-in EnsDb") {
+
+        when {
+            params {
+                // define parameters here. Example:
+                // outdir = "tests/results"
+            }
+            process {
+                """
+                input[0] = channel.of([
+                    "sample_1_ctrl",
+                    file("${projectDir}/tests/data/rds/sample_1.ctrl.Rds", checkIfExists: true),
+                    [
+                        condition: "ctrl"
+                    ],
+                    "human",
+                    [],
+                    true,
+                    []
+                ])
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert snapshot(process.out).match()
+        }
+
+    }
+
+    test("sqlite ens_db: loads EnsDb from file") {
+
+        when {
+            process {
+                """
+                input[0] = channel.of([
+                    "sample_1_ctrl",
+                    file("${projectDir}/tests/data/rds/sample_1.ctrl.Rds", checkIfExists: true),
+                    [condition: "ctrl"],
+                    "human",
+                    file("${projectDir}/tests/data/EnsDb_hsapiens_v113.sqlite", checkIfExists: true),
+                    true,
+                    []
+                ])
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert snapshot(process.out).match()
+        }
+
+    }
+
+}
