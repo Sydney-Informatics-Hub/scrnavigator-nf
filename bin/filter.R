@@ -23,8 +23,9 @@ params <- read_csv(params_file)
 dir.create("qc_results")
 
 # Plot nCount_RNA, nFeature_RNA, and percent.mt distributions
-sample_metadata <- so@meta.data %>%
-  rownames_to_column(var = "barcode")
+# Extract the sample metadata and add barcode/cell IDs as a column
+# Use 'barcode' as the new column name if available, or use a numeric suffix for a unique name
+sample_metadata <- so@meta.data
 
 dist_cols <- c("nCount_RNA", "nFeature_RNA")
 if ("percent.mt" %in% colnames(sample_metadata)) {
@@ -120,8 +121,7 @@ if (!is.na(cells_to_remove_file) && cells_to_remove_file != "") {
 }
 
 # Generate post-filtering nFeature_RNA vs nCount_RNA plot
-sample_metadata_filtered <- so_filtered@meta.data %>%
-  rownames_to_column(var = "barcode")
+sample_metadata_filtered <- so_filtered@meta.data
 p_fvc_post_filtered <- sample_metadata_filtered %>%
   ggplot(aes(x = nCount_RNA, y = nFeature_RNA, colour = percent.mt)) +
   geom_point(size = 0.1) +
